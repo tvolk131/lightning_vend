@@ -1,9 +1,11 @@
 import * as React from 'react';
 import {Theme, ThemeProvider, createTheme} from '@mui/material/styles';
 import {greet} from './api';
-import {useState} from 'react';
 import {blue} from '@mui/material/colors';
 import {makeStyles} from '@mui/styles';
+import {Typography} from '@mui/material';
+import {LightningNetworkLogo} from './lightningNetworkLogo';
+import {StyledQRCode} from './styledQRCode';
 
 const useStyles = makeStyles((theme: Theme) =>
   ({
@@ -23,7 +25,10 @@ const SubApp = () => {
       much better by preventing text from being tiny. */}
       <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
       <div>
-        Hello from React!
+        <div style={{width: 'fit-content', margin: 'auto', padding: '20px'}}>
+          <LightningNetworkLogo size={200}/>
+        </div>
+        <StyledQRCode value={'lightning:lnbc10u1p3hgmlfpp554ufwa2uaa69uz27t9u6hr8yrskju7mxeqksjdmldpa20rh60lnqdqqcqzpgxqr23ssp55u85dejctg2dln8ff94rrtfjxy7xxk4nehzv7v2uetj4kpp2k5vs9qyyssq3zudhexj3x68n4jydplwpyezjxu8au5ydv9zr50l4gccrp7dzw650nve3jgnayc5e0zfu4vzyt2ktvz7tkpmenm9tzk4vtfnvyrzqcqpj53v9k'}/>
       </div>
     </div>
   );
