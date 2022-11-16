@@ -21,8 +21,6 @@ export const StyledQRCode = (props: StyledQRCodeProps) => {
     <ThemeProvider theme={lightTheme}>
       <Paper
         style={{
-          width: 'fit-content',
-          margin: 'auto',
           padding: '15px',
           height: `${size}px`
         }}

@@ -55,10 +55,11 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "title": "lightning-vend",
-        "width": 800
+        "width": 480,
+        "decorations": true
       }
     ]
   }
