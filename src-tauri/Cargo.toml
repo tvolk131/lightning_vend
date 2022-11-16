@@ -1,0 +1,19 @@
+[package]
+name = "lightning-vend"
+version = "0.0.0"
+description = "Vending maching head unit powered by the Bitcoin Lightning Network"
+authors = ["Tommy Volk"]
+edition = "2021"
+rust-version = "1.57"
+
+[build-dependencies]
+tauri-build = { version = "1.1", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.1", features = ["api-all"] }
+
+[features]
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]
