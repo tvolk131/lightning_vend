@@ -10,9 +10,12 @@ rust-version = "1.57"
 tauri-build = { version = "1.1", features = [] }
 
 [dependencies]
+futures = "0.3.25"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.1", features = ["api-all"] }
+tokio = { version = "1.21.2", features = ["rt-multi-thread"] }
+tonic_lnd = "0.5.0"
 
 [features]
 default = [ "custom-protocol" ]

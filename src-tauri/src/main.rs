@@ -3,23 +3,45 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::Manager;
+use tauri::{Manager, State};
+use futures::lock::Mutex;
+use tonic_lnd::lnrpc::Invoice;
+use std::sync::Arc;
+use std::collections::{HashMap, HashSet};
 
-// TODO - Remove this once we can connect to a lightning node.
-const INVOICE: &str = "lightning:lnbc10u1p3hgmlfpp554ufwa2uaa69uz27t9u6hr8yrskju7mxeqksjdmldpa20rh60lnqdqqcqzpgxqr23ssp55u85dejctg2dln8ff94rrtfjxy7xxk4nehzv7v2uetj4kpp2k5vs9qyyssq3zudhexj3x68n4jydplwpyezjxu8au5ydv9zr50l4gccrp7dzw650nve3jgnayc5e0zfu4vzyt2ktvz7tkpmenm9tzk4vtfnvyrzqcqpj53v9k";
+#[tokio::main]
+async fn main() {
+    let mut lnd = tonic_lnd::connect("https://pivendtestnet.t.voltageapp.io:10009", "./tls.cert", "./admin.macaroon").await.unwrap();
 
-fn main() {
+    let mut invoice_stream = lnd.lightning().subscribe_invoices(tonic_lnd::lnrpc::InvoiceSubscription {
+        add_index: 1, // TODO - Find out why we can't set this to zero - it hangs if we do.
+        settle_index: 0
+    })
+    .await
+    .expect("Failed to call subscribe_invoices")
+    .into_inner();
+
+    let tracked_payment_requests = TrackedPaymentRequests{ payment_requests: Arc::from(Mutex::from(HashSet::new())) };
+    let tracked_payment_requests_clone = tracked_payment_requests.clone();
+
     tauri::Builder::default()
+        .manage(WrappedLndClient{ mutex: Mutex::from(lnd) })
+        .manage(tracked_payment_requests)
         .setup(|app| {
             let handle = app.handle();
-            std::thread::spawn(move || {
-                loop {
-                    // TODO - Remove this and actually implement this
-                    // thread loop once we can connect to a lightning node.
-                    std::thread::sleep(std::time::Duration::from_secs(10));
-                    handle.emit_all("on_invoice_paid", INVOICE).unwrap();
+            tokio::spawn(async move {
+                while let Some(invoice) = invoice_stream.message().await.expect("Failed to receive invoices") {
+                    if let Some(state) = tonic_lnd::lnrpc::invoice::InvoiceState::from_i32(invoice.state) {
+                        if state == tonic_lnd::lnrpc::invoice::InvoiceState::Settled {
+                            if tracked_payment_requests_clone.payment_requests.lock().await.contains(&invoice.payment_request) {
+                                println!("Invoice for {} sats was paid!", invoice.value); //  TODO - Spin servo instead of logging to console.
+                                handle.emit_all("on_invoice_paid", format!("lightning:{}", invoice.payment_request)).unwrap();
+                            }
+                        }
+                    }
                 }
             });
+            println!("Done starting up with LND!");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![get_invoice])
@@ -27,9 +49,51 @@ fn main() {
         .expect("error while running tauri application");
 }
 
+struct WrappedLndClient {
+    mutex: Mutex<tonic_lnd::Client>
+}
+
+#[derive(Clone)]
+struct TrackedPaymentRequests {
+    payment_requests: Arc<Mutex<HashSet<String>>>
+}
+
+fn create_invoice(value_sat: i64) -> Invoice {
+    tonic_lnd::lnrpc::Invoice {
+        memo: String::from(""),
+        r_preimage: Vec::new(),
+        r_hash: Vec::new(),
+        value: value_sat,
+        value_msat: 0,
+        settled: false,
+        creation_date: 0,
+        settle_date: 0,
+        payment_request: String::from(""),
+        description_hash: Vec::new(),
+        expiry: 0,
+        fallback_addr: String::from(""),
+        cltv_expiry: 0,
+        route_hints: Vec::new(),
+        private: false,
+        add_index: 0,
+        settle_index: 0,
+        amt_paid: 0,
+        amt_paid_sat: 0,
+        amt_paid_msat: 0,
+        state: 0,
+        htlcs: Vec::new(),
+        features: HashMap::new(),
+        is_keysend: false,
+        payment_addr: Vec::new(),
+        is_amp: false,
+        amp_invoice_state: HashMap::new()
+    }
+}
+
 #[tauri::command]
-async fn get_invoice() -> String {
-    // TODO - Remove this mock value and actually implement this
-    // function once we can connect to a lightning node.
-    String::from(INVOICE)
+async fn get_invoice(wrapped_lnd_client: State<'_, WrappedLndClient>, tracked_payment_requests: State<'_, TrackedPaymentRequests>) -> Result<String, ()> {
+    let response = wrapped_lnd_client.mutex.lock().await.lightning().add_invoice(create_invoice(10)).await.unwrap();
+    let payment_request = response.into_inner().payment_request;
+    tracked_payment_requests.payment_requests.lock().await.insert(payment_request.clone());
+    Ok(format!("lightning:{}", payment_request))
 }
