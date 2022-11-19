@@ -66,7 +66,7 @@ const SubApp = () => {
                       });
                     }}
                   >
-                    Purchase
+                    Purchase!
                   </Button>
               )
           }
