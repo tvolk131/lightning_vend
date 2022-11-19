@@ -11,7 +11,9 @@ use std::collections::{HashMap, HashSet};
 
 #[tokio::main]
 async fn main() {
-    let mut lnd = tonic_lnd::connect("https://pivendtestnet.t.voltageapp.io:10009", "./tls.cert", "./admin.macaroon").await.unwrap();
+    // TODO - Find a better way to handle switching between testnet and prod.
+    // let mut lnd = tonic_lnd::connect("https://pivendtestnet.t.voltageapp.io:10009", "./testnet.tls.cert", "./testnet.admin.macaroon").await.unwrap();
+    let mut lnd = tonic_lnd::connect("https://lightningvend.m.voltageapp.io:10009", "./tls.cert", "./admin.macaroon").await.unwrap();
 
     let mut invoice_stream = lnd.lightning().subscribe_invoices(tonic_lnd::lnrpc::InvoiceSubscription {
         add_index: 1, // TODO - Find out why we can't set this to zero - it hangs if we do.
@@ -34,7 +36,7 @@ async fn main() {
                     if let Some(state) = tonic_lnd::lnrpc::invoice::InvoiceState::from_i32(invoice.state) {
                         if state == tonic_lnd::lnrpc::invoice::InvoiceState::Settled {
                             if tracked_payment_requests_clone.payment_requests.lock().await.contains(&invoice.payment_request) {
-                                println!("Invoice for {} sats was paid!", invoice.value); //  TODO - Spin servo instead of logging to console.
+                                println!("Invoice for {} sats was paid!", invoice.value); // TODO - Spin servo instead of logging to console.
                                 handle.emit_all("on_invoice_paid", format!("lightning:{}", invoice.payment_request)).unwrap();
                             }
                         }
