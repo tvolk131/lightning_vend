@@ -2,8 +2,8 @@
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
-    "devPath": "../client",
-    "distDir": "../client",
+    "devPath": "../client/out",
+    "distDir": "../client/out",
     "withGlobalTauri": true
   },
   "package": {
