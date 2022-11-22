@@ -40,7 +40,7 @@ jobs:
         commands: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
-          curl https://sh.rustup.rs -sSf | sh
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
           cargo build
     - uses: tauri-apps/tauri-action@v0
       env:
