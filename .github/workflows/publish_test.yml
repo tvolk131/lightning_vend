@@ -41,7 +41,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
           curl https://sh.rustup.rs -sSf | sh -s -- -y
-          cargo build
+          cd src-tauri
+          exec cargo build
+          cd ..
     - uses: tauri-apps/tauri-action@v0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
