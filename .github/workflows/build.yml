@@ -1,0 +1,27 @@
+name: "Build"
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Install NodeJS
+      uses: actions/setup-node@v1
+      with:
+        node-version: 18
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1.0.6
+    - name: Install Webpack Dependencies and Build Frontend
+      run: cd client && npm i && npm run build-prod && cd ..
+    - name: Build Backend
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
+        cd src-tauri
+        cargo build --features=stepper-motor
+        cd ..
