@@ -8,6 +8,10 @@ use futures::lock::Mutex;
 use tonic_lnd::lnrpc::Invoice;
 use std::sync::Arc;
 use std::collections::{HashMap, HashSet};
+use std::time::Duration;
+
+#[cfg(feature = "stepper-motor")]
+mod vend_coil;
 
 #[tokio::main]
 async fn main() {
@@ -26,7 +30,13 @@ async fn main() {
     let tracked_payment_requests = TrackedPaymentRequests{ payment_requests: Arc::from(Mutex::from(HashSet::new())) };
     let tracked_payment_requests_clone = tracked_payment_requests.clone();
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+
+    #[cfg(feature = "stepper-motor")] {
+        builder.manage(vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1, Duration::from_secs(1)));
+    }
+
+    builder
         .manage(WrappedLndClient{ mutex: Mutex::from(lnd) })
         .manage(tracked_payment_requests)
         .setup(|app| {
@@ -36,8 +46,12 @@ async fn main() {
                     if let Some(state) = tonic_lnd::lnrpc::invoice::InvoiceState::from_i32(invoice.state) {
                         if state == tonic_lnd::lnrpc::invoice::InvoiceState::Settled {
                             if tracked_payment_requests_clone.payment_requests.lock().await.contains(&invoice.payment_request) {
-                                println!("Invoice for {} sats was paid!", invoice.value); // TODO - Spin servo instead of logging to console.
+                                println!("Invoice for {} sats was paid!", invoice.value);
                                 handle.emit_all("on_invoice_paid", format!("lightning:{}", invoice.payment_request)).unwrap();
+                                #[cfg(feature = "stepper-motor")] {
+                                    let vend_coil: State<'_, vend_coil::VendCoil> = handle.state();
+                                    vend_coil.rotate();
+                                }
                             }
                         }
                     }
