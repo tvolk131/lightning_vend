@@ -1474,6 +1474,7 @@ version = "0.0.0"
 dependencies = [
  "adafruit_motorkit",
  "futures",
+ "pwm-pca9685",
  "serde",
  "serde_json",
  "tauri",
