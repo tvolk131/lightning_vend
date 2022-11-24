@@ -8,6 +8,7 @@ use std::error::Error;
 use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::thread::{sleep, spawn, JoinHandle};
 use std::time::Duration;
+use std::sync::Arc;
  
 pub enum StepperMotor {
     Stepper1,
@@ -24,7 +25,7 @@ impl StepperMotor {
 }
  
 pub struct VendCoil {
-    tx: Sender<()>,
+    tx: Arc<Sender<()>>, // Arc is needed for VendCoil to implement Sync.
     join_handle: JoinHandle<()>,
 }
  
@@ -36,7 +37,7 @@ impl VendCoil {
         let (tx, rx): (Sender<()>, Receiver<()>) = channel();
         let mut raw_coil = RawVendCoil::new(motor)?;
         Ok(Self {
-            tx,
+            tx: Arc::from(tx),
             join_handle: spawn(move || loop {
                 loop {
                     // Blocks until a message is received.
