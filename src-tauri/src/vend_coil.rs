@@ -6,15 +6,15 @@ use adafruit_motorkit::{
 use pwm_pca9685::Pca9685;
 use std::error::Error;
 use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
+use std::sync::Mutex;
 use std::thread::{sleep, spawn, JoinHandle};
 use std::time::Duration;
-use std::sync::Mutex;
- 
+
 pub enum StepperMotor {
     Stepper1,
     Stepper2,
 }
- 
+
 impl StepperMotor {
     fn to_adafruit_stepper_motor(&self) -> Motor {
         match self {
@@ -23,12 +23,12 @@ impl StepperMotor {
         }
     }
 }
- 
+
 pub struct VendCoil {
     tx_mutex: Mutex<Sender<()>>, // Mutex is needed for VendCoil to implement Sync.
     join_handle: JoinHandle<()>,
 }
- 
+
 impl VendCoil {
     pub fn new(
         motor: StepperMotor,
@@ -57,17 +57,17 @@ impl VendCoil {
             }),
         })
     }
- 
+
     pub fn rotate(&self) {
         self.tx_mutex.lock().unwrap().send(()).unwrap();
     }
 }
- 
+
 struct RawVendCoil {
     pwm: Pca9685<linux_embedded_hal::I2cdev>,
     stepper: adafruit_motorkit::stepper::StepperMotor,
 }
- 
+
 impl RawVendCoil {
     fn new(motor: StepperMotor) -> Result<Self, Box<dyn Error>> {
         let mut pwm = init_pwm(None)?;
@@ -78,7 +78,7 @@ impl RawVendCoil {
         )?;
         Ok(Self { pwm, stepper })
     }
- 
+
     fn rotate(&mut self) -> Result<(), Box<dyn Error>> {
         for _ in 0..400 {
             self.stepper
@@ -86,13 +86,13 @@ impl RawVendCoil {
         }
         Ok(())
     }
- 
+
     fn stop(&mut self) -> Result<(), Box<dyn Error>> {
         self.stepper.stop(&mut self.pwm)?;
         Ok(())
     }
 }
- 
+
 impl std::ops::Drop for RawVendCoil {
     fn drop(&mut self) {
         self.stop().unwrap();
