@@ -40,7 +40,7 @@ async fn main() {
     };
     let tracked_payment_requests_clone = tracked_payment_requests.clone();
 
-    let builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::default();
 
     #[cfg(feature = "stepper-motor")]
     {
