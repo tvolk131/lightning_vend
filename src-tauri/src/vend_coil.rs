@@ -25,7 +25,7 @@ impl StepperMotor {
 }
  
 pub struct VendCoil {
-    tx: Mutex<Sender<()>>, // Mutex is needed for VendCoil to implement Sync.
+    tx_mutex: Mutex<Sender<()>>, // Mutex is needed for VendCoil to implement Sync.
     join_handle: JoinHandle<()>,
 }
  
@@ -37,7 +37,7 @@ impl VendCoil {
         let (tx, rx): (Sender<()>, Receiver<()>) = channel();
         let mut raw_coil = RawVendCoil::new(motor)?;
         Ok(Self {
-            tx: Mutex::from(tx),
+            tx_mutex: Mutex::from(tx),
             join_handle: spawn(move || loop {
                 loop {
                     // Blocks until a message is received.
@@ -59,7 +59,7 @@ impl VendCoil {
     }
  
     pub fn rotate(&self) {
-        self.tx.send(()).unwrap();
+        self.tx_mutex.lock().unwrap().send(()).unwrap();
     }
 }
  

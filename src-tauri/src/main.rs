@@ -33,7 +33,7 @@ async fn main() {
     let builder = tauri::Builder::default();
 
     #[cfg(feature = "stepper-motor")] {
-        builder.manage(vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1, Duration::from_secs(1)));
+        builder.manage(vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1, Duration::from_secs(1)).unwrap());
     }
 
     builder
