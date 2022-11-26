@@ -6,6 +6,7 @@
 use futures::lock::Mutex;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+#[cfg(feature = "stepper-motor")]
 use std::time::Duration;
 use tauri::{Manager, State};
 use tonic_lnd::lnrpc::Invoice;
@@ -40,14 +41,19 @@ async fn main() {
     };
     let tracked_payment_requests_clone = tracked_payment_requests.clone();
 
-    let mut builder = tauri::Builder::default();
+    let builder;
 
     #[cfg(feature = "stepper-motor")]
     {
-        builder = builder.manage(
+        builder = tauri::Builder::default().manage(
             vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1, Duration::from_secs(1))
                 .unwrap(),
         );
+    }
+
+    #[cfg(not(feature = "stepper-motor"))]
+    {
+        builder = tauri::Builder::default();
     }
 
     builder
@@ -61,30 +67,30 @@ async fn main() {
                 while let Some(invoice) = invoice_stream
                     .message()
                     .await
+                    // TODO - This fails when the computer goes to sleep for a while and wakes up later. Let's handle the failure and attempt to reconnect here.
                     .expect("Failed to receive invoices")
                 {
                     if let Some(state) =
                         tonic_lnd::lnrpc::invoice::InvoiceState::from_i32(invoice.state)
                     {
-                        if state == tonic_lnd::lnrpc::invoice::InvoiceState::Settled {
-                            if tracked_payment_requests_clone
+                        if state == tonic_lnd::lnrpc::invoice::InvoiceState::Settled
+                            && tracked_payment_requests_clone
                                 .payment_requests
                                 .lock()
                                 .await
                                 .contains(&invoice.payment_request)
+                        {
+                            println!("Invoice for {} sats was paid!", invoice.value);
+                            handle
+                                .emit_all(
+                                    "on_invoice_paid",
+                                    format!("lightning:{}", invoice.payment_request),
+                                )
+                                .unwrap();
+                            #[cfg(feature = "stepper-motor")]
                             {
-                                println!("Invoice for {} sats was paid!", invoice.value);
-                                handle
-                                    .emit_all(
-                                        "on_invoice_paid",
-                                        format!("lightning:{}", invoice.payment_request),
-                                    )
-                                    .unwrap();
-                                #[cfg(feature = "stepper-motor")]
-                                {
-                                    let vend_coil: State<'_, vend_coil::VendCoil> = handle.state();
-                                    vend_coil.rotate();
-                                }
+                                let vend_coil: State<'_, vend_coil::VendCoil> = handle.state();
+                                vend_coil.rotate();
                             }
                         }
                     }
@@ -108,6 +114,7 @@ struct TrackedPaymentRequests {
 }
 
 fn create_invoice(value_sat: i64) -> Invoice {
+    #[allow(deprecated)] // We must set all fields in this struct, even if they are deprecated.
     tonic_lnd::lnrpc::Invoice {
         memo: String::from(""),
         r_preimage: Vec::new(),
