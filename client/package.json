@@ -10,6 +10,8 @@
   "author": "Tommy Volk",
   "dependencies": {
     "@emotion/styled": "^11.10.5",
+    "@mui/icons-material": "^5.10.15",
+    "@mui/lab": "^5.0.0-alpha.109",
     "@mui/material": "^5.10.14",
     "@mui/styles": "^5.10.14",
     "@tauri-apps/api": "^1.2.0",

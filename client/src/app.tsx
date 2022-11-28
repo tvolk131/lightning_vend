@@ -1,12 +1,9 @@
 import * as React from 'react';
-import {useState, useEffect, useRef} from 'react';
 import {Theme, ThemeProvider, createTheme} from '@mui/material/styles';
-import {getInvoice, onInvoicePaid} from './api';
 import {blue} from '@mui/material/colors';
 import {makeStyles} from '@mui/styles';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
-import {StyledQRCode} from './styledQRCode';
-import {CircularProgress, Button} from '@mui/material';
+import {SelectionMenu} from './selectionMenu';
 
 const useStyles = makeStyles((theme: Theme) =>
   ({
@@ -18,25 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const SubApp = () => {
-  const [invoice, setInvoice] = useState<string>();
-  const [loadingInvoice, setLoadingInvoice] = useState(false);
-
-  const invoiceRef = useRef<string>();
-
-  useEffect(() => {
-    invoiceRef.current = invoice;
-  }, [invoice]);
-
   const classes = useStyles();
-
-  useEffect(() => {
-    onInvoicePaid((paidInvoice) => {
-      if (paidInvoice === invoiceRef.current) {
-        setInvoice(undefined);
-      }
-    });
-    // return () => unlistener(); TODO - Deal with listener cleanup on component unmount.
-  }, []);
 
   return (
     <div className={classes.root}>
@@ -48,28 +27,7 @@ const SubApp = () => {
           <LightningNetworkLogo size={200}/>
         </div>
         <div style={{width: 'fit-content', margin: 'auto'}}>
-          {
-            invoice ?
-              <StyledQRCode value={invoice}/>
-              :
-              (
-                loadingInvoice ?
-                  <CircularProgress/>
-                  :
-                  <Button
-                    variant={'contained'}
-                    onClick={() => {
-                      setLoadingInvoice(true);
-                      getInvoice().then((invoice) => {
-                        setInvoice(invoice);
-                        setLoadingInvoice(false);
-                      });
-                    }}
-                  >
-                    Purchase!
-                  </Button>
-              )
-          }
+          <SelectionMenu size={380}/>
         </div>
       </div>
     </div>
