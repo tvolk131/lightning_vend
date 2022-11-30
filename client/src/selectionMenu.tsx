@@ -1,6 +1,7 @@
-import {CircularProgress, Paper, Typography} from '@mui/material';
+import {CircularProgress, Paper, Typography, Fab, Zoom} from '@mui/material';
+import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
-import {CSSProperties, useEffect, useRef, useState} from 'react';
+import {CSSProperties, useEffect, useRef, useReducer} from 'react';
 import {getInvoice, onInvoicePaid} from './api';
 import {Invoice} from './invoice';
 
@@ -42,22 +43,78 @@ interface SelectionMenuProps {
   size: number
 }
 
+interface SelectionMenuState {
+  invoice: string,
+  loadingInvoice: boolean,
+  showInvoice: boolean,
+  showInvoicePaidConfirmation: boolean,
+  disableItemSelection: boolean
+}
+
+type SelectionMenuAction =
+ | {type: 'showLoadingInvoice'}
+ | {type: 'showInvoice', invoice: string}
+ | {type: 'showInvoiceIsPaid'}
+ | {type: 'hideInvoice'};
+
 export const SelectionMenu = (props: SelectionMenuProps) => {
-  const [loadingInvoice, setLoadingInvoice] = useState(false);
-  const [invoice, setInvoice] = useState<string>();
-  const [invoiceIsPaid, setInvoiceIsPaid] = useState(false);
+  const [state, dispatch] = useReducer(
+    (state: SelectionMenuState, action: SelectionMenuAction) => {
+      switch (action.type) {
+        case 'showLoadingInvoice':
+          return {
+            invoice: state.invoice,
+            loadingInvoice: true,
+            showInvoice: false,
+            showInvoicePaidConfirmation: false,
+            disableItemSelection: true
+          };
+        case 'showInvoice':
+          return {
+            invoice: action.invoice,
+            loadingInvoice: false,
+            showInvoice: true,
+            showInvoicePaidConfirmation: false,
+            disableItemSelection: true
+          };
+        case 'showInvoiceIsPaid':
+          return {
+            invoice: state.invoice,
+            loadingInvoice: false,
+            showInvoice: true,
+            showInvoicePaidConfirmation: true,
+            disableItemSelection: true
+          };
+        case 'hideInvoice':
+          return {
+            invoice: state.invoice,
+            loadingInvoice: false,
+            showInvoice: false,
+            showInvoicePaidConfirmation: state.showInvoicePaidConfirmation,
+            disableItemSelection: false
+          };
+      }
+    },
+    {
+      invoice: '',
+      loadingInvoice: false,
+      showInvoice: false,
+      showInvoicePaidConfirmation: false,
+      disableItemSelection: false
+    }
+  );
 
   const invoiceRef = useRef<string>();
 
   useEffect(() => {
-    invoiceRef.current = invoice;
-  }, [invoice]);
+    invoiceRef.current = state.invoice;
+  }, [state.invoice]);
 
   useEffect(() => {
     onInvoicePaid((paidInvoice) => {
       if (paidInvoice === invoiceRef.current) {
-        setInvoiceIsPaid(true);
-        setTimeout(() => setInvoice(undefined), 1000);
+        dispatch({type: 'showInvoiceIsPaid'});
+        setTimeout(() => dispatch({type: 'hideInvoice'}), 1000);
       }
     });
     // return () => unlistener(); TODO - Deal with listener cleanup on component unmount.
@@ -90,8 +147,6 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
     }
   ];
 
-  const disableSelection = loadingInvoice || !!invoice;
-
   return (
     <div style={{padding: '10px'}}>
       <div
@@ -109,7 +164,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             textAlign: 'center',
             transition: 'transform 1s',
             transformStyle: 'preserve-3d',
-            transform: invoice ? 'rotateY(180deg)' : ''
+            transform: state.showInvoice ? 'rotateY(180deg)' : ''
           }}
         >
           <div
@@ -117,7 +172,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
           >
             <Paper style={{height: `${props.size}px`, width: `${props.size}px`, position: 'relative'}}>
               {
-                loadingInvoice &&
+                state.loadingInvoice &&
                   <CircularProgress
                     size={loadingSpinnerSize}
                     style={{
@@ -133,7 +188,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                 style={{
                   padding: `${spaceBetweenItems}px`,
                   transition: 'opacity 0.25s',
-                  opacity: disableSelection ? '50%' : '100%'
+                  opacity: state.loadingInvoice ? '50%' : '100%'
                 }}
               >
                 {
@@ -144,13 +199,12 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                       size={(props.size / 2) - (spaceBetweenItems * 3)}
                       padding={spaceBetweenItems}
                       onClick={() => {
-                        if (!disableSelection) {}
-                        setLoadingInvoice(true);
-                        setInvoiceIsPaid(false);
-                        getInvoice().then((invoice) => {
-                          setInvoice(invoice);
-                          setLoadingInvoice(false);
-                        });
+                        if (!state.disableItemSelection) {
+                          dispatch({type: 'showLoadingInvoice'});
+                          getInvoice().then((invoice) => {
+                            dispatch({type: 'showInvoice', invoice});
+                          });
+                        }
                       }}
                     />
                   ))
@@ -167,13 +221,31 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             <Paper style={{height: `${props.size}px`, width: `${props.size}px`}}>
               <Invoice
                 size={props.size}
-                invoice={invoice || ''}
-                invoiceIsPaid={invoiceIsPaid}
+                invoice={state.invoice}
+                invoiceIsPaid={state.showInvoicePaidConfirmation}
               />
             </Paper>
           </div>
         </div>
       </div>
+      {
+          <div style={{paddingTop: '40px'}}>
+            <Zoom
+              in={state.showInvoice && !state.showInvoicePaidConfirmation}
+              unmountOnExit
+            >
+              <Fab
+                variant={'extended'}
+                color={'primary'}
+                style={{display: 'flex', margin: 'auto'}}
+                onClick={() => dispatch({type: 'hideInvoice'})}
+              >
+                <CancelIcon sx={{mr: 1}} />
+                Cancel
+              </Fab>
+            </Zoom>
+          </div>
+      }
     </div>
   );
 };
