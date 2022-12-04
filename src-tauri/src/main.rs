@@ -6,8 +6,6 @@
 use futures::lock::Mutex;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
-#[cfg(feature = "stepper-motor")]
-use std::time::Duration;
 use tauri::{Manager, State};
 use tonic_lnd::lnrpc::Invoice;
 
@@ -45,10 +43,9 @@ async fn main() {
 
     #[cfg(feature = "stepper-motor")]
     {
-        builder = tauri::Builder::default().manage(
-            vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1, Duration::from_secs(1))
-                .unwrap(),
-        );
+        builder = tauri::Builder::default().manage(std::sync::Mutex::from(
+            vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1).unwrap(),
+        ));
     }
 
     #[cfg(not(feature = "stepper-motor"))]
@@ -89,8 +86,9 @@ async fn main() {
                                 .unwrap();
                             #[cfg(feature = "stepper-motor")]
                             {
-                                let vend_coil: State<'_, vend_coil::VendCoil> = handle.state();
-                                vend_coil.rotate();
+                                let vend_coil: State<'_, std::sync::Mutex<vend_coil::VendCoil>> =
+                                    handle.state();
+                                vend_coil.lock().unwrap().rotate().unwrap();
                             }
                         }
                     }
@@ -99,15 +97,15 @@ async fn main() {
             println!("Done starting up with LND!");
             Ok(())
         })
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::Destroyed => {
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Destroyed = event.event() {
                 #[cfg(feature = "stepper-motor")]
                 {
-                    let mut vend_coil: State<'_, vend_coil::VendCoil> = event.window().state();
-                    vend_coil.stop().unwrap();
+                    let vend_coil: State<'_, std::sync::Mutex<vend_coil::VendCoil>> =
+                        event.window().state();
+                    vend_coil.lock().unwrap().stop().unwrap();
                 }
             }
-            _ => {}
         })
         .invoke_handler(tauri::generate_handler![get_invoice])
         .run(tauri::generate_context!())
