@@ -99,6 +99,16 @@ async fn main() {
             println!("Done starting up with LND!");
             Ok(())
         })
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::Destroyed => {
+                #[cfg(feature = "stepper-motor")]
+                {
+                    let mut vend_coil: State<'_, vend_coil::VendCoil> = event.window().state();
+                    vend_coil.stop().unwrap();
+                }
+            }
+            _ => {}
+        })
         .invoke_handler(tauri::generate_handler![get_invoice])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
