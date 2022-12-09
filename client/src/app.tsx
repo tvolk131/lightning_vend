@@ -1,33 +1,27 @@
 import * as React from 'react';
-import {Theme, ThemeProvider, createTheme} from '@mui/material/styles';
+import {ThemeProvider, createTheme, useTheme} from '@mui/material/styles';
 import {blue} from '@mui/material/colors';
-import {makeStyles} from '@mui/styles';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {SelectionMenu} from './selectionMenu';
-
-const useStyles = makeStyles((theme: Theme) =>
-  ({
-    root: {
-      backgroundColor: theme.palette.background.default,
-      minHeight: '100vh'
-    }
-  })
-);
+import {Helmet} from 'react-helmet';
 
 const SubApp = () => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   return (
-    <div className={classes.root}>
+    <div>
       {/* This meta tag makes the mobile experience
       much better by preventing text from being tiny. */}
       <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
-      <div>
+      <Helmet>
+          <style>{`body { background-color: ${theme.palette.background.default}; }`}</style>
+      </Helmet>
+      <div style={{display: 'flex', flexWrap: 'wrap', height: '100vh'}}>
         <div style={{width: 'fit-content', margin: 'auto', padding: '20px'}}>
           <LightningNetworkLogo size={200}/>
         </div>
         <div style={{width: 'fit-content', margin: 'auto'}}>
-          <SelectionMenu size={380}/>
+          <SelectionMenu size={330}/>
         </div>
       </div>
     </div>

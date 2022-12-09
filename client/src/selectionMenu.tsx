@@ -130,6 +130,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
 
   const spaceBetweenItems = 10;
   const loadingSpinnerSize = 100;
+  const showCancelButton = state.showInvoice && !state.showInvoicePaidConfirmation;
+  const transitionTimeSecs = 0.8;
 
   // TODO - Load inventory from Tauri backend.
   const inventory = [
@@ -148,7 +150,13 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   ];
 
   return (
-    <div style={{padding: '10px'}}>
+    <div
+      style={{
+        padding: '10px',
+        transition: `transform ${transitionTimeSecs}s`,
+        transform: showCancelButton ? 'translate(0, -35px)' : undefined
+      }}
+    >
       <div
         style={{
           height: `${props.size}px`,
@@ -162,7 +170,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             height: '100%',
             width: '100%',
             textAlign: 'center',
-            transition: 'transform 1s',
+            transition: `transform ${transitionTimeSecs}s`,
             transformStyle: 'preserve-3d',
             transform: state.showInvoice ? 'rotateY(180deg)' : ''
           }}
@@ -228,24 +236,30 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
           </div>
         </div>
       </div>
-      {
-          <div style={{paddingTop: '40px'}}>
-            <Zoom
-              in={state.showInvoice && !state.showInvoicePaidConfirmation}
-              unmountOnExit
+      <div style={{position: 'relative'}}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%)',
+            padding: `${showCancelButton ? 20 : 0}px`,
+            transition: `padding ${transitionTimeSecs}s`,
+        }}
+        >
+          <Zoom timeout={transitionTimeSecs * 1000} in={showCancelButton} unmountOnExit>
+            <Fab
+              variant={'extended'}
+              color={'primary'}
+              style={{display: 'flex', margin: 'auto'}}
+              onClick={() => dispatch({type: 'hideInvoice'})}
             >
-              <Fab
-                variant={'extended'}
-                color={'primary'}
-                style={{display: 'flex', margin: 'auto'}}
-                onClick={() => dispatch({type: 'hideInvoice'})}
-              >
-                <CancelIcon sx={{mr: 1}} />
-                Cancel
-              </Fab>
-            </Zoom>
-          </div>
-      }
+              <CancelIcon sx={{mr: 1}} />
+              Cancel
+            </Fab>
+          </Zoom>
+        </div>
+      </div>
     </div>
   );
 };
