@@ -40,7 +40,8 @@ const SelectionItem = (props: SelectionItemProps) => {
 };
 
 interface SelectionMenuProps {
-  size: number
+  size: number,
+  canShowInvoice: boolean
 }
 
 interface SelectionMenuState {
@@ -109,6 +110,12 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   useEffect(() => {
     invoiceRef.current = state.invoice;
   }, [state.invoice]);
+
+  useEffect(() => {
+    if (!props.canShowInvoice) {
+      dispatch({type: 'hideInvoice'});
+    }
+  }, [props.canShowInvoice, state]);
 
   useEffect(() => {
     onInvoicePaid((paidInvoice) => {

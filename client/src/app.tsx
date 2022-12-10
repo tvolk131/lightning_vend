@@ -60,7 +60,7 @@ const SubApp = () => {
           <LightningNetworkLogo size={200}/>
         </div>
         <div style={{width: 'fit-content', margin: 'auto'}}>
-          <SelectionMenu size={330}/>
+          <SelectionMenu size={330} canShowInvoice={!screensaverActive}/>
         </div>
         <div
           id='screensaver'
