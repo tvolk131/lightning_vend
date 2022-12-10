@@ -114,7 +114,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
     onInvoicePaid((paidInvoice) => {
       if (paidInvoice === invoiceRef.current) {
         dispatch({type: 'showInvoiceIsPaid'});
-        setTimeout(() => dispatch({type: 'hideInvoice'}), 1000);
+        setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
       }
     });
     // return () => unlistener(); TODO - Deal with listener cleanup on component unmount.
@@ -131,7 +131,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   const spaceBetweenItems = 10;
   const loadingSpinnerSize = 100;
   const showCancelButton = state.showInvoice && !state.showInvoicePaidConfirmation;
-  const transitionTimeSecs = 0.8;
+  const transitionTimeSecs = 0.65;
 
   // TODO - Load inventory from Tauri backend.
   const inventory = [
