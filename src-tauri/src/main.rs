@@ -166,7 +166,7 @@ async fn get_invoice(
         .lightning()
         .add_invoice(create_invoice(10))
         .await
-        .map_err(|_| (()))?;
+        .map_err(|_| ())?;
     let payment_request = response.into_inner().payment_request;
     tracked_payment_requests
         .payment_requests
