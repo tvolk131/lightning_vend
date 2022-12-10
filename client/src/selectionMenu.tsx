@@ -1,4 +1,4 @@
-import {CircularProgress, Paper, Typography, Fab, Zoom} from '@mui/material';
+import {CircularProgress, Paper, Typography, Fab, Zoom, Alert} from '@mui/material';
 import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
@@ -49,13 +49,15 @@ interface SelectionMenuState {
   loadingInvoice: boolean,
   showInvoice: boolean,
   showInvoicePaidConfirmation: boolean,
-  disableItemSelection: boolean
+  disableItemSelection: boolean,
+  showInvoiceLoadError: boolean
 }
 
 type SelectionMenuAction =
  | {type: 'showLoadingInvoice'}
  | {type: 'showInvoice', invoice: string}
  | {type: 'showInvoiceIsPaid'}
+ | {type: 'hideInvoiceAndShowLoadError'}
  | {type: 'hideInvoice'};
 
 export const SelectionMenu = (props: SelectionMenuProps) => {
@@ -68,7 +70,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             loadingInvoice: true,
             showInvoice: false,
             showInvoicePaidConfirmation: false,
-            disableItemSelection: true
+            disableItemSelection: true,
+            showInvoiceLoadError: false
           };
         case 'showInvoice':
           return {
@@ -76,7 +79,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             loadingInvoice: false,
             showInvoice: true,
             showInvoicePaidConfirmation: false,
-            disableItemSelection: true
+            disableItemSelection: true,
+            showInvoiceLoadError: false
           };
         case 'showInvoiceIsPaid':
           return {
@@ -84,7 +88,17 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             loadingInvoice: false,
             showInvoice: true,
             showInvoicePaidConfirmation: true,
-            disableItemSelection: true
+            disableItemSelection: true,
+            showInvoiceLoadError: false
+          };
+        case 'hideInvoiceAndShowLoadError':
+          return {
+            invoice: state.invoice,
+            loadingInvoice: false,
+            showInvoice: false,
+            showInvoicePaidConfirmation: state.showInvoicePaidConfirmation,
+            disableItemSelection: false,
+            showInvoiceLoadError: true
           };
         case 'hideInvoice':
           return {
@@ -92,7 +106,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             loadingInvoice: false,
             showInvoice: false,
             showInvoicePaidConfirmation: state.showInvoicePaidConfirmation,
-            disableItemSelection: false
+            disableItemSelection: false,
+            showInvoiceLoadError: false
           };
       }
     },
@@ -101,7 +116,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       loadingInvoice: false,
       showInvoice: false,
       showInvoicePaidConfirmation: false,
-      disableItemSelection: false
+      disableItemSelection: false,
+      showInvoiceLoadError: false
     }
   );
 
@@ -218,6 +234,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                           dispatch({type: 'showLoadingInvoice'});
                           getInvoice().then((invoice) => {
                             dispatch({type: 'showInvoice', invoice});
+                          }).catch(() => {
+                            dispatch({type: 'hideInvoiceAndShowLoadError'});
                           });
                         }
                       }}
@@ -243,6 +261,13 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
           </div>
         </div>
       </div>
+      {state.showInvoiceLoadError && (
+        <div style={{position: 'relative'}}>
+          <div style={{position: 'absolute', paddingTop: '20px', width: 'max-content', left: '50%', transform: 'translateX(-50%)'}}>
+            <Alert severity={'error'}>Failed to fetch an invoice! Try again.</Alert>
+          </div>
+        </div>
+      )}
       <div style={{position: 'relative'}}>
         <div
           style={{
