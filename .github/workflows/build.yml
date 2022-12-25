@@ -24,9 +24,7 @@ jobs:
       run: cd client && npm i && npm run build-prod && cd ..
     - name: Build Backend
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
-        cd src-tauri
+        cd server
         cargo fmt -- --check
 
         cargo clippy --features=custom-protocol -- -D warnings
