@@ -26,16 +26,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
-        cd src-tauri
+        cd motor_server
         cargo fmt -- --check
-
-        cargo clippy --features=custom-protocol -- -D warnings
-        cargo clippy --features=custom-protocol,stepper-motor -- -D warnings
-        cargo clippy --no-default-features --features=custom-protocol -- -D warnings
-        cargo clippy --no-default-features --features=custom-protocol,stepper-motor -- -D warnings
-
-        cargo build --features=custom-protocol
-        cargo build --features=custom-protocol,stepper-motor
-        cargo build --no-default-features --features=custom-protocol
-        cargo build --no-default-features --features=custom-protocol,stepper-motor
+        cargo clippy -- -D warnings
+        cargo build
         cd ..

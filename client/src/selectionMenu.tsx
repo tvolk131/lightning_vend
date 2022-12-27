@@ -158,7 +158,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   const showCancelButton = state.showInvoice && !state.showInvoicePaidConfirmation;
   const transitionTimeSecs = 0.65;
 
-  // TODO - Load inventory from Tauri backend.
+  // TODO - Load inventory from backend.
   const inventory = [
     {
       name: 'Cheez-Its',
