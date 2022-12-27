@@ -2,7 +2,7 @@ import {CircularProgress, Paper, Typography, Fab, Zoom, Alert} from '@mui/materi
 import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
-import {getInvoice, onInvoicePaid} from './api';
+import {getInvoice, subscribeToInvoicePaid, unsubscribeFromInvoicePaid} from './api';
 import {Invoice} from './invoice';
 
 interface SelectionItemProps {
@@ -134,13 +134,15 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   }, [props.canShowInvoice, state]);
 
   useEffect(() => {
-    onInvoicePaid((paidInvoice) => {
+    const callbackId = subscribeToInvoicePaid((paidInvoice) => {
       if (paidInvoice === invoiceRef.current) {
         dispatch({type: 'showInvoiceIsPaid'});
         setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
       }
     });
-    // return () => unlistener(); TODO - Deal with listener cleanup on component unmount.
+    return (() => {
+      unsubscribeFromInvoicePaid(callbackId);
+    });
   }, []);
 
   const innerSideStyles: CSSProperties = {
