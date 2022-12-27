@@ -5,13 +5,17 @@ import {blue} from '@mui/material/colors';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {SelectionMenu} from './selectionMenu';
 import {Helmet} from 'react-helmet';
-import {Typography} from '@mui/material';
+import {Chip, Typography} from '@mui/material';
+import {Circle as CircleIcon} from '@mui/icons-material';
+import {useConnectionStatus} from './api';
 
 // Screensaver appears after one minute of inactivity.
 const SCREENSAVER_DELAY_MS = 60000;
 
 const SubApp = () => {
   const theme = useTheme();
+
+  const connectionStatus = useConnectionStatus();
   
   // Whether the screensaver should be displaying.
   const [screensaverActive, setScreensaverActive] = useState(true);
@@ -61,6 +65,12 @@ const SubApp = () => {
         </div>
         <div style={{width: 'fit-content', margin: 'auto'}}>
           <SelectionMenu size={330} canShowInvoice={!screensaverActive}/>
+        </div>
+        <div style={{position: 'absolute', top: 0, right: 0, padding: '10px'}}>
+          <Chip
+            icon={<CircleIcon color={connectionStatus === 'connected' ? 'success' : 'error'}/>}
+            label={connectionStatus === 'connected' ? 'Online' : 'Offline'}
+          />
         </div>
         <div
           id='screensaver'
