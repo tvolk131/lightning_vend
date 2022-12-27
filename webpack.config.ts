@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as webpack from 'webpack';
-const SRC_DIR = path.join(__dirname, '/src');
-const DIST_DIR = path.join(__dirname, '/out');
+const SRC_DIR = path.join(__dirname, '/client/src');
+const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 

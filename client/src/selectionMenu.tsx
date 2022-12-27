@@ -128,7 +128,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   }, [state.invoice]);
 
   useEffect(() => {
-    if (!props.canShowInvoice) {
+    if (!props.canShowInvoice && state.showInvoice) {
       dispatch({type: 'hideInvoice'});
     }
   }, [props.canShowInvoice, state]);
@@ -223,9 +223,10 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                 }}
               >
                 {
-                  inventory.map(({name, costSats}) => (
+                  inventory.map(({name, costSats}, index) => (
                     <SelectionItem
                       itemName={name}
+                      key={index}
                       itemCostSats={costSats}
                       size={(props.size / 2) - (spaceBetweenItems * 3)}
                       padding={spaceBetweenItems}

@@ -13,6 +13,7 @@ dist
 dist-ssr
 *.local
 bundle.js
+bundle.js.LICENSE.txt
 
 # Editor directories and files
 .vscode/*
