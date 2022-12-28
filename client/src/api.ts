@@ -1,22 +1,9 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react';
 import {io} from 'socket.io-client';
+import {makeUuid} from '../../shared/uuid';
 
 const socket = io();
-
-const makeId = (length: number): string => {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
-// Generates a 20-character ID where each character is one of 62 possible characters.
-// 62^20 is approximately 7*10^35 possibilities, which is safe enough that we're not
-// worrying about collisions.
-const makeUniqueId = () => makeId(20);
 
 /**
  * Fetches a Lightning Network invoice that can be subscribed to for further payment updates using `subscribeToInvoicePaid`.
@@ -38,7 +25,7 @@ socket.on('invoicePaid', (invoice) => {
  * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the callback. 
  */
 export const subscribeToInvoicePaid = (callback: (invoice: string) => void): string => {
-  const callbackId = makeUniqueId();
+  const callbackId = makeUuid();
   invoicePaidCallbacks[callbackId] = callback;
   return callbackId;
 };
@@ -69,7 +56,7 @@ socket.on('disconnect', (...args) => {
  * @returns A callback id, which can be passed to `unsubscribeFromConnectionStatus` to remove the callback. 
  */
 export const subscribeToConnectionStatus = (callback: (connectionStatus: ConnectionStatus) => void) => {
-  const callbackId = makeUniqueId();
+  const callbackId = makeUuid();
   connectionStatusCallbacks[callbackId] = callback;
   return callbackId;
 }

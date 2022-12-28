@@ -25,6 +25,8 @@ const SubApp = () => {
   const [screensaverRendered, setScreensaverRendered] = useState(true);
   const screensaverTimeout = useRef<NodeJS.Timeout>();
 
+  const showLightningLogo = false;
+
   const screensaverClicked = useCallback(() => {
     setScreensaverActive(false);
     startTimeout();
@@ -60,11 +62,15 @@ const SubApp = () => {
         style={{display: 'flex', flexWrap: 'wrap', height: '100vh'}}
         onClick={appTouched}
       >
-        <div style={{width: 'fit-content', margin: 'auto', padding: '20px'}}>
-          <LightningNetworkLogo size={200}/>
-        </div>
+        {
+          showLightningLogo && (
+            <div style={{width: 'fit-content', margin: 'auto', padding: '20px'}}>
+              <LightningNetworkLogo size={200}/>
+            </div>
+          )
+        }
         <div style={{width: 'fit-content', margin: 'auto'}}>
-          <SelectionMenu size={330} canShowInvoice={!screensaverActive}/>
+          <SelectionMenu size={330} canShowInvoice={connectionStatus === 'connected' && !screensaverActive}/>
         </div>
         <div style={{position: 'absolute', top: 0, right: 0, padding: '10px'}}>
           <Chip
