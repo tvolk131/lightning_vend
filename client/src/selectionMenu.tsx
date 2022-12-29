@@ -4,10 +4,11 @@ import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
 import {getInvoice, subscribeToInvoicePaid, unsubscribeFromInvoicePaid} from './api';
 import {Invoice} from './invoice';
+import {InventoryItem} from '../../server/deviceSessionManager';
 
 interface SelectionItemProps {
   itemName: string,
-  itemCostSats: number,
+  itemPriceSats: number,
   size: number,
   padding: number,
   onClick(): void
@@ -33,7 +34,7 @@ const SelectionItem = (props: SelectionItemProps) => {
         onClick={props.onClick}
       >
         <Typography variant={'h6'} style={{padding: '20px'}}>{props.itemName}</Typography>
-        <Typography style={{padding: '20px'}}>{props.itemCostSats} sats</Typography>
+        <Typography style={{padding: '20px'}}>{props.itemPriceSats} sats</Typography>
       </Paper>
     </div>
   );
@@ -41,7 +42,8 @@ const SelectionItem = (props: SelectionItemProps) => {
 
 interface SelectionMenuProps {
   size: number,
-  canShowInvoice: boolean
+  canShowInvoice: boolean,
+  inventory: InventoryItem[]
 }
 
 interface SelectionMenuState {
@@ -158,22 +160,6 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   const showCancelButton = state.showInvoice && !state.showInvoicePaidConfirmation;
   const transitionTimeSecs = 0.65;
 
-  // TODO - Load inventory from backend.
-  const inventory = [
-    {
-      name: 'Cheez-Its',
-      costSats: 5
-    },
-    {
-      name: 'Carmello',
-      costSats: 10
-    },
-    {
-      name: 'Gushers',
-      costSats: 15
-    }
-  ];
-
   return (
     <div
       style={{
@@ -225,25 +211,28 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                 }}
               >
                 {
-                  inventory.map(({name, costSats}, index) => (
-                    <SelectionItem
-                      itemName={name}
-                      key={index}
-                      itemCostSats={costSats}
-                      size={(props.size / 2) - (spaceBetweenItems * 3)}
-                      padding={spaceBetweenItems}
-                      onClick={() => {
-                        if (!state.disableItemSelection) {
-                          dispatch({type: 'showLoadingInvoice'});
-                          getInvoice().then((invoice) => {
-                            dispatch({type: 'showInvoice', invoice});
-                          }).catch(() => {
-                            dispatch({type: 'hideInvoiceAndShowLoadError'});
-                          });
-                        }
-                      }}
-                    />
-                  ))
+                  props.inventory.length ?
+                    props.inventory.map(({name, priceSats}, index) => (
+                      <SelectionItem
+                        itemName={name}
+                        key={index}
+                        itemPriceSats={priceSats}
+                        size={(props.size / 2) - (spaceBetweenItems * 3)}
+                        padding={spaceBetweenItems}
+                        onClick={() => {
+                          if (!state.disableItemSelection) {
+                            dispatch({type: 'showLoadingInvoice'});
+                            getInvoice().then((invoice) => {
+                              dispatch({type: 'showInvoice', invoice});
+                            }).catch(() => {
+                              dispatch({type: 'hideInvoiceAndShowLoadError'});
+                            });
+                          }
+                        }}
+                      />
+                    ))
+                    :
+                    <Typography>Inventory is empty! If you are the owner of this machine, head over to the admin page to add some items here.</Typography>
                 }
               </div>
             </Paper>

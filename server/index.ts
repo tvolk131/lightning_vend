@@ -7,6 +7,7 @@ import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
 import {SocketManager} from './socketManager';
 import {parse} from 'cookie';
+import {DeviceSessionManager} from './deviceSessionManager';
 
 const app = express();
 const server = http.createServer(app);
@@ -15,14 +16,10 @@ const io = new Server(server);
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
 
-export const sessionCookieName = 'session';
+export const deviceSessionCookieName = 'device-session';
 
 const socketManager = new SocketManager(io);
-
-// io.engine.on('initial_headers', (headers: any, request: any) => {
-//   const uuid = makeUuid();
-//   headers['set-cookie'] = serialize('session', uuid, {sameSite: 'strict'});
-// });
+const deviceSessionManager = new DeviceSessionManager();
 
 app.get('/bundle.js', (req, res) => {
   res.send(bundle);
@@ -36,6 +33,45 @@ app.get('/api/getInvoice', async (req, res) => {
     {headers: {'Grpc-Metadata-macaroon': macaroon}}
   );
   res.send(resp.data.payment_request);
+});
+
+app.get('/api/deviceData', (req, res) => {
+  if (!req.headers.cookie) {
+    return res.status(401).send('Device must be registered! No cookie header found.');
+  }
+
+  const deviceSessionId = parse(req.headers.cookie)[deviceSessionCookieName];
+  if (!deviceSessionId) {
+    return res.status(401).send('Device must be registered! No device session found.');
+  }
+
+  const deviceData = deviceSessionManager.getDeviceData(deviceSessionId);
+  if (!deviceData) {
+    return res.status(401).send('Device must be registered! Unrecognized device session.');
+  }
+
+  res.send(deviceData);
+});
+
+app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
+  let deviceSessionId;
+
+  if (req.headers.cookie) {
+    // Remember, this line could still leave deviceSessionId unset.
+    deviceSessionId = parse(req.headers.cookie)[deviceSessionCookieName];
+  }
+  
+  if (!deviceSessionId) {
+    deviceSessionId = makeUuid();
+  }
+
+  const {deviceData, isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
+
+  if (isNew) {
+    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send(deviceData);
+  } else {
+    res.status(400).send('Device is already registered!');
+  }
 });
 
 app.get('*/', (req, res) => {
