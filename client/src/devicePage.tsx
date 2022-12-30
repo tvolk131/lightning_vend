@@ -5,7 +5,8 @@ import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {SelectionMenu} from './selectionMenu';
 import {Button, Chip, Paper, TextField, Typography} from '@mui/material';
 import {Circle as CircleIcon} from '@mui/icons-material';
-import {registerDevice, useConnectionStatus, useLoadableDeviceData} from './deviceApi';
+import {registerDevice, useLoadableDeviceData} from './api/deviceApi';
+import {useConnectionStatus} from './api/sharedApi';
 
 // Screensaver appears after one minute of inactivity.
 const SCREENSAVER_DELAY_MS = 60000;

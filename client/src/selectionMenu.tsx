@@ -2,7 +2,7 @@ import {CircularProgress, Paper, Typography, Fab, Zoom, Alert} from '@mui/materi
 import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
-import {getInvoice, subscribeToInvoicePaid, unsubscribeFromInvoicePaid} from './deviceApi';
+import {getInvoice, subscribeToInvoicePaid, unsubscribeFromInvoicePaid} from './api/deviceApi';
 import {Invoice} from './invoice';
 import {InventoryItem} from '../../server/deviceSessionManager';
 
