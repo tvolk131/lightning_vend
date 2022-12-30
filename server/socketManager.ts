@@ -23,15 +23,13 @@ export class SocketManager {
   }
 
   /**
-   * Sends a Socket.IO event to all active sockets.
-   * @param eventName The event name.
-   * @param eventData The event data.
+   * Sends an `invoicePaid` event to the specified device.
+   * @param deviceSessionId The device to send the event to.
+   * @param invoice The invoice that was successfully paid.
+   * @returns Whether there is an open socket to the device.
    */
-  sendMessageToAllSockets(eventName: string, eventData: string) {
-    for (const socketId in this.activeSocketsBySocketId) {
-      const socket = this.activeSocketsBySocketId[socketId];
-      socket.emit(eventName, eventData);
-    }
+  emitInvoicePaid(deviceSessionId: string, invoice: string): boolean {
+    return this.sendMessageToDevice(deviceSessionId, 'invoicePaid', invoice);
   }
 
   /**

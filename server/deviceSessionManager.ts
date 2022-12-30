@@ -1,4 +1,5 @@
 export interface DeviceData {
+  deviceSessionId: string,
   displayName?: string,
   lightningNodeOwnerPubkey: string,
   inventory: InventoryItem[]
@@ -33,6 +34,7 @@ export class DeviceSessionManager {
 
     if (!this.deviceSessions[deviceSessionId]) {
       this.deviceSessions[deviceSessionId] = {
+        deviceSessionId,
         lightningNodeOwnerPubkey,
         inventory: []
       };

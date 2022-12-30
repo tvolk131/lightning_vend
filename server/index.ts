@@ -20,12 +20,36 @@ export const deviceSessionCookieName = 'device-session';
 
 const socketManager = new SocketManager(io);
 const deviceSessionManager = new DeviceSessionManager();
+const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
+
+const authenticateDevice = (req: express.Request, res: express.Response) => {
+  if (!req.headers.cookie) {
+    return {response: res.status(401).send('Device must be registered! No cookie header found.')};
+  }
+
+  const deviceSessionId = parse(req.headers.cookie)[deviceSessionCookieName];
+  if (!deviceSessionId) {
+    return {response: res.status(401).send('Device must be registered! No device session found.')};
+  }
+
+  const deviceData = deviceSessionManager.getDeviceData(deviceSessionId);
+  if (!deviceData) {
+    return {response: res.status(401).send('Device must be registered! Unrecognized device session.')};
+  }
+
+  return {deviceData};
+};
 
 app.get('*/bundle.js', (req, res) => {
   res.send(bundle);
 });
 
 app.get('/api/getInvoice', async (req, res) => {
+  const {response, deviceData} = authenticateDevice(req, res);
+  if (response) {
+    return response;
+  }
+
   // TODO - Use GRPC client rather than an http request.
   // TODO - Require an invoice amount be passed from the UI.
   const resp = await axios.post(
@@ -33,22 +57,16 @@ app.get('/api/getInvoice', async (req, res) => {
     {value: 5},
     {headers: {'Grpc-Metadata-macaroon': macaroon}}
   );
-  res.send(resp.data.payment_request);
+
+  const invoice = resp.data.payment_request;
+  invoicesToDeviceSessionIds[invoice] = deviceData.deviceSessionId;
+  res.send(invoice);
 });
 
 app.get('/api/deviceData', (req, res) => {
-  if (!req.headers.cookie) {
-    return res.status(401).send('Device must be registered! No cookie header found.');
-  }
-
-  const deviceSessionId = parse(req.headers.cookie)[deviceSessionCookieName];
-  if (!deviceSessionId) {
-    return res.status(401).send('Device must be registered! No device session found.');
-  }
-
-  const deviceData = deviceSessionManager.getDeviceData(deviceSessionId);
-  if (!deviceData) {
-    return res.status(401).send('Device must be registered! Unrecognized device session.');
+  const {response, deviceData} = authenticateDevice(req, res);
+  if (response) {
+    return response;
   }
 
   res.send(deviceData);
@@ -104,7 +122,12 @@ interface Invoice {
 lightning.subscribeInvoices({})
   .on('data', (invoice: Invoice) => {
     if (invoice.state === 'SETTLED') {
-      socketManager.sendMessageToAllSockets('invoicePaid', invoice.payment_request);
+      const deviceSessionId = invoicesToDeviceSessionIds[invoice.payment_request];
+      if (deviceSessionId) {
+        // TODO - Check if this message was send (i.e. if the device is online) and
+        // save the event to retry later if the device is currently offline.
+        socketManager.emitInvoicePaid(deviceSessionId, invoice.payment_request);
+      }
     }
   })
   .on('end', () => console.log('SubscribeInvoices ended!'))
