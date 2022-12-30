@@ -8,7 +8,7 @@ import {DeviceData} from './deviceSessionManager';
  * to be sent to particular devices or groups of devices.
  * Handles connections/disconnections automatically.
  */
-export class SocketManager {
+export class DeviceSocketManager {
   private activeSocketsBySocketId: {[socketId: string]: Socket} = {};
   private activeSocketsByDeviceSessionId: {[deviceSessionId: string]: Socket} = {};
 
@@ -61,7 +61,7 @@ export class SocketManager {
 
   private addSocket(socket: Socket) {
     this.activeSocketsBySocketId[socket.id] = socket;
-    const deviceSessionId = SocketManager.getDeviceSessionId(socket);
+    const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       this.activeSocketsByDeviceSessionId[deviceSessionId] = socket;
     }
@@ -69,7 +69,7 @@ export class SocketManager {
 
   private removeSocket(socket: Socket) {
     delete this.activeSocketsBySocketId[socket.id];
-    const deviceSessionId = SocketManager.getDeviceSessionId(socket);
+    const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       delete this.activeSocketsByDeviceSessionId[deviceSessionId];
     }

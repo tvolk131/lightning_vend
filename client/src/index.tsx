@@ -8,7 +8,7 @@ import {LandingPage} from './landingPage';
 import {AdminPage} from './adminPage';
 import {NotFoundPage} from './notFoundPage';
 import {Helmet} from 'react-helmet';
-import {adminPagePath, devicePagePath} from '../../shared/cookie';
+import {adminPagePath, devicePagePath} from '../../shared/constants';
 
 const router = createBrowserRouter([
   {

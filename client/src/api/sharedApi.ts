@@ -1,8 +1,9 @@
 import {io} from 'socket.io-client';
 import {makeUuid} from '../../../shared/uuid';
 import {useState, useEffect} from 'react';
+import {socketIoDevicePath} from '../../../shared/constants';
 
-export const socket = io();
+export const socket = io({path: socketIoDevicePath});
 
 type ConnectionStatus = 'connected' | 'disconnected';
 const connectionStatusCallbacks: {[key: string]: ((connectionStatus: ConnectionStatus) => void)} = {};

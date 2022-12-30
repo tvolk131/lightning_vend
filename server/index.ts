@@ -5,21 +5,21 @@ import {Server} from 'socket.io';
 import axios from 'axios';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
-import {SocketManager} from './socketManager';
+import {DeviceSocketManager} from './deviceSocketManager';
 import {parse} from 'cookie';
 import {DeviceSessionManager} from './deviceSessionManager';
-import {devicePagePath} from '../shared/cookie';
+import {socketIoDevicePath} from '../shared/constants';
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const deviceSocketServer = new Server(server, {path: socketIoDevicePath});
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
 
 export const deviceSessionCookieName = 'device-session';
 
-const socketManager = new SocketManager(io);
+const deviceSocketManager = new DeviceSocketManager(deviceSocketServer);
 const deviceSessionManager = new DeviceSessionManager();
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
 
@@ -88,7 +88,7 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
   const {deviceData, isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
 
   if (isNew) {
-    res.cookie(deviceSessionCookieName, deviceSessionId, {path: devicePagePath}).send(deviceData);
+    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send(deviceData);
   } else {
     res.status(400).send('Device is already registered!');
   }
@@ -127,7 +127,7 @@ lightning.subscribeInvoices({})
       if (deviceSessionId) {
         // TODO - Check if this message was send (i.e. if the device is online) and
         // save the event to retry later if the device is currently offline.
-        socketManager.emitInvoicePaid(deviceSessionId, invoice.payment_request);
+        deviceSocketManager.emitInvoicePaid(deviceSessionId, invoice.payment_request);
       }
     }
   })
