@@ -4,15 +4,25 @@ import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {blue} from '@mui/material/colors';
 import {DevicePage} from './devicePage';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
+import {LandingPage} from './landingPage';
+import {AdminPage} from './adminPage';
+import {NotFoundPage} from './notFoundPage';
 
 const router = createBrowserRouter([
   {
-    path: '/device',
-    element: <DevicePage/>
+    path: '/',
+    element: <LandingPage/>,
+    errorElement: <NotFoundPage/>
   },
   {
-    // TODO - Make an actual 404 page.
-    errorElement: <div>Error!</div>
+    path: '/admin',
+    element: <AdminPage/>,
+    errorElement: <NotFoundPage/>
+  },
+  {
+    path: '/device',
+    element: <DevicePage/>,
+    errorElement: <NotFoundPage/>
   }
 ]);
 
