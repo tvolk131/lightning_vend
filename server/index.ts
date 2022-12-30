@@ -8,6 +8,7 @@ import {makeUuid} from '../shared/uuid';
 import {SocketManager} from './socketManager';
 import {parse} from 'cookie';
 import {DeviceSessionManager} from './deviceSessionManager';
+import {devicePagePath} from '../shared/cookie';
 
 const app = express();
 const server = http.createServer(app);
@@ -87,7 +88,7 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
   const {deviceData, isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
 
   if (isNew) {
-    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send(deviceData);
+    res.cookie(deviceSessionCookieName, deviceSessionId, {path: devicePagePath}).send(deviceData);
   } else {
     res.status(400).send('Device is already registered!');
   }

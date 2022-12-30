@@ -8,6 +8,7 @@ import {LandingPage} from './landingPage';
 import {AdminPage} from './adminPage';
 import {NotFoundPage} from './notFoundPage';
 import {Helmet} from 'react-helmet';
+import {adminPagePath, devicePagePath} from '../../shared/cookie';
 
 const router = createBrowserRouter([
   {
@@ -16,12 +17,12 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage/>
   },
   {
-    path: '/admin',
+    path: adminPagePath,
     element: <AdminPage/>,
     errorElement: <NotFoundPage/>
   },
   {
-    path: '/device',
+    path: devicePagePath,
     element: <DevicePage/>,
     errorElement: <NotFoundPage/>
   }
