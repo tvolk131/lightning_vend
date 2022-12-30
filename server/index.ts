@@ -8,19 +8,28 @@ import {makeUuid} from '../shared/uuid';
 import {DeviceSocketManager} from './deviceSocketManager';
 import {parse} from 'cookie';
 import {DeviceSessionManager} from './deviceSessionManager';
-import {socketIoDevicePath} from '../shared/constants';
-
-const app = express();
-const server = http.createServer(app);
-const deviceSocketServer = new Server(server, {path: socketIoDevicePath});
+import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
+import {AdminSocketManager} from './adminSocketManager';
+import {AdminSessionManager} from './adminSessionManager';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
 
+const app = express();
+const server = http.createServer(app);
+
+const adminSocketServer = new Server(server, {path: socketIoAdminPath});
+const deviceSocketServer = new Server(server, {path: socketIoDevicePath});
+
+export const adminSessionCookieName = 'admin-session';
 export const deviceSessionCookieName = 'device-session';
 
-const deviceSocketManager = new DeviceSocketManager(deviceSocketServer);
+const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
+
+const adminSocketManager = new AdminSocketManager(adminSocketServer, adminSessionManager.getNodePubkeyFromSessionId);
+const deviceSocketManager = new DeviceSocketManager(deviceSocketServer);
+
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
 
 const authenticateDevice = (req: express.Request, res: express.Response) => {

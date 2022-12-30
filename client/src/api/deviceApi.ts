@@ -1,124 +1,107 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react';
 import {DeviceData} from '../../../server/deviceSessionManager';
+import {socketIoDevicePath} from '../../../shared/constants';
 import {makeUuid} from '../../../shared/uuid';
-import {socket} from './sharedApi';
+import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
 
-class SubscribableDataManager<T> {
-  private data: T;
-  private callbacks: {[key: string]: ((data: T) => void)} = {};
+class DeviceApi extends ReactSocket {
+  private invoicePaidCallbacks: {[key: string]: ((invoice: string) => void)} = {};
 
-  constructor(initialDataValue: T) {
-    this.data = initialDataValue;
+  // TODO - Create a way to ensure that, even when updated potentially out of order, the most recent
+  // received version of the device data is always set and never reverted to an older version, and to
+  // acknowledge to the server that the version was successfully updated on-device. And on the server,
+  // we should add a way to keep track of changes that were made on the server and whether or not they
+  // have been reflected on the device. That way, an admin can make changes to a device that is offline
+  // and be confident that those changes will sync and be confirmed whenever the device is reconnected.
+  private deviceDataManager = new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
+
+  constructor() {
+    super(socketIoDevicePath);
+
+    this.socket.on('updateDeviceData', (deviceData: DeviceData) => {
+      this.deviceDataManager.setData({
+        state: 'loaded',
+        data: deviceData
+      });
+    });
+
+    this.socket.on('invoicePaid', (invoice) => {
+      for (let callbackId in this.invoicePaidCallbacks) {
+        this.invoicePaidCallbacks[callbackId](invoice);
+      }
+    });
+
+    this.getDeviceData()
+      .then((deviceData) => {
+        this.deviceDataManager.setData({
+          state: 'loaded',
+          data: deviceData
+        });
+      })
+      .catch(() => {
+        this.deviceDataManager.setData({
+          state: 'error'
+        });
+      });
   }
 
-  subscribe(callback: (data: T) => void): string {
+  /**
+   * Sets up an event listener that is called any time an invoice related to this client is paid.
+   * @param callback A function that should be called any time an invoice is paid.
+   * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the callback. 
+   */
+  subscribeToInvoicePaid(callback: (invoice: string) => void): string {
     const callbackId = makeUuid();
-    this.callbacks[callbackId] = callback;
+    this.invoicePaidCallbacks[callbackId] = callback;
     return callbackId;
-  }
-
-  unsubscribe(callbackId: string): boolean {
-    return delete this.callbacks[callbackId];
   };
 
-  setData(newData: T) {
-    this.data = newData;
-    for (let callbackId in this.callbacks) {
-      this.callbacks[callbackId](this.data);
-    }
-  }
+  /**
+   * Removes an event listener created from `subscribeToInvoicePaid`.
+   * @param callbackId The id of the callback, returned from `subscribeToInvoicePaid`.
+   * @returns Whether the callback was successfully removed. True means it was removed.
+   */
+  unsubscribeFromInvoicePaid(callbackId: string): boolean {
+    return delete this.invoicePaidCallbacks[callbackId];
+  };
 
-  getData(): Readonly<T> {
-    return this.data;
-  }
-}
-
-type AsyncLoadableData<T> = {state: 'loading'} | {state: 'error'} | {state: 'loaded', data: T};
-
-const getDeviceData = async (): Promise<DeviceData> => {
-  const res = await axios.get('/api/deviceData');
-  return res.data;
-};
-// TODO - Create a way to ensure that, even when updated potentially out of order, the most recent
-// received version of the device data is always set and never reverted to an older version, and to
-// acknowledge to the server that the version was successfully updated on-device. And on the server,
-// we should add a way to keep track of changes that were made on the server and whether or not they
-// have been reflected on the device. That way, an admin can make changes to a device that is offline
-// and be confident that those changes will sync and be confirmed whenever the device is reconnected.
-const deviceDataManager = new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
-getDeviceData()
-  .then((deviceData) => {
-    deviceDataManager.setData({
+  async registerDevice(lightningNodeOwnerPubkey: string): Promise<void> {
+    const deviceData = (await axios.get(`/api/registerDevice/${lightningNodeOwnerPubkey}`)).data as DeviceData;
+  
+    this.disconnectAndReconnectSocket();
+  
+    this.deviceDataManager.setData({
       state: 'loaded',
       data: deviceData
     });
-  })
-  .catch(() => {
-    deviceDataManager.setData({
-      state: 'error'
-    });
-  });
-socket.on('updateDeviceData', (deviceData: DeviceData, callback) => {
-  deviceDataManager.setData({
-    state: 'loaded',
-    data: deviceData
-  });
-  callback();
-});
-export const registerDevice = async (lightningNodeOwnerPubkey: string): Promise<void> => {
-  const deviceData = (await axios.get(`/api/registerDevice/${lightningNodeOwnerPubkey}`)).data as DeviceData;
-
-  socket.close();
-  socket.open();
-
-  deviceDataManager.setData({
-    state: 'loaded',
-    data: deviceData
-  });
-}
-export const useLoadableDeviceData = (): AsyncLoadableData<DeviceData> => {
-  const [data, setData] = useState<Readonly<AsyncLoadableData<DeviceData>>>(deviceDataManager.getData());
-
-  useEffect(() => {
-    const callbackId = deviceDataManager.subscribe(setData);
-    return () => {
-      deviceDataManager.unsubscribe(callbackId);
-    };
-  }, []);
-
-  return data;
-};
-
-/**
- * Fetches a Lightning Network invoice that can be subscribed to for further payment updates using `subscribeToInvoicePaid`.
- * @returns A Lightning Network invoice.
- */
-export const getInvoice = async (): Promise<string> => {
-  return (await axios.get('/api/getInvoice')).data;
-}
-
-let invoicePaidCallbacks: {[key: string]: ((invoice: string) => void)} = {};
-socket.on('invoicePaid', (invoice) => {
-  for (let callbackId in invoicePaidCallbacks) {
-    invoicePaidCallbacks[callbackId](invoice);
   }
-});
-/**
- * Sets up an event listener that is called any time an invoice related to this client is paid.
- * @param callback A function that should be called any time an invoice is paid.
- * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the callback. 
- */
-export const subscribeToInvoicePaid = (callback: (invoice: string) => void): string => {
-  const callbackId = makeUuid();
-  invoicePaidCallbacks[callbackId] = callback;
-  return callbackId;
-};
-/**
- * Removes an event listener created from `subscribeToInvoicePaid`.
- * @param callbackId The id of the callback, returned from `subscribeToInvoicePaid`.
- * @returns Whether the callback was successfully removed. True means it was removed.
- */
-export const unsubscribeFromInvoicePaid = (callbackId: string): boolean => {
-  return delete invoicePaidCallbacks[callbackId];
-};
+
+  useLoadableDeviceData(): AsyncLoadableData<DeviceData> {
+    const [data, setData] = useState<AsyncLoadableData<DeviceData>>(this.deviceDataManager.getData());
+  
+    useEffect(() => {
+      const callbackId = this.deviceDataManager.subscribe(setData);
+      return () => {
+        this.deviceDataManager.unsubscribe(callbackId);
+      };
+    }, []);
+  
+    return data;
+  };
+
+  /**
+   * Fetches a Lightning Network invoice that can be subscribed to for further payment updates using `subscribeToInvoicePaid`.
+   * @returns A Lightning Network invoice.
+   */
+  async getInvoice(): Promise<string> {
+    return (await axios.get('/api/getInvoice')).data;
+  }
+
+  private async getDeviceData(): Promise<DeviceData> {
+    const res = await axios.get('/api/deviceData');
+    return res.data;
+  };
+}
+
+export const deviceApi = new DeviceApi();

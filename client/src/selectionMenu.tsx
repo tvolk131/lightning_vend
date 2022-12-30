@@ -2,7 +2,7 @@ import {CircularProgress, Paper, Typography, Fab, Zoom, Alert} from '@mui/materi
 import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
-import {getInvoice, subscribeToInvoicePaid, unsubscribeFromInvoicePaid} from './api/deviceApi';
+import {deviceApi} from './api/deviceApi';
 import {Invoice} from './invoice';
 import {InventoryItem} from '../../server/deviceSessionManager';
 
@@ -136,14 +136,14 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   }, [props.canShowInvoice, state]);
 
   useEffect(() => {
-    const callbackId = subscribeToInvoicePaid((paidInvoice) => {
+    const callbackId = deviceApi.subscribeToInvoicePaid((paidInvoice) => {
       if (paidInvoice === invoiceRef.current) {
         dispatch({type: 'showInvoiceIsPaid'});
         setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
       }
     });
     return (() => {
-      unsubscribeFromInvoicePaid(callbackId);
+      deviceApi.unsubscribeFromInvoicePaid(callbackId);
     });
   }, []);
 
@@ -222,7 +222,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                         onClick={() => {
                           if (!state.disableItemSelection) {
                             dispatch({type: 'showLoadingInvoice'});
-                            getInvoice().then((invoice) => {
+                            deviceApi.getInvoice().then((invoice) => {
                               dispatch({type: 'showInvoice', invoice});
                             }).catch(() => {
                               dispatch({type: 'hideInvoiceAndShowLoadError'});

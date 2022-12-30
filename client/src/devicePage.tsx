@@ -5,8 +5,7 @@ import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {SelectionMenu} from './selectionMenu';
 import {Button, Chip, Paper, TextField, Typography} from '@mui/material';
 import {Circle as CircleIcon} from '@mui/icons-material';
-import {registerDevice, useLoadableDeviceData} from './api/deviceApi';
-import {useConnectionStatus} from './api/sharedApi';
+import {deviceApi} from './api/deviceApi';
 
 // Screensaver appears after one minute of inactivity.
 const SCREENSAVER_DELAY_MS = 60000;
@@ -16,8 +15,9 @@ const centerSquareSize = 330;
 export const DevicePage = () => {
   const theme = useTheme();
 
-  const connectionStatus = useConnectionStatus();
-  const loadableDeviceData = useLoadableDeviceData();
+  deviceApi.useSocket();
+  const connectionStatus = deviceApi.useConnectionStatus();
+  const loadableDeviceData = deviceApi.useLoadableDeviceData();
 
   const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
   
@@ -74,6 +74,7 @@ export const DevicePage = () => {
               inventory={loadableDeviceData.data.inventory}
             />
         )}
+        {/* TODO - If loadableDeviceData.state === 'loading' then display a loading spinner. */}
         {/* TODO - Make the registration process easier by doing a few things:
             1. Replace the TextField with an Autocomplete component that dynamically fetches node pubkeys that match what is typed.
             2. Check for the right text length and possibly even ping LND to make sure the proposed node is real and has active channels.
@@ -90,7 +91,7 @@ export const DevicePage = () => {
                   disabled={!nodeRegistrationPubkey.length}
                   onClick={() => {
                     // TODO - Display a loading spinner until this promise resolves.
-                    registerDevice(nodeRegistrationPubkey);
+                    deviceApi.registerDevice(nodeRegistrationPubkey);
                   }}
                 >
                   Register
