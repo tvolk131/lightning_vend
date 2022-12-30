@@ -14,6 +14,8 @@ dist-ssr
 *.local
 bundle.js
 bundle.js.LICENSE.txt
+*.macaroon
+*.cert
 
 # Editor directories and files
 .vscode/*
