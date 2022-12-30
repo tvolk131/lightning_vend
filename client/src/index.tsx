@@ -7,6 +7,7 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import {LandingPage} from './landingPage';
 import {AdminPage} from './adminPage';
 import {NotFoundPage} from './notFoundPage';
+import {Helmet} from 'react-helmet';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,12 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      {/* This meta tag makes the mobile experience
+      much better by preventing text from being tiny. */}
+      <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+      <Helmet>
+        <style>{`body { background-color: ${theme.palette.background.default}; }`}</style>
+      </Helmet>
       <RouterProvider router={router}/>
     </ThemeProvider>
   );
