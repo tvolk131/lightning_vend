@@ -21,12 +21,13 @@ export const deviceSessionCookieName = 'device-session';
 const socketManager = new SocketManager(io);
 const deviceSessionManager = new DeviceSessionManager();
 
-app.get('/bundle.js', (req, res) => {
+app.get('*/bundle.js', (req, res) => {
   res.send(bundle);
 });
 
 app.get('/api/getInvoice', async (req, res) => {
   // TODO - Use GRPC client rather than an http request.
+  // TODO - Require an invoice amount be passed from the UI.
   const resp = await axios.post(
     'https://lightningvend.m.voltageapp.io:8080/v1/invoices',
     {value: 5},

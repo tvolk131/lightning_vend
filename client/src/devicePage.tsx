@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {useState, useEffect, useRef, useCallback} from 'react';
-import {ThemeProvider, createTheme, useTheme} from '@mui/material/styles';
-import {blue} from '@mui/material/colors';
+import {useTheme} from '@mui/material/styles';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {SelectionMenu} from './selectionMenu';
 import {Helmet} from 'react-helmet';
@@ -14,7 +13,7 @@ const SCREENSAVER_DELAY_MS = 60000;
 
 const centerSquareSize = 330;
 
-const SubApp = () => {
+export const DevicePage = () => {
   const theme = useTheme();
 
   const connectionStatus = useConnectionStatus();
@@ -146,25 +145,3 @@ const SubApp = () => {
     </div>
   );
 };
-
-const ThemedSubApp = () => {
-  const isDarkMode = true; // TODO - Add a way for users to be able to set this.
-
-  const theme = createTheme({
-    palette: {
-      primary: {main: '#F7931A'},
-      secondary: blue,
-      mode: isDarkMode ? 'dark' : 'light'
-    }
-  });
-
-  return (
-    <ThemeProvider theme={theme}>
-      <SubApp/>
-    </ThemeProvider>
-  );
-};
-
-export const App = () => (
-  <ThemedSubApp/>
-);
