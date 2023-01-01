@@ -18,19 +18,34 @@ const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
 const app = express();
 const server = http.createServer(app);
 
-const adminSocketServer = new Server(server, {path: socketIoAdminPath});
-const deviceSocketServer = new Server(server, {path: socketIoDevicePath});
-
 export const adminSessionCookieName = 'admin-session';
 export const deviceSessionCookieName = 'device-session';
 
 const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
 
-const adminSocketManager = new AdminSocketManager(adminSocketServer, adminSessionManager.getNodePubkeyFromSessionId);
-const deviceSocketManager = new DeviceSocketManager(deviceSocketServer);
+const adminSocketManager = new AdminSocketManager(new Server(server, {path: socketIoAdminPath}), (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId));
+const deviceSocketManager = new DeviceSocketManager(new Server(server, {path: socketIoDevicePath}));
 
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
+
+const authenticateAdmin = (req: express.Request, res: express.Response) => {
+  if (!req.headers.cookie) {
+    return {response: res.status(401).send('Admin must be registered! No cookie header found.')};
+  }
+
+  const adminSessionId = parse(req.headers.cookie)[adminSessionCookieName];
+  if (!adminSessionId) {
+    return {response: res.status(401).send('Admin must be registered! No admin session found.')};
+  }
+
+  const lightningNodePubkey = adminSessionManager.getNodePubkeyFromSessionId(adminSessionId);
+  if (!lightningNodePubkey) {
+    return {response: res.status(401).send('Admin must be registered! Unrecognized admin session.')};
+  }
+
+  return {lightningNodePubkey};
+};
 
 const authenticateDevice = (req: express.Request, res: express.Response) => {
   if (!req.headers.cookie) {
@@ -98,6 +113,31 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
 
   if (isNew) {
     res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send(deviceData);
+  } else {
+    res.status(400).send('Device is already registered!');
+  }
+});
+
+// TODO - CRITICAL - This is currently a completely unauthorized login method
+// where you simply declare that you're the owner of a particular node to login
+// as that node. We need to add some method of actually verifying this. Maybe
+// do something similar to https://lightningnetwork.plus/.
+app.get('/api/registerAdmin/:lightningNodePubkey', async (req, res) => {
+  let adminSessionId;
+
+  if (req.headers.cookie) {
+    // Remember, this line could still leave adminSessionId unset.
+    adminSessionId = parse(req.headers.cookie)[adminSessionCookieName];
+  }
+  
+  if (!adminSessionId) {
+    adminSessionId = makeUuid();
+  }
+
+  const {isNew} = adminSessionManager.getOrCreateAdminSession(adminSessionId, req.params.lightningNodePubkey);
+
+  if (isNew) {
+    res.cookie(adminSessionCookieName, adminSessionId, {path: '/'}).send();
   } else {
     res.status(400).send('Device is already registered!');
   }
