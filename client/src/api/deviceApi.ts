@@ -19,11 +19,17 @@ class DeviceApi extends ReactSocket {
   constructor() {
     super(socketIoDevicePath);
 
-    this.socket.on('updateDeviceData', (deviceData: DeviceData) => {
-      this.deviceDataManager.setData({
-        state: 'loaded',
-        data: deviceData
-      });
+    this.socket.on('updateDeviceData', (deviceData: DeviceData | undefined) => {
+      if (deviceData) {
+        this.deviceDataManager.setData({
+          state: 'loaded',
+          data: deviceData
+        });
+      } else {
+        this.deviceDataManager.setData({
+          state: 'error'
+        });
+      }
     });
 
     this.socket.on('invoicePaid', (invoice) => {
@@ -31,19 +37,6 @@ class DeviceApi extends ReactSocket {
         this.invoicePaidCallbacks[callbackId](invoice);
       }
     });
-
-    this.getDeviceData()
-      .then((deviceData) => {
-        this.deviceDataManager.setData({
-          state: 'loaded',
-          data: deviceData
-        });
-      })
-      .catch(() => {
-        this.deviceDataManager.setData({
-          state: 'error'
-        });
-      });
   }
 
   /**
@@ -67,14 +60,8 @@ class DeviceApi extends ReactSocket {
   };
 
   async registerDevice(lightningNodeOwnerPubkey: string): Promise<void> {
-    const deviceData = (await axios.get(`/api/registerDevice/${lightningNodeOwnerPubkey}`)).data as DeviceData;
-  
+    await axios.get(`/api/registerDevice/${lightningNodeOwnerPubkey}`);
     this.disconnectAndReconnectSocket();
-  
-    this.deviceDataManager.setData({
-      state: 'loaded',
-      data: deviceData
-    });
   }
 
   useLoadableDeviceData(): AsyncLoadableData<DeviceData> {
@@ -97,11 +84,6 @@ class DeviceApi extends ReactSocket {
   async getInvoice(): Promise<string> {
     return (await axios.get('/api/getInvoice')).data;
   }
-
-  private async getDeviceData(): Promise<DeviceData> {
-    const res = await axios.get('/api/deviceData');
-    return res.data;
-  };
 }
 
 export const deviceApi = new DeviceApi();

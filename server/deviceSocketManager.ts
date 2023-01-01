@@ -12,9 +12,14 @@ export class DeviceSocketManager {
   private activeSocketsBySocketId: {[socketId: string]: Socket} = {};
   private activeSocketsByDeviceSessionId: {[deviceSessionId: string]: Socket} = {};
 
-  constructor (server: Server) {
+  constructor (server: Server, getDeviceData: (deviceSessionId: string) => DeviceData | undefined) {
     server.on('connection', (socket) => {
       this.addSocket(socket);
+
+      const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
+      if (deviceSessionId) {
+        socket.emit('updateDeviceData', getDeviceData(deviceSessionId));
+      }
     
       socket.on('disconnect', () => {
         this.removeSocket(socket);

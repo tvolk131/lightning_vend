@@ -25,7 +25,7 @@ const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
 
 const adminSocketManager = new AdminSocketManager(new Server(server, {path: socketIoAdminPath}), (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId));
-const deviceSocketManager = new DeviceSocketManager(new Server(server, {path: socketIoDevicePath}));
+const deviceSocketManager = new DeviceSocketManager(new Server(server, {path: socketIoDevicePath}), (deviceSessionId) => deviceSessionManager.getDeviceData(deviceSessionId));
 
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
 
@@ -88,15 +88,6 @@ app.get('/api/getInvoice', async (req, res) => {
   res.send(invoice);
 });
 
-app.get('/api/deviceData', (req, res) => {
-  const {response, deviceData} = authenticateDevice(req, res);
-  if (response) {
-    return response;
-  }
-
-  res.send(deviceData);
-});
-
 app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
   let deviceSessionId;
 
@@ -109,10 +100,10 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
     deviceSessionId = makeUuid();
   }
 
-  const {deviceData, isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
+  const {isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
 
   if (isNew) {
-    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send(deviceData);
+    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send();
   } else {
     res.status(400).send('Device is already registered!');
   }
