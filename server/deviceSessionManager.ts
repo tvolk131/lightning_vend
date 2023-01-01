@@ -16,7 +16,7 @@ export interface InventoryItem {
  * TODO - Read/write using non-volatile storage.
  */
 export class DeviceSessionManager {
-  private deviceSessions: {[deviceSessionId: string]: DeviceData} = {};
+  private deviceSessionsBySessionId: {[deviceSessionId: string]: DeviceData} = {};
 
   /**
    * Performs a find-or-create for a device, initializing basic device
@@ -32,8 +32,8 @@ export class DeviceSessionManager {
   getOrCreateDeviceSession(deviceSessionId: string, lightningNodeOwnerPubkey: string): {deviceData: DeviceData, isNew: boolean} {
     let isNew = false;
 
-    if (!this.deviceSessions[deviceSessionId]) {
-      this.deviceSessions[deviceSessionId] = {
+    if (!this.deviceSessionsBySessionId[deviceSessionId]) {
+      this.deviceSessionsBySessionId[deviceSessionId] = {
         deviceSessionId,
         lightningNodeOwnerPubkey,
         inventory: []
@@ -42,7 +42,7 @@ export class DeviceSessionManager {
     }
 
     return {
-      deviceData: this.deviceSessions[deviceSessionId],
+      deviceData: this.deviceSessionsBySessionId[deviceSessionId],
       isNew
     };
   }
@@ -54,7 +54,7 @@ export class DeviceSessionManager {
    * with the given `deviceSessionId` does not exist.
    */
   getDeviceData(deviceSessionId: string): DeviceData | undefined {
-    return this.deviceSessions[deviceSessionId];
+    return this.deviceSessionsBySessionId[deviceSessionId];
   }
 
   /**
@@ -68,9 +68,9 @@ export class DeviceSessionManager {
    * for the given `deviceSessionId`.
    */
   updateDeviceData(deviceSessionId: string, mutateFn: (deviceData: DeviceData) => DeviceData, notFoundFn: () => void) {
-    const deviceData = this.deviceSessions[deviceSessionId];
+    const deviceData = this.deviceSessionsBySessionId[deviceSessionId];
     if (deviceData) {
-      this.deviceSessions[deviceSessionId] = mutateFn(deviceData);
+      this.deviceSessionsBySessionId[deviceSessionId] = mutateFn(deviceData);
     } else {
       notFoundFn();
     }
