@@ -17,6 +17,20 @@ export interface InventoryItem {
  */
 export class DeviceSessionManager {
   private deviceSessionsBySessionId: {[deviceSessionId: string]: DeviceData} = {};
+  private deviceSessionIdsByNodePubkey: {[nodePubkey: string]: string[]} = {};
+
+  getDeviceSessionsBelongingToNodePubkey(nodePubkey: string): DeviceData[] {
+    const deviceSessionIds = this.deviceSessionIdsByNodePubkey[nodePubkey] || [];
+
+    const deviceDataList: DeviceData[] = [];
+    deviceSessionIds.forEach((deviceSessionId) => {
+      const deviceData = this.getDeviceData(deviceSessionId);
+      if (deviceData) {
+        deviceDataList.push(deviceData);
+      }
+    });
+    return deviceDataList;
+  }
 
   /**
    * Performs a find-or-create for a device, initializing basic device
@@ -38,6 +52,12 @@ export class DeviceSessionManager {
         lightningNodeOwnerPubkey,
         inventory: []
       };
+
+      if (!this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey]) {
+        this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey] = [];
+      }
+      this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey].push(deviceSessionId);
+
       isNew = true;
     }
 
