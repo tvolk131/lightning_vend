@@ -88,7 +88,7 @@ app.get('/api/getInvoice', async (req, res) => {
   res.send(invoice);
 });
 
-app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
+app.get('/api/registerDevice/:lightningNodeOwnerPubkey', (req, res) => {
   let deviceSessionId;
 
   if (req.headers.cookie) {
@@ -113,7 +113,7 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', async (req, res) => {
 // where you simply declare that you're the owner of a particular node to login
 // as that node. We need to add some method of actually verifying this. Maybe
 // do something similar to https://lightningnetwork.plus/.
-app.get('/api/registerAdmin/:lightningNodePubkey', async (req, res) => {
+app.get('/api/registerAdmin/:lightningNodePubkey', (req, res) => {
   let adminSessionId;
 
   if (req.headers.cookie) {
@@ -138,7 +138,7 @@ app.get('*/', (req, res) => {
   res.send(`
     <html>
     <head>
-      <title>Sat Dash</title>
+      <title>Lightning Vend</title>
       <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
       <link href="https://fonts.googleapis.com/css?family=Material+Icons&display=block" rel="stylesheet">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
