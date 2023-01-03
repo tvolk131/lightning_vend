@@ -13,7 +13,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
 
   return (
     <Paper>
-      <Typography variant={'h2'}>{props.adminDeviceView.deviceData.displayName || <i>Unnamed Device</i>}</Typography>
+      <Typography variant={'h2'}>{props.adminDeviceView.deviceData.displayName}</Typography>
     </Paper>
   );
 };

@@ -1,7 +1,7 @@
 export interface DeviceData {
   // TODO - Replace `deviceSessionId` with `deviceSessionIdHash` since this value should not be sent over the wire except as a cookie.
   deviceSessionId: string,
-  displayName?: string,
+  displayName: string,
   lightningNodeOwnerPubkey: string,
   inventory: InventoryItem[]
 }
@@ -37,6 +37,7 @@ export class DeviceSessionManager {
    * Performs a find-or-create for a device, initializing basic device
    * data for a new device or fetching existing device data.
    * @param deviceSessionId The session ID of the device we're fetching.
+   * @param displayName The display name for the device.
    * @param lightningNodeOwnerPubkey The Lightning Network node that owns
    * this device, and that payments to this device should pay out to.
    * If the device already exists, this field is ignored and _not_ updated
@@ -44,12 +45,13 @@ export class DeviceSessionManager {
    * @returns The device data, and flag indicating whether `deviceSessionId`
    * mapped to an existing device.
    */
-  getOrCreateDeviceSession(deviceSessionId: string, lightningNodeOwnerPubkey: string): {deviceData: DeviceData, isNew: boolean} {
+  getOrCreateDeviceSession(deviceSessionId: string, lightningNodeOwnerPubkey: string, displayName: string): {deviceData: DeviceData, isNew: boolean} {
     let isNew = false;
 
     if (!this.deviceSessionsBySessionId[deviceSessionId]) {
       this.deviceSessionsBySessionId[deviceSessionId] = {
         deviceSessionId,
+        displayName,
         lightningNodeOwnerPubkey,
         inventory: []
       };

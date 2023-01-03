@@ -52,8 +52,8 @@ class DeviceApi extends ReactSocket {
     return delete this.invoicePaidCallbacks[callbackId];
   };
 
-  async registerDevice(lightningNodeOwnerPubkey: string): Promise<void> {
-    await axios.get(`/api/registerDevice/${lightningNodeOwnerPubkey}`);
+  async registerDevice(lightningNodeOwnerPubkey: string, displayName: string): Promise<void> {
+    await axios.post(`/api/registerDevice`, {lightningNodeOwnerPubkey, displayName});
     this.disconnectAndReconnectSocket();
   }
 

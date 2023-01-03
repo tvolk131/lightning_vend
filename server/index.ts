@@ -16,6 +16,7 @@ const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
 
 const app = express();
+app.use(express.json());
 const server = http.createServer(app);
 
 export const adminSessionCookieName = 'admin-session';
@@ -107,7 +108,18 @@ app.get('/api/getInvoice', async (req, res) => {
   res.send(invoice);
 });
 
-app.get('/api/registerDevice/:lightningNodeOwnerPubkey', (req, res) => {
+app.post('/api/registerDevice', (req, res) => {
+  if (typeof req.body !== 'object') {
+    return {response: res.status(400).send('Request body must be an object.')};
+  }
+  if (typeof req.body.lightningNodeOwnerPubkey !== 'string') {
+    return {response: res.status(400).send('Request body must have string property `lightningNodeOwnerPubkey`.')};
+  }
+  if (typeof req.body.displayName !== 'string') {
+    return {response: res.status(400).send('Request body must have string property `displayName`.')};
+  }
+  const {lightningNodeOwnerPubkey, displayName}: {lightningNodeOwnerPubkey: string, displayName: string} = req.body;
+
   let deviceSessionId;
 
   if (req.headers.cookie) {
@@ -119,7 +131,7 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', (req, res) => {
     deviceSessionId = makeUuid();
   }
 
-  const {isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
+  const {isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, lightningNodeOwnerPubkey, displayName);
 
   // Note: No manual event trigger is needed here, since the client will automatically
   // disconnect and reconnect its socket, which triggers its own events.
@@ -156,7 +168,7 @@ app.get('/api/registerAdmin/:lightningNodePubkey', (req, res) => {
   }
 });
 
-app.get('/api/updateDeviceDisplayName', async (req, res) => {
+app.post('/api/updateDeviceDisplayName', async (req, res) => {
   const {response, lightningNodePubkey} = authenticateAdmin(req, res);
   if (response) {
     return response;
@@ -165,15 +177,12 @@ app.get('/api/updateDeviceDisplayName', async (req, res) => {
   if (typeof req.body !== 'object') {
     return {response: res.status(400).send('Request body must be an object.')};
   }
-
   if (typeof req.body.displayName !== 'string') {
     return {response: res.status(400).send('Request body must have string property `displayName`.')};
   }
-
   if (typeof req.body.deviceSessionId !== 'string') {
     return {response: res.status(400).send('Request body must have string property `deviceSessionId`.')};
   }
-
   const {displayName, deviceSessionId}: {displayName: string, deviceSessionId: string} = req.body;
 
   if (deviceSessionManager.getDeviceOwnerPubkey(deviceSessionId) !== lightningNodePubkey) {

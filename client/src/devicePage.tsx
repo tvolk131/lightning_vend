@@ -20,6 +20,7 @@ export const DevicePage = () => {
   const loadableDeviceData = deviceApi.useLoadableDeviceData();
 
   const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
+  const [nodeRegistrationDisplayName, setNodeRegistrationDisplayName] = useState('');
   
   // Whether the screensaver should be displaying.
   const [screensaverActive, setScreensaverActive] = useState(true);
@@ -86,12 +87,13 @@ export const DevicePage = () => {
                   Device is not setup! Please enter the Lightning Network node pubkey that you would like to pair this device to.
                 </Typography>
                 <TextField value={nodeRegistrationPubkey} onChange={(e) => setNodeRegistrationPubkey(e.target.value)} label={'LN Node Pubkey'} style={{margin: '20px'}}/>
+                <TextField value={nodeRegistrationDisplayName} onChange={(e) => setNodeRegistrationDisplayName(e.target.value)} label={'Device Name'} style={{marginBottom: '20px'}}/>
                 <Button
                   variant={'contained'}
-                  disabled={!nodeRegistrationPubkey.length}
+                  disabled={!(nodeRegistrationPubkey.length && nodeRegistrationDisplayName.length)}
                   onClick={() => {
                     // TODO - Display a loading spinner until this promise resolves.
-                    deviceApi.registerDevice(nodeRegistrationPubkey);
+                    deviceApi.registerDevice(nodeRegistrationPubkey, nodeRegistrationDisplayName);
                   }}
                 >
                   Register

@@ -52,7 +52,7 @@ export const AdminPage = () => {
                       <ListItemIcon>
                         <CircleIcon color={device.isOnline ? 'success' : 'error'}/>
                       </ListItemIcon>
-                      <ListItemText color={''} primary={device.deviceData.displayName || <i>Unnamed Device</i>}/>
+                      <ListItemText color={''} primary={device.deviceData.displayName}/>
                     </ListItemButton>
                   );
                 })}
