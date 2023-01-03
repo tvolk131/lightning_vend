@@ -7,13 +7,6 @@ import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedA
 
 class DeviceApi extends ReactSocket {
   private invoicePaidCallbacks: {[key: string]: ((invoice: string) => void)} = {};
-
-  // TODO - Create a way to ensure that, even when updated potentially out of order, the most recent
-  // received version of the device data is always set and never reverted to an older version, and to
-  // acknowledge to the server that the version was successfully updated on-device. And on the server,
-  // we should add a way to keep track of changes that were made on the server and whether or not they
-  // have been reflected on the device. That way, an admin can make changes to a device that is offline
-  // and be confident that those changes will sync and be confirmed whenever the device is reconnected.
   private deviceDataManager = new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
 
   constructor() {

@@ -10,7 +10,7 @@ import {parse} from 'cookie';
 import {DeviceSessionManager} from './deviceSessionManager';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
-import {AdminSessionManager} from './adminSessionManager';
+import {AdminData, AdminSessionManager} from './adminSessionManager';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
@@ -24,7 +24,20 @@ export const deviceSessionCookieName = 'device-session';
 const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
 
-const adminSocketManager = new AdminSocketManager(new Server(server, {path: socketIoAdminPath}), (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId));
+const getAdminData = (adminSessionId: string, lightningNodePubkey: string): AdminData | undefined => {
+  return {
+    adminSessionId,
+    lightningNodePubkey,
+    devices: deviceSessionManager.getDeviceSessionsBelongingToNodePubkey(lightningNodePubkey).map((deviceData) => {
+      return {
+        isOnline: deviceSocketManager.isDeviceConnected(deviceData.deviceSessionId),
+        deviceData
+      };
+    })
+  };
+};
+
+const adminSocketManager = new AdminSocketManager(new Server(server, {path: socketIoAdminPath}), (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId), getAdminData);
 const deviceSocketManager = new DeviceSocketManager(new Server(server, {path: socketIoDevicePath}), (deviceSessionId) => deviceSessionManager.getDeviceData(deviceSessionId));
 
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};

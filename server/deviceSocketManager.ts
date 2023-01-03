@@ -19,6 +19,8 @@ export class DeviceSocketManager {
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
       if (deviceSessionId) {
         socket.emit('updateDeviceData', getDeviceData(deviceSessionId));
+      } else {
+        socket.emit('updateDeviceData', undefined);
       }
     
       socket.on('disconnect', () => {
@@ -45,6 +47,10 @@ export class DeviceSocketManager {
    */
   updateDeviceData(deviceSessionId: string, deviceData: DeviceData): boolean {
     return this.sendMessageToDevice(deviceSessionId, 'updateDeviceData', deviceData);
+  }
+
+  isDeviceConnected(deviceSessionId: string): boolean {
+    return !!this.activeSocketsByDeviceSessionId[deviceSessionId]
   }
 
   /**
