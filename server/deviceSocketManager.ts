@@ -2,6 +2,7 @@ import {Server, Socket} from 'socket.io';
 import {parse} from 'cookie';
 import {deviceSessionCookieName} from '.';
 import {DeviceData} from './deviceSessionManager';
+import {SubscribableEventManager} from '../client/src/api/sharedApi';
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -11,6 +12,7 @@ import {DeviceData} from './deviceSessionManager';
 export class DeviceSocketManager {
   private activeSocketsBySocketId: {[socketId: string]: Socket} = {};
   private activeSocketsByDeviceSessionId: {[deviceSessionId: string]: Socket} = {};
+  private onDeviceConnectionStatusChangeEventManager: SubscribableEventManager<DeviceConnectionStatusEvent> = new SubscribableEventManager();
 
   constructor (server: Server, getDeviceData: (deviceSessionId: string) => DeviceData | undefined) {
     server.on('connection', (socket) => {
@@ -53,6 +55,14 @@ export class DeviceSocketManager {
     return !!this.activeSocketsByDeviceSessionId[deviceSessionId]
   }
 
+  subscribeToDeviceConnectionStatus(callback: (event: DeviceConnectionStatusEvent) => void): string {
+    return this.onDeviceConnectionStatusChangeEventManager.subscribe(callback);
+  }
+
+  unsubscribeFromDeviceConnectionStatus(callbackId: string) {
+    return this.onDeviceConnectionStatusChangeEventManager.unsubscribe(callbackId);
+  }
+
   /**
    * Sends a Socket.IO event to the socket belonging to a particular device.
    * @param deviceSessionId The device to send the event to.
@@ -75,6 +85,10 @@ export class DeviceSocketManager {
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       this.activeSocketsByDeviceSessionId[deviceSessionId] = socket;
+      this.onDeviceConnectionStatusChangeEventManager.emitEvent({
+        deviceSessionId,
+        isOnline: true
+      });
     }
   }
 
@@ -83,10 +97,19 @@ export class DeviceSocketManager {
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       delete this.activeSocketsByDeviceSessionId[deviceSessionId];
+      this.onDeviceConnectionStatusChangeEventManager.emitEvent({
+        deviceSessionId,
+        isOnline: false
+      });
     }
   }
 
   private static getDeviceSessionId(socket: Socket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[deviceSessionCookieName];
   }
+};
+
+interface DeviceConnectionStatusEvent {
+  deviceSessionId: string,
+  isOnline: boolean
 };

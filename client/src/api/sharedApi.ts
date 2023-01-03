@@ -110,18 +110,12 @@ export class ReactSocket {
   }
 }
 
-export class SubscribableDataManager<T> {
-  private data: T;
-  private callbacks: {[key: string]: ((data: T) => void)} = {};
+export class SubscribableEventManager<T> {
+  private callbacks: {[key: string]: ((event: T) => void)} = {};
 
-  constructor(initialDataValue: T) {
-    this.data = initialDataValue;
-  }
-
-  subscribe(callback: (data: T) => void): string {
+  subscribe(callback: (event: T) => void): string {
     const callbackId = makeUuid();
     this.callbacks[callbackId] = callback;
-    callback(this.data); // This is called just to make sure that the subscriber's data is in sync.
     return callbackId;
   }
 
@@ -129,11 +123,34 @@ export class SubscribableDataManager<T> {
     return delete this.callbacks[callbackId];
   };
 
+  emitEvent(event: T) {
+    for (let callbackId in this.callbacks) {
+      this.callbacks[callbackId](event);
+    }
+  }
+}
+
+export class SubscribableDataManager<T> {
+  private data: T;
+  private eventManager: SubscribableEventManager<T>;
+
+  constructor(initialDataValue: T) {
+    this.data = initialDataValue;
+    this.eventManager = new SubscribableEventManager();
+  }
+
+  subscribe(callback: (data: T) => void): string {
+    callback(this.data); // This is called just to make sure that the subscriber's data is in sync.
+    return this.eventManager.subscribe(callback);
+  }
+
+  unsubscribe(callbackId: string): boolean {
+    return this.eventManager.unsubscribe(callbackId);
+  };
+
   setData(newData: T) {
     this.data = newData;
-    for (let callbackId in this.callbacks) {
-      this.callbacks[callbackId](this.data);
-    }
+    this.eventManager.emitEvent(this.data);
   }
 
   getData(): Readonly<T> {

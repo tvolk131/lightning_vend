@@ -1,4 +1,5 @@
 export interface DeviceData {
+  // TODO - Replace `deviceSessionId` with `deviceSessionIdHash` since this value should not be sent over the wire except as a cookie.
   deviceSessionId: string,
   displayName?: string,
   lightningNodeOwnerPubkey: string,
@@ -78,21 +79,30 @@ export class DeviceSessionManager {
   }
 
   /**
-   * Updates the device data for a single device. Guaranteed to call either
-   * `mutateFn` or `notFoundFn` exactly once.
+   * Updates the device data for a single device.
    * @param deviceSessionId The session ID of the device we're updating.
    * @param mutateFn A function that mutates the device data for a given device.
    * Whatever is returned from this function is written to storage.
-   * This is called if device data is found for the given `deviceSessionId`.
-   * @param notFoundFn A function that is called if no device data is found
-   * for the given `deviceSessionId`.
+   * @returns A promise that resolves to the new device data if the update was
+   * successfully written, or rejects if the `deviceSessionId` is invalid or the
+   * write failed for any reason.
    */
-  updateDeviceData(deviceSessionId: string, mutateFn: (deviceData: DeviceData) => DeviceData, notFoundFn: () => void) {
+  updateDeviceData(deviceSessionId: string, mutateFn: (deviceData: DeviceData) => DeviceData): Promise<DeviceData> {
+    return new Promise((resolve, reject) => {
+      const deviceData = this.deviceSessionsBySessionId[deviceSessionId];
+      if (deviceData) {
+        this.deviceSessionsBySessionId[deviceSessionId] = mutateFn(deviceData);
+        resolve(deviceData);
+      } else {
+        reject();
+      }
+    });
+  }
+
+  getDeviceOwnerPubkey(deviceSessionId: string): string | undefined {
     const deviceData = this.deviceSessionsBySessionId[deviceSessionId];
     if (deviceData) {
-      this.deviceSessionsBySessionId[deviceSessionId] = mutateFn(deviceData);
-    } else {
-      notFoundFn();
+      return deviceData.lightningNodeOwnerPubkey;
     }
   }
 };

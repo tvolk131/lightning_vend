@@ -12,30 +12,31 @@ export class AdminSocketManager {
   private activeSocketsBySocketId: {[socketId: string]: {socket: Socket, nodePubkey: string | undefined}} = {};
   private activeSocketsByNodePubkey: {[nodePubkey: string]: Socket[]} = {};
   private getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined;
+  private getAdminData: (lightningNodePubkey: string) => AdminData | undefined;
 
-  constructor (server: Server, getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined, getAdminData: (adminSessionId: string, lightningNodePubkey: string) => AdminData | undefined) {
+  constructor (server: Server, getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined, getAdminData: (lightningNodePubkey: string) => AdminData | undefined) {
     this.getNodePubkeyFromAdminSessionId = getNodePubkeyFromAdminSessionId;
+    this.getAdminData = getAdminData;
 
     server.on('connection', (socket) => {
       this.addSocket(socket);
 
-      let emittedInitialMessage = false;
-      const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
-      if (adminSessionId) {
-        const lightningNodePubkey = getNodePubkeyFromAdminSessionId(adminSessionId);
-        if (lightningNodePubkey) {
-          socket.emit('updateAdminData', getAdminData(adminSessionId, lightningNodePubkey));
-          emittedInitialMessage = true;
-        }
-      }
-      if (!emittedInitialMessage) {
-        socket.emit('updateAdminData', undefined);
-      }
+      socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
 
       socket.on('disconnect', () => {
         this.removeSocket(socket);
       });
     });
+  }
+
+  private getAdminDataForSocket(socket: Socket): AdminData | undefined {
+    const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
+    if (adminSessionId) {
+      const lightningNodePubkey = this.getNodePubkeyFromAdminSessionId(adminSessionId);
+      if (lightningNodePubkey) {
+        return this.getAdminData(lightningNodePubkey);
+      }
+    }
   }
 
   /**
@@ -44,14 +45,12 @@ export class AdminSocketManager {
    * @param adminData The new admin data to send.
    * @returns Whether there are any open sockets to the admin.
    */
-  updateAdminData(nodePubkey: string, adminData: AdminData): boolean {
-    // TODO - Add some way to check whether we need to even calculate `adminData`.
-    // If no admin is logged in using the specified pubkey, we can just no-op.
-    // TODO - Call this function any time the calculated admin data is changed.
-
+  updateAdminData(nodePubkey: string): boolean {
     const sockets = this.activeSocketsByNodePubkey[nodePubkey];
 
-    if (sockets.length) {
+    // Only get admin data if a relevant admin is currently connected.
+    if (sockets && sockets.length) {
+      const adminData = this.getAdminData(nodePubkey);
       sockets.forEach((socket) => socket.emit('updateAdminData', adminData));
       return true;
     }

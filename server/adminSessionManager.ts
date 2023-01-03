@@ -1,3 +1,15 @@
+import {DeviceData} from './deviceSessionManager';
+
+export interface AdminData {
+  lightningNodePubkey: string,
+  devices: AdminDeviceView[]
+}
+
+export interface AdminDeviceView {
+  isOnline: boolean
+  deviceData: DeviceData
+}
+
 /**
  * Manages the persistence of admin sessions.
  * Currently stores everything in memory, but will eventually use MongoDB to persist this data.

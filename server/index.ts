@@ -24,9 +24,8 @@ export const deviceSessionCookieName = 'device-session';
 const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
 
-const getAdminData = (adminSessionId: string, lightningNodePubkey: string): AdminData | undefined => {
+const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
   return {
-    adminSessionId,
     lightningNodePubkey,
     devices: deviceSessionManager.getDeviceSessionsBelongingToNodePubkey(lightningNodePubkey).map((deviceData) => {
       return {
@@ -39,6 +38,13 @@ const getAdminData = (adminSessionId: string, lightningNodePubkey: string): Admi
 
 const adminSocketManager = new AdminSocketManager(new Server(server, {path: socketIoAdminPath}), (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId), getAdminData);
 const deviceSocketManager = new DeviceSocketManager(new Server(server, {path: socketIoDevicePath}), (deviceSessionId) => deviceSessionManager.getDeviceData(deviceSessionId));
+
+deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
+  const ownerPubkey = deviceSessionManager.getDeviceOwnerPubkey(event.deviceSessionId);
+  if (ownerPubkey) {
+    adminSocketManager.updateAdminData(ownerPubkey);
+  }
+});
 
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
 
@@ -115,6 +121,9 @@ app.get('/api/registerDevice/:lightningNodeOwnerPubkey', (req, res) => {
 
   const {isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, req.params.lightningNodeOwnerPubkey);
 
+  // Note: No manual event trigger is needed here, since the client will automatically
+  // disconnect and reconnect its socket, which triggers its own events.
+
   if (isNew) {
     res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send();
   } else {
@@ -145,6 +154,39 @@ app.get('/api/registerAdmin/:lightningNodePubkey', (req, res) => {
   } else {
     res.status(400).send('Device is already registered!');
   }
+});
+
+app.get('/api/updateDeviceDisplayName', async (req, res) => {
+  const {response, lightningNodePubkey} = authenticateAdmin(req, res);
+  if (response) {
+    return response;
+  }
+
+  if (typeof req.body !== 'object') {
+    return {response: res.status(400).send('Request body must be an object.')};
+  }
+
+  if (typeof req.body.displayName !== 'string') {
+    return {response: res.status(400).send('Request body must have string property `displayName`.')};
+  }
+
+  if (typeof req.body.deviceSessionId !== 'string') {
+    return {response: res.status(400).send('Request body must have string property `deviceSessionId`.')};
+  }
+
+  const {displayName, deviceSessionId}: {displayName: string, deviceSessionId: string} = req.body;
+
+  if (deviceSessionManager.getDeviceOwnerPubkey(deviceSessionId) !== lightningNodePubkey) {
+    return {response: res.status(401).send('Cannot update a device you do not own!')};
+  }
+
+  await deviceSessionManager.updateDeviceData(deviceSessionId, (deviceData) => {
+    deviceData.displayName = displayName;
+    return deviceData;
+  }).then((deviceData) => {
+    deviceSocketManager.updateDeviceData(deviceSessionId, deviceData);
+    adminSocketManager.updateAdminData(lightningNodePubkey);
+  });
 });
 
 app.get('*/', (req, res) => {
