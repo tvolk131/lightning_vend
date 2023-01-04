@@ -59,7 +59,7 @@ export const AdminPage = () => {
               </List>
             </Paper>
           </Grid>
-          <Grid item xs>
+          <Grid item xs={12} sm={8}>
             <DeviceSettingsPanel adminDeviceView={loadableAdminData.data.devices[selectedDeviceIndex]}/>
           </Grid>
         </Grid>

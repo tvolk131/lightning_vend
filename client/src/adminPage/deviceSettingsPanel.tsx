@@ -31,7 +31,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
     <Paper style={{padding: '10px'}}>
       {isEditingDisplayName ? (
           <OutlinedInput
-            // These styles are to match the Typography h2 above.
+            // These styles are to match the Typography h2 below.
             style={{
               fontWeight: 300,
               fontSize: '3.75em',
@@ -57,7 +57,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
           />
         ) : (
           <div style={{display: 'flex'}}>
-            <Typography variant={'h2'} style={{padding: '23.5px 14px 23.75px', width: '100%'}}>{props.adminDeviceView.deviceData.displayName}</Typography>
+            <Typography variant={'h2'} style={{padding: '23.5px 14px 23.75px', width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{props.adminDeviceView.deviceData.displayName}</Typography>
             <IconButton size={'large'} style={{marginTop: '35px', marginRight: '14px', height: '100%'}} onClick={() => setIsEditingDisplayName(!isEditingDisplayName)}>
               <EditIcon/>
             </IconButton>
