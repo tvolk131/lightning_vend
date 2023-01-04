@@ -112,10 +112,10 @@ app.post('/api/registerDevice', (req, res) => {
   if (typeof req.body !== 'object') {
     return {response: res.status(400).send('Request body must be an object.')};
   }
-  if (typeof req.body.lightningNodeOwnerPubkey !== 'string') {
+  if (typeof req.body.lightningNodeOwnerPubkey !== 'string' || req.body.lightningNodeOwnerPubkey.length === 0) {
     return {response: res.status(400).send('Request body must have string property `lightningNodeOwnerPubkey`.')};
   }
-  if (typeof req.body.displayName !== 'string') {
+  if (typeof req.body.displayName !== 'string' || req.body.displayName.length === 0) {
     return {response: res.status(400).send('Request body must have string property `displayName`.')};
   }
   const {lightningNodeOwnerPubkey, displayName}: {lightningNodeOwnerPubkey: string, displayName: string} = req.body;
@@ -177,10 +177,10 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
   if (typeof req.body !== 'object') {
     return {response: res.status(400).send('Request body must be an object.')};
   }
-  if (typeof req.body.displayName !== 'string') {
+  if (typeof req.body.displayName !== 'string' || req.body.displayName.length === 0) {
     return {response: res.status(400).send('Request body must have string property `displayName`.')};
   }
-  if (typeof req.body.deviceSessionId !== 'string') {
+  if (typeof req.body.deviceSessionId !== 'string' || req.body.deviceSessionId.length === 0) {
     return {response: res.status(400).send('Request body must have string property `deviceSessionId`.')};
   }
   const {displayName, deviceSessionId}: {displayName: string, deviceSessionId: string} = req.body;
@@ -195,6 +195,7 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
   }).then((deviceData) => {
     deviceSocketManager.updateDeviceData(deviceSessionId, deviceData);
     adminSocketManager.updateAdminData(lightningNodePubkey);
+    res.status(200).send();
   });
 });
 

@@ -29,6 +29,13 @@ class AdminApi extends ReactSocket {
     this.disconnectAndReconnectSocket();
   }
 
+  async updateDeviceDisplayName(deviceSessionId: string, displayName: string): Promise<void> {
+    return await axios.post('/api/updateDeviceDisplayName', {
+      deviceSessionId,
+      displayName
+    });
+  }
+
   useLoadableAdminData(): AsyncLoadableData<AdminData> {
     const [data, setData] = useState<AsyncLoadableData<AdminData>>(this.adminDataManager.getData());
   

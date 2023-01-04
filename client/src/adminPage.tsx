@@ -21,7 +21,7 @@ export const AdminPage = () => {
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
 
   return (
-    <div style={{padding: theme.spacing(2)}}>
+    <div style={{padding: theme.spacing(2), margin: 'auto', maxWidth: '1000px'}}>
       {loadableAdminData.state === 'loading' && <CircularProgress/>}
       {loadableAdminData.state === 'error' && (
         <div>
@@ -40,8 +40,8 @@ export const AdminPage = () => {
       )}
       {loadableAdminData.state === 'loaded' && (
         <Grid container spacing={2}>
-          <Grid item xs={'auto'}>
-            <Paper sx={{width: '100%', maxWidth: '360px', bgcolor: 'background.paper'}}>
+          <Grid item xs={12} sm={4}>
+            <Paper>
               <List>
                 {loadableAdminData.data.devices.map((device, index) => {
                   return (
