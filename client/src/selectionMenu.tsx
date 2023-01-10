@@ -160,6 +160,17 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   const showCancelButton = state.showInvoice && !state.showInvoicePaidConfirmation;
   const transitionTimeSecs = 0.65;
 
+  if (props.inventory.length === 0) {
+    return (
+      <Paper style={{height: `${props.size}px`, width: `${props.size}px`, position: 'relative'}}>
+        <div style={{padding: `20px`, textAlign: 'center', position: 'absolute', top: '50%', transform: 'translateY(-50%)'}}>
+          <Typography variant={'h5'}>Inventory is empty!</Typography>
+          <Typography>If you are the owner of this machine, head over to the admin page to add some items.</Typography>
+        </div>
+      </Paper>
+    );
+  }
+
   return (
     <div
       style={{
@@ -211,28 +222,25 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                 }}
               >
                 {
-                  props.inventory.length ?
-                    props.inventory.map(({name, priceSats}, index) => (
-                      <SelectionItem
-                        itemName={name}
-                        key={index}
-                        itemPriceSats={priceSats}
-                        size={(props.size / 2) - (spaceBetweenItems * 3)}
-                        padding={spaceBetweenItems}
-                        onClick={() => {
-                          if (!state.disableItemSelection) {
-                            dispatch({type: 'showLoadingInvoice'});
-                            deviceApi.getInvoice().then((invoice) => {
-                              dispatch({type: 'showInvoice', invoice});
-                            }).catch(() => {
-                              dispatch({type: 'hideInvoiceAndShowLoadError'});
-                            });
-                          }
-                        }}
-                      />
-                    ))
-                    :
-                    <Typography>Inventory is empty! If you are the owner of this machine, head over to the admin page to add some items here.</Typography>
+                  props.inventory.map(({name, priceSats}, index) => (
+                    <SelectionItem
+                      itemName={name}
+                      key={index}
+                      itemPriceSats={priceSats}
+                      size={(props.size / 2) - (spaceBetweenItems * 3)}
+                      padding={spaceBetweenItems}
+                      onClick={() => {
+                        if (!state.disableItemSelection) {
+                          dispatch({type: 'showLoadingInvoice'});
+                          deviceApi.getInvoice().then((invoice) => {
+                            dispatch({type: 'showInvoice', invoice});
+                          }).catch(() => {
+                            dispatch({type: 'hideInvoiceAndShowLoadError'});
+                          });
+                        }
+                      }}
+                    />
+                  ))
                 }
               </div>
             </Paper>
