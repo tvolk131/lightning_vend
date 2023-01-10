@@ -238,6 +238,7 @@ exports[`renders inventory with 1 item 1`] = `
               {
                 "height": "300px",
                 "padding": "15px",
+                "width": "300px",
               }
             }
           >
@@ -2761,6 +2762,7 @@ exports[`renders inventory with 2 items 1`] = `
               {
                 "height": "300px",
                 "padding": "15px",
+                "width": "300px",
               }
             }
           >
@@ -5328,6 +5330,7 @@ exports[`renders inventory with 3 items 1`] = `
               {
                 "height": "300px",
                 "padding": "15px",
+                "width": "300px",
               }
             }
           >
@@ -7939,6 +7942,7 @@ exports[`renders inventory with 4 items 1`] = `
               {
                 "height": "300px",
                 "padding": "15px",
+                "width": "300px",
               }
             }
           >

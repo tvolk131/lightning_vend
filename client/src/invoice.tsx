@@ -18,7 +18,7 @@ export const Invoice = (props: InvoiceProps) => {
   });
 
   const padding = 15;
-  const height = props.size - (padding * 2);
+  const size = props.size - (padding * 2);
 
   const transitionTimeSecs = 0.5;
 
@@ -29,7 +29,8 @@ export const Invoice = (props: InvoiceProps) => {
       <Paper
         style={{
           padding: `${padding}px`,
-          height: `${height}px`
+          height: `${size}px`,
+          width: `${size}px`
         }}
       >
         <div style={{position: 'relative'}}>
@@ -40,7 +41,7 @@ export const Invoice = (props: InvoiceProps) => {
               transition: `opacity ${transitionTimeSecs}s`
             }}
           >
-            <QRCode size={height} value={props.invoice}/>
+            <QRCode size={size} value={props.invoice}/>
           </div>
           <div
             style={{
@@ -49,7 +50,7 @@ export const Invoice = (props: InvoiceProps) => {
               transition: `opacity ${transitionTimeSecs}s`
             }}
           >
-            <div style={{padding: `${(height - greenCheckSizePx) / 2}px`}}>
+            <div style={{padding: `${(size - greenCheckSizePx) / 2}px`}}>
               <CheckCircleOutline
                 color={'success'}
                 style={{
