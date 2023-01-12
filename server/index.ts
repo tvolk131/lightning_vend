@@ -12,6 +12,13 @@ import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
 
+interface Invoice {
+  payment_request?: string,
+  state?: 'OPEN' | 'SETTLED' | 'CANCELED' | 'ACCEPTED',
+  value: number,
+  expiry: number
+}
+
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
 
@@ -95,11 +102,16 @@ app.get('/api/getInvoice', async (req, res) => {
     return response;
   }
 
+  const preCreatedInvoice: Invoice = {
+    value: 5,
+    expiry: 300 // 300 seconds -> 5 minutes.
+  };
+
   // TODO - Use GRPC client rather than an http request.
   // TODO - Require an invoice amount be passed from the UI.
   const resp = await axios.post(
     'https://lightningvend.m.voltageapp.io:8080/v1/invoices',
-    {value: 5},
+    preCreatedInvoice,
     {headers: {'Grpc-Metadata-macaroon': macaroon}}
   );
 
@@ -221,15 +233,9 @@ server.listen(3000, () => {
   console.log('Listening on *:3000');
 });
 
-interface Invoice {
-  payment_request: string,
-  state: 'OPEN' | 'SETTLED' | 'CANCELED' | 'ACCEPTED',
-  value: string
-}
-
 lightning.subscribeInvoices({})
   .on('data', (invoice: Invoice) => {
-    if (invoice.state === 'SETTLED') {
+    if (invoice.state === 'SETTLED' && invoice.payment_request) {
       const deviceSessionId = invoicesToDeviceSessionIds[invoice.payment_request];
       if (deviceSessionId) {
         // TODO - Check if this message was send (i.e. if the device is online) and
