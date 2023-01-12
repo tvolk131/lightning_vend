@@ -1,10 +1,11 @@
-import {CircularProgress, Paper, Typography, Fab, Zoom, Alert} from '@mui/material';
+import {CircularProgress, Paper, Typography, Fab, Zoom, Alert, Dialog, Slide, PaperProps} from '@mui/material';
 import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
 import {deviceApi} from './api/deviceApi';
 import {Invoice} from './invoice';
 import {InventoryItem} from '../../server/deviceSessionManager';
+import {TransitionProps} from '@mui/material/transitions';
 
 interface SelectionItemProps {
   itemName: string,
@@ -14,13 +15,22 @@ interface SelectionItemProps {
   onClick(): void
 }
 
+const SlideDownTransition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement<any, any>;
+  },
+  ref: React.Ref<unknown>,
+) {
+  return <Slide direction={'down'} ref={ref} {...props} />;
+});
+
 const SelectionItem = (props: SelectionItemProps) => {
   return (
     <div
       style={{
         padding: `${props.padding}px`,
         width: 'fitContent',
-        margin: 'auto',
+        textAlign: 'center',
         float: 'left'
       }}
     >
@@ -168,6 +178,50 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
           <Typography>If you are the owner of this machine, head over to the admin page to add some items.</Typography>
         </div>
       </Paper>
+    );
+  }
+
+  if (props.inventory.length > 4) {
+    // TODO - This branch doesn't use `state.showInvoiceLoadError`. Make sure it displays a proper error message!
+    return (
+      <div style={{padding: `${spaceBetweenItems}px`, display: 'flex', flexWrap: 'wrap', justifyContent: 'center'}}>
+        <Dialog
+          open={state.loadingInvoice || state.showInvoice}
+          PaperComponent={state.loadingInvoice ? (props: PaperProps) => (<CircularProgress size={loadingSpinnerSize}/>) : Paper}
+          TransitionComponent={state.loadingInvoice ? undefined : SlideDownTransition}
+          transitionDuration={state.loadingInvoice ? undefined : 500}
+          onClose={() => {
+            dispatch({type: 'hideInvoice'});
+          }}
+        >
+          <Invoice
+            size={props.size}
+            invoice={state.invoice}
+            invoiceIsPaid={state.showInvoicePaidConfirmation}
+          />
+        </Dialog>
+        {
+          props.inventory.map(({name, priceSats}, index) => (
+            <SelectionItem
+              itemName={name}
+              key={index}
+              itemPriceSats={priceSats}
+              size={(props.size / 2) - (spaceBetweenItems * 3)}
+              padding={spaceBetweenItems}
+              onClick={() => {
+                if (!state.disableItemSelection) {
+                  dispatch({type: 'showLoadingInvoice'});
+                  deviceApi.getInvoice().then((invoice) => {
+                    dispatch({type: 'showInvoice', invoice});
+                  }).catch(() => {
+                    dispatch({type: 'hideInvoiceAndShowLoadError'});
+                  });
+                }
+              }}
+            />
+          ))
+        }
+      </div>
     );
   }
 

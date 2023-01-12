@@ -100,3 +100,35 @@ it('renders inventory with 4 items', () => {
   ).toJSON();
   expect(tree).toMatchSnapshot();
 });
+
+it('renders inventory with 5 items', () => {
+  const tree = renderer.create(
+    <SelectionMenu
+      size={330}
+      canShowInvoice={true}
+      inventory={[
+        {
+          name: 'Test Item 1',
+          priceSats: 1000
+        },
+        {
+          name: 'Test Item 2',
+          priceSats: 2000
+        },
+        {
+          name: 'Test Item 3',
+          priceSats: 3000
+        },
+        {
+          name: 'Test Item 4',
+          priceSats: 4000
+        },
+        {
+          name: 'Test Item 5',
+          priceSats: 5000
+        }
+      ]}
+    />
+  ).toJSON();
+  expect(tree).toMatchSnapshot();
+});
