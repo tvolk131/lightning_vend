@@ -3,6 +3,7 @@ import {useState, useEffect} from 'react';
 import {DeviceData} from '../../../server/deviceSessionManager';
 import {socketIoDevicePath} from '../../../shared/constants';
 import {makeUuid} from '../../../shared/uuid';
+import {getActions} from './deviceActionExecutorApi';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
 
 class DeviceApi extends ReactSocket {
@@ -30,6 +31,8 @@ class DeviceApi extends ReactSocket {
         this.invoicePaidCallbacks[callbackId](invoice);
       }
     });
+
+    this.syncActions();
   }
 
   /**
@@ -77,6 +80,11 @@ class DeviceApi extends ReactSocket {
    */
   async createInvoice(valueSats: number): Promise<string> {
     return (await axios.post('/api/createInvoice', {valueSats})).data;
+  }
+
+  private async syncActions(): Promise<void> {
+    const actions = await getActions();
+    await axios.post('/api/setActions', actions);
   }
 }
 

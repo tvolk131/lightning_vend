@@ -116,6 +116,20 @@ app.get('*/bundle.js', (req, res) => {
   res.send(bundle);
 });
 
+app.post('/api/setActions', (req, res) => {
+  if (!Array.isArray(req.body)) {
+    return {response: res.status(400).send('Request body must be an array of strings.')};
+  }
+  for (let i in req.body) {
+    if (typeof req.body[i] !== 'string') {
+      return {response: res.status(400).send('Request body must be an array of strings.')};
+    }
+  }
+  const actions: string[] = req.body;
+  // TODO - Use this `actions` variable above to update device data.
+  res.send();
+});
+
 app.post('/api/createInvoice', async (req, res) => {
   if (typeof req.body !== 'object') {
     return {response: res.status(400).send('Request body must be an object.')};
