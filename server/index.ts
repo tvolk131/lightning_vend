@@ -12,7 +12,7 @@ import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
 
-interface Invoice {
+interface LNDInvoice {
   payment_request?: string,
   state?: 'OPEN' | 'SETTLED' | 'CANCELED' | 'ACCEPTED',
   value: number,
@@ -102,7 +102,7 @@ app.get('/api/getInvoice', async (req, res) => {
     return response;
   }
 
-  const preCreatedInvoice: Invoice = {
+  const preCreatedInvoice: LNDInvoice = {
     value: 5,
     expiry: 300 // 300 seconds -> 5 minutes.
   };
@@ -234,7 +234,7 @@ server.listen(3000, () => {
 });
 
 lightning.subscribeInvoices({})
-  .on('data', (invoice: Invoice) => {
+  .on('data', (invoice: LNDInvoice) => {
     if (invoice.state === 'SETTLED' && invoice.payment_request) {
       const deviceSessionId = invoicesToDeviceSessionIds[invoice.payment_request];
       if (deviceSessionId) {
