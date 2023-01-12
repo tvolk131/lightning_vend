@@ -72,10 +72,11 @@ class DeviceApi extends ReactSocket {
 
   /**
    * Fetches a Lightning Network invoice that can be subscribed to for further payment updates using `subscribeToInvoicePaid`.
+   * @param valueSats The value in satoshis that the invoice is for.
    * @returns A Lightning Network invoice.
    */
-  async getInvoice(): Promise<string> {
-    return (await axios.get('/api/getInvoice')).data;
+  async createInvoice(valueSats: number): Promise<string> {
+    return (await axios.post('/api/createInvoice', {valueSats})).data;
   }
 }
 

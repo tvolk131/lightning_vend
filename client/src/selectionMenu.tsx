@@ -211,7 +211,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
               onClick={() => {
                 if (!state.disableItemSelection) {
                   dispatch({type: 'showLoadingInvoice'});
-                  deviceApi.getInvoice().then((invoice) => {
+                  deviceApi.createInvoice(priceSats).then((invoice) => {
                     dispatch({type: 'showInvoice', invoice});
                   }).catch(() => {
                     dispatch({type: 'hideInvoiceAndShowLoadError'});
@@ -286,7 +286,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                       onClick={() => {
                         if (!state.disableItemSelection) {
                           dispatch({type: 'showLoadingInvoice'});
-                          deviceApi.getInvoice().then((invoice) => {
+                          deviceApi.createInvoice(priceSats).then((invoice) => {
                             dispatch({type: 'showInvoice', invoice});
                           }).catch(() => {
                             dispatch({type: 'hideInvoiceAndShowLoadError'});

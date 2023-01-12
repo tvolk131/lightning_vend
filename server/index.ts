@@ -116,14 +116,21 @@ app.get('*/bundle.js', (req, res) => {
   res.send(bundle);
 });
 
-app.get('/api/getInvoice', async (req, res) => {
+app.post('/api/createInvoice', async (req, res) => {
+  if (typeof req.body !== 'object') {
+    return {response: res.status(400).send('Request body must be an object.')};
+  }
+  if (typeof req.body.valueSats !== 'number' || req.body.valueSats < 1 || !Number.isInteger(req.body.valueSats)) {
+    return {response: res.status(400).send('Request body must have positive integer property `valueSats`.')};
+  }
+
   const {response, deviceData} = authenticateDevice(req, res);
   if (response) {
     return response;
   }
 
   const preCreatedInvoice: LNDInvoice = {
-    value: 5,
+    value: req.body.valueSats,
     expiry: 300 // 300 seconds -> 5 minutes.
   };
 
