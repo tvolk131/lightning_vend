@@ -11,6 +11,7 @@ import {DeviceSessionManager} from './deviceSessionManager';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
+import {decode as decodeInvoice, Invoice} from '@node-lightning/invoice';
 
 interface LNDInvoice {
   payment_request?: string,
@@ -54,7 +55,26 @@ deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
   }
 });
 
+const isInvoiceExpired = (invoice: Invoice): boolean => {
+  const now = new Date();
+  const createTime = new Date(invoice.timestamp);
+
+  const elapsedSeconds = now.getUTCSeconds() - createTime.getUTCSeconds();
+  const secondsRemainingToExpiry = invoice.expiry - elapsedSeconds;
+
+  return secondsRemainingToExpiry < 0;
+}
+
+// TODO - Persist this in a MongoDB collection and use a TTL to automatically clean up expired invoices.
 const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
+// Once per minute, flush all expired invoices.
+setInterval(() => {
+  Object.keys(invoicesToDeviceSessionIds)
+      .filter((invoice) => isInvoiceExpired(decodeInvoice(invoice)))
+      .forEach((expiredInvoice) => {
+        delete invoicesToDeviceSessionIds[expiredInvoice];
+      });
+}, 60000);
 
 const authenticateAdmin = (req: express.Request, res: express.Response) => {
   if (!req.headers.cookie) {
