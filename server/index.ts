@@ -135,7 +135,6 @@ app.post('/api/createInvoice', async (req, res) => {
   };
 
   // TODO - Use GRPC client rather than an http request.
-  // TODO - Require an invoice amount be passed from the UI.
   const resp = await axios.post(
     'https://lightningvend.m.voltageapp.io:8080/v1/invoices',
     preCreatedInvoice,
@@ -297,7 +296,7 @@ lightning.subscribeInvoices({})
     if (invoice.state === 'SETTLED' && invoice.payment_request) {
       const deviceSessionId = invoicesToDeviceSessionIds[invoice.payment_request];
       if (deviceSessionId) {
-        // TODO - Check if this message was send (i.e. if the device is online) and
+        // TODO - Check if this message was sent (i.e. if the device is online) and
         // save the event to retry later if the device is currently offline.
         deviceSocketManager.emitInvoicePaid(deviceSessionId, invoice.payment_request);
       }
