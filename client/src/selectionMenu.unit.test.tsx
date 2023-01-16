@@ -21,7 +21,8 @@ it('renders inventory with 1 item', () => {
       inventory={[
         {
           name: 'Test Item 1',
-          priceSats: 1234
+          priceSats: 1234,
+          executionWebhook: 'http://localhost:3000/actions/1'
         }
       ]}
     />
@@ -37,11 +38,13 @@ it('renders inventory with 2 items', () => {
       inventory={[
         {
           name: 'Test Item 1',
-          priceSats: 1000
+          priceSats: 1000,
+          executionWebhook: 'http://localhost:3000/actions/1'
         },
         {
           name: 'Test Item 2',
-          priceSats: 2000
+          priceSats: 2000,
+          executionWebhook: 'http://localhost:3000/actions/2'
         }
       ]}
     />
@@ -57,15 +60,18 @@ it('renders inventory with 3 items', () => {
       inventory={[
         {
           name: 'Test Item 1',
-          priceSats: 1000
+          priceSats: 1000,
+          executionWebhook: 'http://localhost:3000/actions/1'
         },
         {
           name: 'Test Item 2',
-          priceSats: 2000
+          priceSats: 2000,
+          executionWebhook: 'http://localhost:3000/actions/2'
         },
         {
           name: 'Test Item 3',
-          priceSats: 3000
+          priceSats: 3000,
+          executionWebhook: 'http://localhost:3000/actions/3'
         }
       ]}
     />
@@ -81,19 +87,23 @@ it('renders inventory with 4 items', () => {
       inventory={[
         {
           name: 'Test Item 1',
-          priceSats: 1000
+          priceSats: 1000,
+          executionWebhook: 'http://localhost:3000/actions/1'
         },
         {
           name: 'Test Item 2',
-          priceSats: 2000
+          priceSats: 2000,
+          executionWebhook: 'http://localhost:3000/actions/2'
         },
         {
           name: 'Test Item 3',
-          priceSats: 3000
+          priceSats: 3000,
+          executionWebhook: 'http://localhost:3000/actions/3'
         },
         {
           name: 'Test Item 4',
-          priceSats: 4000
+          priceSats: 4000,
+          executionWebhook: 'http://localhost:3000/actions/4'
         }
       ]}
     />
@@ -109,23 +119,28 @@ it('renders inventory with 5 items', () => {
       inventory={[
         {
           name: 'Test Item 1',
-          priceSats: 1000
+          priceSats: 1000,
+          executionWebhook: 'http://localhost:3000/actions/1'
         },
         {
           name: 'Test Item 2',
-          priceSats: 2000
+          priceSats: 2000,
+          executionWebhook: 'http://localhost:3000/actions/2'
         },
         {
           name: 'Test Item 3',
-          priceSats: 3000
+          priceSats: 3000,
+          executionWebhook: 'http://localhost:3000/actions/3'
         },
         {
           name: 'Test Item 4',
-          priceSats: 4000
+          priceSats: 4000,
+          executionWebhook: 'http://localhost:3000/actions/4'
         },
         {
           name: 'Test Item 5',
-          priceSats: 5000
+          priceSats: 5000,
+          executionWebhook: 'http://localhost:3000/actions/5'
         }
       ]}
     />

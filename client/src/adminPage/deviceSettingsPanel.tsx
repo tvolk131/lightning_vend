@@ -1,31 +1,41 @@
 import * as React from 'react';
 import {useState, useEffect} from 'react';
-import {Paper, Typography, InputAdornment, IconButton, OutlinedInput} from '@mui/material';
-import {CheckCircle as CheckCircleIcon, Edit as EditIcon} from '@mui/icons-material';
+import {Paper, Typography, InputAdornment, IconButton, OutlinedInput, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField} from '@mui/material';
+import {CheckCircle as CheckCircleIcon, Edit as EditIcon, Delete as DeleteIcon} from '@mui/icons-material';
 import {AdminDeviceView} from '../../../server/adminSessionManager';
 import {adminApi} from '../api/adminApi';
+import {InventoryItem} from '../../../server/deviceSessionManager';
 
 interface DeviceSettingsPanelProps {
-  adminDeviceView?: AdminDeviceView
+  adminDeviceView: AdminDeviceView
 }
 
-export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
-  if (!props.adminDeviceView) {
-    return <div></div>;
-  }
+const emptyInventoryItem = {
+  name: '',
+  priceSats: 1,
+  executionWebhook: ''
+};
 
+export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
   const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState('');
 
+  const [showAddInventoryItemDialog, setShowAddInventoryItemDialog] = useState(false);
+  const [newInventoryItem, setNewInventoryItem] = useState<InventoryItem>(emptyInventoryItem);
+
   const updateDisplayName = () => {
     if (props.adminDeviceView) {
-      adminApi.updateDeviceDisplayName(props.adminDeviceView?.deviceData.deviceSessionId, newDisplayName).then(() => setIsEditingDisplayName(false));
+      adminApi.updateDeviceDisplayName(props.adminDeviceView.deviceData.deviceSessionId, newDisplayName).then(() => setIsEditingDisplayName(false));
     }
   };
 
   useEffect(() => {
-    setNewDisplayName(props.adminDeviceView?.deviceData.displayName || '');
+    setNewDisplayName(props.adminDeviceView.deviceData.displayName || '');
   }, [isEditingDisplayName]);
+
+  useEffect(() => {
+    setNewInventoryItem(emptyInventoryItem);
+  }, [showAddInventoryItemDialog]);
 
   return (
     <Paper style={{padding: '10px'}}>
@@ -64,6 +74,72 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
           </div>
         )
       }
+      <div>
+        <Typography variant={'h4'}>Inventory</Typography>
+        {props.adminDeviceView.deviceData.inventory.map((inventoryItem) => (
+          <Paper
+            elevation={6}
+            style={{padding: '10px', margin: '10px 0'}}
+          >
+            <div style={{display: 'inline-block'}}>
+              <Typography>Item Name: {inventoryItem.name}</Typography>
+              <Typography>Price: {inventoryItem.priceSats} sats</Typography>
+              <Typography>Webhook: {inventoryItem.executionWebhook}</Typography>
+            </div>
+            <IconButton style={{float: 'right'}} onClick={() => {
+              adminApi.updateDeviceInventory(props.adminDeviceView.deviceData.deviceSessionId, props.adminDeviceView.deviceData.inventory.filter((i) => i !== inventoryItem));
+            }}>
+              <DeleteIcon/>
+            </IconButton>
+          </Paper>
+        ))}
+        <Button onClick={() => setShowAddInventoryItemDialog(true)}>Add Item</Button>
+        <Dialog open={showAddInventoryItemDialog} onClose={() => setShowAddInventoryItemDialog(false)}>
+          <DialogTitle>
+            Add Inventory Item
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Item will be immediately accessible on the device's UI. Keep in mind that
+              the execution webhook can use `localhost` to access the device itself.
+            </DialogContentText>
+            <TextField
+              style={{display: 'flex', marginTop: '15px'}}
+              label={'Name'}
+              value={newInventoryItem.name}
+              onChange={(e) => setNewInventoryItem({...newInventoryItem, name: e.target.value})}
+            />
+            <TextField
+              style={{display: 'flex', marginTop: '15px'}}
+              label={'Price (Sats)'}
+              type={'number'}
+              value={`${newInventoryItem.priceSats}`}
+              onChange={(e) => setNewInventoryItem({...newInventoryItem, priceSats: Math.max(Math.floor(Number(e.target.value)), 1)})}
+            />
+            <TextField
+              style={{display: 'flex', marginTop: '15px'}}
+              label={'Execution Webhook'}
+              value={newInventoryItem.executionWebhook}
+              onChange={(e) => setNewInventoryItem({...newInventoryItem, executionWebhook: e.target.value})}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowAddInventoryItemDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              // TODO - Show a loading spinner until this promise resolves below.
+              adminApi.updateDeviceInventory(props.adminDeviceView.deviceData.deviceSessionId, [...props.adminDeviceView.deviceData.inventory, newInventoryItem])
+                .then(() => {
+                  setNewInventoryItem(emptyInventoryItem);
+                  setShowAddInventoryItemDialog(false);
+                });
+            }}>
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     </Paper>
   );
 };

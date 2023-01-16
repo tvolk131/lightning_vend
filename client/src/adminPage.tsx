@@ -1,4 +1,4 @@
-import {Button, TextField, CircularProgress, List, ListItemButton, ListItemText, ListItemIcon, Paper, Grid, useTheme} from '@mui/material';
+import {Button, TextField, CircularProgress, List, ListItemButton, ListItemText, ListItemIcon, Paper, Grid, useTheme, Typography} from '@mui/material';
 import * as React from 'react';
 import {useState} from 'react';
 import {adminApi,} from './api/adminApi';
@@ -60,7 +60,12 @@ export const AdminPage = () => {
             </Paper>
           </Grid>
           <Grid item xs={12} sm={8}>
-            <DeviceSettingsPanel adminDeviceView={loadableAdminData.data.devices[selectedDeviceIndex]}/>
+            {
+              loadableAdminData.data.devices[selectedDeviceIndex] ?
+                <DeviceSettingsPanel adminDeviceView={loadableAdminData.data.devices[selectedDeviceIndex]}/>
+                :
+                <Paper><Typography variant={'h2'}>No Device Selected</Typography></Paper>
+            }
           </Grid>
         </Grid>
       )}
