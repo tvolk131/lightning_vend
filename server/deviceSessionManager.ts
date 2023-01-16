@@ -8,8 +8,47 @@ export interface DeviceData {
 
 export interface InventoryItem {
   name: string,
-  priceSats: number
+  priceSats: number,
+  executionWebhook: string
 }
+
+const tryCastToInventoryItem = (inventoryItem: any): InventoryItem | undefined => {
+  if (typeof inventoryItem !== 'object') {
+    return undefined;
+  }
+
+  if (typeof inventoryItem.name !== 'string') {
+    return undefined;
+  }
+
+  if (typeof inventoryItem.priceSats !== 'number') {
+    return undefined;
+  }
+
+  if (typeof inventoryItem.executionWebhook !== 'string') {
+    return undefined;
+  }
+
+  return inventoryItem as InventoryItem;
+};
+
+export const tryCastToInventoryArray = (inventory: any): InventoryItem[] | undefined => {
+  if (!Array.isArray(inventory)) {
+    return undefined;
+  }
+
+  const inventoryItems: InventoryItem[] = [];
+
+  for (let i = 0; i < inventory.length; i++) {
+    const inventoryItem = tryCastToInventoryItem(inventory[i]);
+    if (!inventoryItem) {
+      return undefined;
+    }
+    inventoryItems.push(inventoryItem);
+  }
+
+  return inventoryItems;
+};
 
 /**
  * Manages the persistence of device sessions and all related device data.

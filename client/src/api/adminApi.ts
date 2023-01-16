@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react';
 import {AdminData} from '../../../server/adminSessionManager';
+import {InventoryItem} from '../../../server/deviceSessionManager';
 import {socketIoAdminPath} from '../../../shared/constants';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
 
@@ -33,6 +34,13 @@ class AdminApi extends ReactSocket {
     return await axios.post('/api/updateDeviceDisplayName', {
       deviceSessionId,
       displayName
+    });
+  }
+
+  async updateDeviceInventory(deviceSessionId: string, inventory: InventoryItem[]): Promise<void> {
+    return await axios.post('/api/updateDeviceInventory', {
+      deviceSessionId,
+      inventory
     });
   }
 

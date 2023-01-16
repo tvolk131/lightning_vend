@@ -7,7 +7,7 @@ import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
 import {DeviceSocketManager} from './deviceSocketManager';
 import {parse} from 'cookie';
-import {DeviceSessionManager} from './deviceSessionManager';
+import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
@@ -230,6 +230,38 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
 
   await deviceSessionManager.updateDeviceData(deviceSessionId, (deviceData) => {
     deviceData.displayName = displayName;
+    return deviceData;
+  }).then((deviceData) => {
+    deviceSocketManager.updateDeviceData(deviceSessionId, deviceData);
+    adminSocketManager.updateAdminData(lightningNodePubkey);
+    res.status(200).send();
+  });
+});
+
+app.post('/api/updateDeviceInventory', async (req, res) => {
+  const {response, lightningNodePubkey} = authenticateAdmin(req, res);
+  if (response) {
+    return response;
+  }
+
+  if (typeof req.body !== 'object') {
+    return {response: res.status(400).send('Request body must be an object.')};
+  }
+  if (typeof req.body.deviceSessionId !== 'string' || req.body.deviceSessionId.length === 0) {
+    return {response: res.status(400).send('Request body must have string property `deviceSessionId`.')};
+  }
+  const deviceSessionId: string = req.body.deviceSessionId;
+  const newInventory = tryCastToInventoryArray(req.body.inventory);
+  if (!newInventory) {
+    return {response: res.status(400).send('Request body must have valid array of InventoryItems on property `inventory`.')};
+  }
+
+  if (deviceSessionManager.getDeviceOwnerPubkey(deviceSessionId) !== lightningNodePubkey) {
+    return {response: res.status(401).send('Cannot update a device you do not own!')};
+  }
+
+  await deviceSessionManager.updateDeviceData(deviceSessionId, (deviceData) => {
+    deviceData.inventory = newInventory;
     return deviceData;
   }).then((deviceData) => {
     deviceSocketManager.updateDeviceData(deviceSessionId, deviceData);
