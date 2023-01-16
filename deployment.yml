@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lightningvend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lightningvend
+  template:
+    metadata:
+      labels:
+        app: lightningvend
+    spec:
+      containers:
+      - name: lightningvend
+        image: <IMAGE>
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lightningvend-service
+  annotations:
+    service.beta.kubernetes.io/do-loadbalancer-certificate-id: "764289e9-2e38-4751-b0bf-0cdfdbd73a54"
+    service.beta.kubernetes.io/do-loadbalancer-hostname: "lightningvend.com"
+    service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
+    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
+    service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 80
+  selector:
+    app: lightningvend
