@@ -181,6 +181,26 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
     );
   }
 
+  const inventoryComponents = props.inventory.map(({name, priceSats}, index) => (
+    <SelectionItem
+      itemName={name}
+      key={index}
+      itemPriceSats={priceSats}
+      size={(props.size / 2) - (spaceBetweenItems * 3)}
+      padding={spaceBetweenItems}
+      onClick={() => {
+        if (!state.disableItemSelection) {
+          dispatch({type: 'showLoadingInvoice'});
+          deviceApi.createInvoice(priceSats).then((invoice) => {
+            dispatch({type: 'showInvoice', invoice});
+          }).catch(() => {
+            dispatch({type: 'hideInvoiceAndShowLoadError'});
+          });
+        }
+      }}
+    />
+  ));
+
   if (props.inventory.length > 4) {
     // TODO - This branch doesn't use `state.showInvoiceLoadError`. Make sure it displays a proper error message!
     return (
@@ -200,27 +220,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             invoiceIsPaid={state.showInvoicePaidConfirmation}
           />
         </Dialog>
-        {
-          props.inventory.map(({name, priceSats}, index) => (
-            <SelectionItem
-              itemName={name}
-              key={index}
-              itemPriceSats={priceSats}
-              size={(props.size / 2) - (spaceBetweenItems * 3)}
-              padding={spaceBetweenItems}
-              onClick={() => {
-                if (!state.disableItemSelection) {
-                  dispatch({type: 'showLoadingInvoice'});
-                  deviceApi.createInvoice(priceSats).then((invoice) => {
-                    dispatch({type: 'showInvoice', invoice});
-                  }).catch(() => {
-                    dispatch({type: 'hideInvoiceAndShowLoadError'});
-                  });
-                }
-              }}
-            />
-          ))
-        }
+        {inventoryComponents}
       </div>
     );
   }
@@ -275,27 +275,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                   opacity: state.loadingInvoice ? '50%' : '100%'
                 }}
               >
-                {
-                  props.inventory.map(({name, priceSats}, index) => (
-                    <SelectionItem
-                      itemName={name}
-                      key={index}
-                      itemPriceSats={priceSats}
-                      size={(props.size / 2) - (spaceBetweenItems * 3)}
-                      padding={spaceBetweenItems}
-                      onClick={() => {
-                        if (!state.disableItemSelection) {
-                          dispatch({type: 'showLoadingInvoice'});
-                          deviceApi.createInvoice(priceSats).then((invoice) => {
-                            dispatch({type: 'showInvoice', invoice});
-                          }).catch(() => {
-                            dispatch({type: 'hideInvoiceAndShowLoadError'});
-                          });
-                        }
-                      }}
-                    />
-                  ))
-                }
+                {inventoryComponents}
               </div>
             </Paper>
           </div>
