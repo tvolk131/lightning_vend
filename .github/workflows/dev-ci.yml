@@ -1,12 +1,14 @@
-name: "Build"
+name: Dev CI
+
 on:
   push:
     branches:
-      - master
+      - '**' # Matches every branch.
+      - '!master' # Excludes master.
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  test:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -22,12 +24,13 @@ jobs:
         components: rustfmt, clippy
     - name: Install Webpack Dependencies and Build Frontend
       run: cd client && npm i && npm run build-prod && cd ..
-    - name: Build Backend
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
-        cd motor_server
-        cargo fmt -- --check
-        cargo clippy -- -D warnings
-        cargo build
-        cd ..
+    # TODO - Uncomment this section once we want to re-activate the motor action executor.
+    # - name: Build Backend
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
+    #     cd motor_server
+    #     cargo fmt -- --check
+    #     cargo clippy -- -D warnings
+    #     cargo build
+    #     cd ..

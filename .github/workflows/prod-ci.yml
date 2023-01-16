@@ -1,0 +1,68 @@
+name: Prod CI/CD
+
+on:
+  push:
+    branches:
+      - 'master'
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Install NodeJS
+      uses: actions/setup-node@v1
+      with:
+        node-version: 18
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: stable
+        override: true
+        components: rustfmt, clippy
+    - name: Install Webpack Dependencies and Build Frontend
+      run: cd client && npm i && npm run build-prod && cd ..
+    # TODO - Uncomment this section once we want to re-activate the motor action executor.
+    # - name: Build Backend
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0
+    #     cd motor_server
+    #     cargo fmt -- --check
+    #     cargo clippy -- -D warnings
+    #     cargo build
+    #     cd ..
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Build container image
+        run: docker build -t registry.digitalocean.com/cards/lightningvend:$(echo $GITHUB_SHA | head -c7) .
+
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push registry.digitalocean.com/cards/lightningvend:$(echo $GITHUB_SHA | head -c7)
+
+      - name: Update deployment file
+        run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/cards/lightningvend:'${TAG}'|' $GITHUB_WORKSPACE/deployment.yml
+
+      - name: Save DigitalOcean kubeconfig with short-lived credentials
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 cards
+
+      - name: Deploy to DigitalOcean Kubernetes
+        run: kubectl apply -f $GITHUB_WORKSPACE/deployment.yml
+
+      - name: Verify deployment
+        run: kubectl rollout status deployment/lightningvend
