@@ -49,7 +49,7 @@ export const DevicePage = () => {
     screensaverTimeout.current = timeout;
   }, []);
 
-  const appTouched = useCallback(ev => {
+  const appTouched = useCallback((ev: any) => {
     if (ev.target.id !== 'screensaver') {
       startTimeout();
     }

@@ -7,7 +7,7 @@
     "build-dev": "webpack --watch --mode development",
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "start-prod": "ts-node ./server/index.ts",
-    "start-dev": "nodemon"
+    "start-dev": "nodemon ./server/index.ts"
   },
   "author": "Tommy Volk",
   "dependencies": {
