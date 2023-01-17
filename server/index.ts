@@ -21,7 +21,7 @@ interface LNDInvoice {
 }
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
-const macaroon = fs.readFileSync(`${__dirname}/admin.macaroon`).toString('hex');
+const macaroon = fs.readFileSync(`${__dirname}/../config/admin.macaroon`).toString('hex');
 
 const app = express();
 app.use(express.json());

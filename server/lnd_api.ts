@@ -12,10 +12,10 @@ const loaderOptions: protoLoader.Options = {
 
 const packageDefinition = protoLoader.loadSync(__dirname + '/lightning.proto', loaderOptions);
 
-const lndCert = fs.readFileSync(__dirname + '/tls.cert');
+const lndCert = fs.readFileSync(__dirname + '/../config/tls.cert');
 const sslCreds = grpc.credentials.createSsl(lndCert);
 
-const macaroon = fs.readFileSync(__dirname + '/admin.macaroon').toString('hex');
+const macaroon = fs.readFileSync(__dirname + '/../config/admin.macaroon').toString('hex');
 const metadata = new grpc.Metadata();
 metadata.add('macaroon', macaroon);
 const macaroonCreds = grpc.credentials.createFromMetadataGenerator((_args, callback) => {

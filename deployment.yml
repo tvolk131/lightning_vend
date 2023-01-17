@@ -17,6 +17,13 @@ spec:
         image: <IMAGE>
         ports:
         - containerPort: 80
+        volumeMounts:
+          - name: lightning-vend-lnd
+            mountPath: /app/config/
+      volumes:
+        - name: lightning-vend-lnd
+          secret:
+            secretName: lightning-vend-lnd
 ---
 apiVersion: v1
 kind: Service
