@@ -175,7 +175,9 @@ app.post('/api/registerDevice', (req, res) => {
   // disconnect and reconnect its socket, which triggers its own events.
 
   if (isNew) {
-    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/'}).send();
+    const now = new Date();
+    const oneThousandYearsFromNow = new Date(now.getFullYear() + 1000, now.getMonth(), now.getDate());
+    res.cookie(deviceSessionCookieName, deviceSessionId, {path: '/', expires: oneThousandYearsFromNow}).send();
   } else {
     res.status(400).send('Device is already registered!');
   }
