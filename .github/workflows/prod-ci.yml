@@ -23,7 +23,7 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Install Webpack Dependencies and Build Frontend
-      run: cd client && npm i && npm run build-prod && cd ..
+      run: cd client && npm i && npm run build-proto && npm run build-prod && cd ..
     # TODO - Uncomment this section once we want to re-activate the motor action executor.
     # - name: Build Backend
     #   run: |

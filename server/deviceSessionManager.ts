@@ -1,53 +1,11 @@
-export interface DeviceData {
-  // TODO - Replace `deviceSessionId` with `deviceSessionIdHash` since this value should not be sent over the wire except as a cookie.
-  deviceSessionId: string,
-  displayName: string,
-  lightningNodeOwnerPubkey: string,
-  inventory: InventoryItem[]
-}
-
-export interface InventoryItem {
-  name: string,
-  priceSats: number,
-  executionWebhook: string
-}
-
-const tryCastToInventoryItem = (inventoryItem: any): InventoryItem | undefined => {
-  if (typeof inventoryItem !== 'object') {
-    return undefined;
-  }
-
-  if (typeof inventoryItem.name !== 'string') {
-    return undefined;
-  }
-
-  if (typeof inventoryItem.priceSats !== 'number') {
-    return undefined;
-  }
-
-  if (typeof inventoryItem.executionWebhook !== 'string') {
-    return undefined;
-  }
-
-  return inventoryItem as InventoryItem;
-};
+import {DeviceData, InventoryItem} from "../proto/lightning_vend/model";
 
 export const tryCastToInventoryArray = (inventory: any): InventoryItem[] | undefined => {
   if (!Array.isArray(inventory)) {
     return undefined;
   }
 
-  const inventoryItems: InventoryItem[] = [];
-
-  for (let i = 0; i < inventory.length; i++) {
-    const inventoryItem = tryCastToInventoryItem(inventory[i]);
-    if (!inventoryItem) {
-      return undefined;
-    }
-    inventoryItems.push(inventoryItem);
-  }
-
-  return inventoryItems;
+  return inventory.map(InventoryItem.fromJSON);
 };
 
 /**

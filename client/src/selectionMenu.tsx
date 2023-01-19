@@ -4,12 +4,11 @@ import * as React from 'react';
 import {CSSProperties, useEffect, useRef, useReducer} from 'react';
 import {deviceApi} from './api/deviceApi';
 import {Invoice} from './invoice';
-import {InventoryItem} from '../../server/deviceSessionManager';
+import {InventoryItem} from '../../proto/lightning_vend/model';
 import {TransitionProps} from '@mui/material/transitions';
 
 interface SelectionItemProps {
-  itemName: string,
-  itemPriceSats: number,
+  inventoryItem: InventoryItem,
   size: number,
   padding: number,
   onClick(): void
@@ -43,8 +42,8 @@ const SelectionItem = (props: SelectionItemProps) => {
         }}
         onClick={props.onClick}
       >
-        <Typography variant={'h6'} style={{padding: '20px'}}>{props.itemName}</Typography>
-        <Typography style={{padding: '20px'}}>{props.itemPriceSats} sats</Typography>
+        <Typography variant={'h6'} style={{padding: '20px'}}>{props.inventoryItem.displayName}</Typography>
+        <Typography style={{padding: '20px'}}>{props.inventoryItem.priceSats} sats</Typography>
       </Paper>
     </div>
   );
@@ -181,17 +180,16 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
     );
   }
 
-  const inventoryComponents = props.inventory.map(({name, priceSats}, index) => (
+  const inventoryComponents = props.inventory.map((inventoryItem, index) => (
     <SelectionItem
-      itemName={name}
       key={index}
-      itemPriceSats={priceSats}
+      inventoryItem={inventoryItem}
       size={(props.size / 2) - (spaceBetweenItems * 3)}
       padding={spaceBetweenItems}
       onClick={() => {
         if (!state.disableItemSelection) {
           dispatch({type: 'showLoadingInvoice'});
-          deviceApi.createInvoice(priceSats).then((invoice) => {
+          deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
             dispatch({type: 'showInvoice', invoice});
           }).catch(() => {
             dispatch({type: 'hideInvoiceAndShowLoadError'});

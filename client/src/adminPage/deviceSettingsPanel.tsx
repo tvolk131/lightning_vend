@@ -4,17 +4,13 @@ import {Paper, Typography, InputAdornment, IconButton, OutlinedInput, Button, Di
 import {CheckCircle as CheckCircleIcon, Edit as EditIcon, Delete as DeleteIcon} from '@mui/icons-material';
 import {AdminDeviceView} from '../../../server/adminSessionManager';
 import {adminApi} from '../api/adminApi';
-import {InventoryItem} from '../../../server/deviceSessionManager';
+import {InventoryItem} from '../../../proto/lightning_vend/model';
 
 interface DeviceSettingsPanelProps {
   adminDeviceView: AdminDeviceView
 }
 
-const emptyInventoryItem = {
-  name: '',
-  priceSats: 1,
-  executionWebhook: ''
-};
+const emptyInventoryItem = InventoryItem.create({priceSats: 1});
 
 export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
   const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
@@ -82,7 +78,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             style={{padding: '10px', margin: '10px 0'}}
           >
             <div style={{display: 'inline-block'}}>
-              <Typography>Item Name: {inventoryItem.name}</Typography>
+              <Typography>Item Name: {inventoryItem.displayName}</Typography>
               <Typography>Price: {inventoryItem.priceSats} sats</Typography>
               <Typography>Webhook: {inventoryItem.executionWebhook}</Typography>
             </div>
@@ -106,8 +102,8 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             <TextField
               style={{display: 'flex', marginTop: '15px'}}
               label={'Name'}
-              value={newInventoryItem.name}
-              onChange={(e) => setNewInventoryItem({...newInventoryItem, name: e.target.value})}
+              value={newInventoryItem.displayName}
+              onChange={(e) => setNewInventoryItem({...newInventoryItem, displayName: e.target.value})}
             />
             <TextField
               style={{display: 'flex', marginTop: '15px'}}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package lightning_vend;
+
+message DeviceData {
+  // TODO - Replace `device_session_id` with `device_session_id_hash` since the raw value should not be sent over the wire except as a cookie.
+  string device_session_id = 1;
+
+  string display_name = 2;
+
+  // TODO - Replace with the line below.
+  // string owner_user_id = 3;
+  string lightning_node_owner_pubkey = 3;
+
+  repeated InventoryItem inventory = 4;
+}
+
+message InventoryItem {
+  string display_name = 1;
+
+  int32 price_sats = 2;
+
+  string execution_webhook = 3;
+}

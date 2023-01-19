@@ -12,13 +12,7 @@ import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
 import {decode as decodeInvoice, Invoice} from '@node-lightning/invoice';
-
-interface LNDInvoice {
-  payment_request?: string,
-  state?: 'OPEN' | 'SETTLED' | 'CANCELED' | 'ACCEPTED',
-  value: number,
-  expiry: number
-}
+import {Invoice as LNDInvoice, Invoice_InvoiceState as LNDInvoice_InvoiceState} from '../proto/lnd/lnrpc/lightning';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 const macaroon = fs.readFileSync(`${__dirname}/../config/admin.macaroon`).toString('hex');
@@ -129,21 +123,16 @@ app.post('/api/createInvoice', async (req, res) => {
     return response;
   }
 
-  const preCreatedInvoice: LNDInvoice = {
+  const preCreatedInvoice = LNDInvoice.create({
     value: req.body.valueSats,
     expiry: 300 // 300 seconds -> 5 minutes.
-  };
+  });
 
-  // TODO - Use GRPC client rather than an http request.
-  const resp = await axios.post(
-    'https://lightningvend.m.voltageapp.io:8080/v1/invoices',
-    preCreatedInvoice,
-    {headers: {'Grpc-Metadata-macaroon': macaroon}}
-  );
-
-  const invoice = resp.data.payment_request;
-  invoicesToDeviceSessionIds[invoice] = deviceData.deviceSessionId;
-  res.send(invoice);
+  lightning.addInvoice(preCreatedInvoice, (_: any, rawInvoice: any) => {
+    const invoice = LNDInvoice.fromJSON(rawInvoice);
+    invoicesToDeviceSessionIds[invoice.paymentRequest] = deviceData.deviceSessionId;
+    res.send(invoice.paymentRequest);
+  });
 });
 
 app.post('/api/registerDevice', (req, res) => {
@@ -252,7 +241,7 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
     return {response: res.status(400).send('Request body must have string property `deviceSessionId`.')};
   }
   const deviceSessionId: string = req.body.deviceSessionId;
-  const newInventory = tryCastToInventoryArray(req.body.inventory);
+  const newInventory = tryCastToInventoryArray(req.body.inventory); // TODO - Add some validation.
   if (!newInventory) {
     return {response: res.status(400).send('Request body must have valid array of InventoryItems on property `inventory`.')};
   }
@@ -295,13 +284,14 @@ server.listen(port, () => {
 });
 
 lightning.subscribeInvoices({})
-  .on('data', (invoice: LNDInvoice) => {
-    if (invoice.state === 'SETTLED' && invoice.payment_request) {
-      const deviceSessionId = invoicesToDeviceSessionIds[invoice.payment_request];
+  .on('data', (rawInvoice: any) => {
+    const invoice = LNDInvoice.fromJSON(rawInvoice);
+    if (invoice.state === LNDInvoice_InvoiceState.SETTLED && invoice.paymentRequest) {
+      const deviceSessionId = invoicesToDeviceSessionIds[invoice.paymentRequest];
       if (deviceSessionId) {
         // TODO - Check if this message was sent (i.e. if the device is online) and
         // save the event to retry later if the device is currently offline.
-        deviceSocketManager.emitInvoicePaid(deviceSessionId, invoice.payment_request);
+        deviceSocketManager.emitInvoicePaid(deviceSessionId, invoice.paymentRequest);
       }
     }
   })

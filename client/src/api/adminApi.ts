@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react';
+import {InventoryItem} from '../../../proto/lightning_vend/model';
 import {AdminData} from '../../../server/adminSessionManager';
-import {InventoryItem} from '../../../server/deviceSessionManager';
 import {socketIoAdminPath} from '../../../shared/constants';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
 

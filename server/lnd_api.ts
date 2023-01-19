@@ -3,14 +3,14 @@ import * as protoLoader from '@grpc/proto-loader';
 import * as fs from 'fs';
 
 const loaderOptions: protoLoader.Options = {
-  keepCase: true,
+  keepCase: false,
   longs: String,
   enums: String,
   defaults: true,
   oneofs: true
 };
 
-const packageDefinition = protoLoader.loadSync(__dirname + '/lightning.proto', loaderOptions);
+const packageDefinition = protoLoader.loadSync(__dirname + '/../proto/lnd/lnrpc/lightning.proto', loaderOptions);
 
 const lndCert = fs.readFileSync(__dirname + '/../config/tls.cert');
 const sslCreds = grpc.credentials.createSsl(lndCert);

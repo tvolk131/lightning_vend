@@ -1,4 +1,4 @@
-import {DeviceData} from './deviceSessionManager';
+import {DeviceData} from '../proto/lightning_vend/model';
 
 export interface AdminData {
   lightningNodePubkey: string,

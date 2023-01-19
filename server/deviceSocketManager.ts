@@ -1,8 +1,8 @@
 import {Server, Socket} from 'socket.io';
 import {parse} from 'cookie';
 import {deviceSessionCookieName} from '.';
-import {DeviceData} from './deviceSessionManager';
 import {SubscribableEventManager} from '../client/src/api/sharedApi';
+import {DeviceData} from '../proto/lightning_vend/model';
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages

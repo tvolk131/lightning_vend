@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react';
-import {DeviceData} from '../../../server/deviceSessionManager';
+import {DeviceData} from '../../../proto/lightning_vend/model';
 import {socketIoDevicePath} from '../../../shared/constants';
 import {makeUuid} from '../../../shared/uuid';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
