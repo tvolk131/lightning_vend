@@ -6,6 +6,10 @@ import {deviceApi} from './api/deviceApi';
 import {Invoice} from './invoice';
 import {InventoryItem} from '../../proto/lightning_vend/model';
 import {TransitionProps} from '@mui/material/transitions';
+import axios from 'axios';
+
+// TODO - Store this in LocalStorage so that reloading the page doesn't break existing invoices.
+const invoiceToWebhook: {[invoice: string]: string} = {};
 
 interface SelectionItemProps {
   inventoryItem: InventoryItem,
@@ -147,6 +151,11 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   useEffect(() => {
     const callbackId = deviceApi.subscribeToInvoicePaid((paidInvoice) => {
       if (paidInvoice === invoiceRef.current) {
+        const webhook = invoiceToWebhook[paidInvoice];
+        if (webhook) {
+          // TODO - Handle any potential error from the webhook.
+          axios.get(webhook);
+        }
         dispatch({type: 'showInvoiceIsPaid'});
         setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
       }
@@ -190,6 +199,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
         if (!state.disableItemSelection) {
           dispatch({type: 'showLoadingInvoice'});
           deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
+            invoiceToWebhook[invoice] = inventoryItem.executionWebhook;
             dispatch({type: 'showInvoice', invoice});
           }).catch(() => {
             dispatch({type: 'hideInvoiceAndShowLoadError'});
