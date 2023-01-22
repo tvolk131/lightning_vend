@@ -43,8 +43,4 @@ impl VendCoil {
         }
         Ok(())
     }
-
-    pub fn stop(&mut self) -> Result<(), MotorError> {
-        self.stepper.stop(&mut self.pwm)
-    }
 }
