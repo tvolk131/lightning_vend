@@ -126,79 +126,61 @@ exports[`renders inventory with 1 item 1`] = `
           <div
             style={
               {
-                "opacity": "100%",
-                "padding": "10px",
-                "transition": "opacity 0.25s",
+                "float": "left",
+                "padding": "0px",
+                "textAlign": "center",
+                "width": "fitContent",
               }
             }
           >
             <div
+              className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
+              onClick={[Function]}
               style={
                 {
-                  "float": "left",
-                  "padding": "10px",
-                  "textAlign": "center",
-                  "width": "fitContent",
+                  "cursor": "pointer",
+                  "height": "330px",
+                  "width": "330px",
                 }
               }
             >
               <style
                 dangerouslySetInnerHTML={
                   {
-                    "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
+                    "__html": ".css-gepadz-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:3rem;line-height:1.167;letter-spacing:0em;}",
                   }
                 }
-                data-emotion="css azc51k-MuiPaper-root"
+                data-emotion="css gepadz-MuiTypography-root"
               />
-              <div
-                className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
-                onClick={[Function]}
+              <h3
+                className="MuiTypography-root MuiTypography-h3 css-gepadz-MuiTypography-root"
                 style={
                   {
-                    "cursor": "pointer",
-                    "height": "135px",
-                    "width": "135px",
+                    "padding": "60px",
                   }
                 }
               >
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-                    }
+                Test Item 1
+              </h3>
+              <style
+                dangerouslySetInnerHTML={
+                  {
+                    "__html": ".css-ag7rrr-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1.5rem;line-height:1.334;letter-spacing:0em;}",
                   }
-                  data-emotion="css 2ulfj5-MuiTypography-root"
-                />
-                <h6
-                  className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
-                  style={
-                    {
-                      "padding": "20px",
-                    }
+                }
+                data-emotion="css ag7rrr-MuiTypography-root"
+              />
+              <h5
+                className="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
+                style={
+                  {
+                    "padding": "20px",
                   }
-                >
-                  Test Item 1
-                </h6>
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-                    }
-                  }
-                  data-emotion="css ahj2mt-MuiTypography-root"
-                />
-                <p
-                  className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                  style={
-                    {
-                      "padding": "20px",
-                    }
-                  }
-                >
-                  1234
-                   sats
-                </p>
-              </div>
+                }
+              >
+                1234
+                 sats
+              </h5>
             </div>
           </div>
         </div>

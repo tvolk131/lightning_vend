@@ -14,6 +14,7 @@ const invoiceToWebhook: {[invoice: string]: string} = {};
 interface SelectionItemProps {
   inventoryItem: InventoryItem,
   size: number,
+  isOnlySelectionItem?: boolean,
   padding: number,
   onClick(): void
 }
@@ -38,7 +39,7 @@ const SelectionItem = (props: SelectionItemProps) => {
       }}
     >
       <Paper
-        elevation={6}
+        elevation={props.isOnlySelectionItem ? undefined : 6}
         style={{
           height: `${props.size}px`,
           width: `${props.size}px`,
@@ -46,8 +47,8 @@ const SelectionItem = (props: SelectionItemProps) => {
         }}
         onClick={props.onClick}
       >
-        <Typography variant={'h6'} style={{padding: '20px'}}>{props.inventoryItem.displayName}</Typography>
-        <Typography style={{padding: '20px'}}>{props.inventoryItem.priceSats} sats</Typography>
+        <Typography variant={props.isOnlySelectionItem ? 'h3' : 'h6'} style={{padding: props.isOnlySelectionItem ? '60px' : '20px'}}>{props.inventoryItem.displayName}</Typography>
+        <Typography variant={props.isOnlySelectionItem ? 'h5' : undefined} style={{padding: '20px'}}>{props.inventoryItem.priceSats} sats</Typography>
       </Paper>
     </div>
   );
@@ -189,23 +190,27 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
     );
   }
 
+  const createItemClickHandler = (inventoryItem: InventoryItem) => {
+    return () => {
+      if (!state.disableItemSelection) {
+        dispatch({type: 'showLoadingInvoice'});
+        deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
+          invoiceToWebhook[invoice] = inventoryItem.executionWebhook;
+          dispatch({type: 'showInvoice', invoice});
+        }).catch(() => {
+          dispatch({type: 'hideInvoiceAndShowLoadError'});
+        });
+      }
+    };
+  };
+
   const inventoryComponents = props.inventory.map((inventoryItem, index) => (
     <SelectionItem
       key={index}
       inventoryItem={inventoryItem}
       size={(props.size / 2) - (spaceBetweenItems * 3)}
       padding={spaceBetweenItems}
-      onClick={() => {
-        if (!state.disableItemSelection) {
-          dispatch({type: 'showLoadingInvoice'});
-          deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
-            invoiceToWebhook[invoice] = inventoryItem.executionWebhook;
-            dispatch({type: 'showInvoice', invoice});
-          }).catch(() => {
-            dispatch({type: 'hideInvoiceAndShowLoadError'});
-          });
-        }
-      }}
+      onClick={createItemClickHandler(inventoryItem)}
     />
   ));
 
@@ -232,6 +237,34 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       </div>
     );
   }
+
+  const getInventoryItems = () => {
+    if (props.inventory.length === 1) {
+      const inventoryItem = props.inventory[0];
+  
+      return (
+        <SelectionItem
+          inventoryItem={inventoryItem}
+          isOnlySelectionItem
+          size={props.size}
+          padding={0}
+          onClick={createItemClickHandler(inventoryItem)}
+        />
+      );
+    } else {
+      return (
+        <div
+          style={{
+            padding: `${spaceBetweenItems}px`,
+            transition: 'opacity 0.25s',
+            opacity: state.loadingInvoice ? '50%' : '100%'
+          }}
+        >
+          {inventoryComponents}
+        </div>
+      );
+    }
+  };
 
   return (
     <div
@@ -276,15 +309,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
                     }}
                   />
               }
-              <div
-                style={{
-                  padding: `${spaceBetweenItems}px`,
-                  transition: 'opacity 0.25s',
-                  opacity: state.loadingInvoice ? '50%' : '100%'
-                }}
-              >
-                {inventoryComponents}
-              </div>
+              {getInventoryItems()}
             </Paper>
           </div>
           <div
