@@ -2,7 +2,6 @@ import * as express from 'express';
 import * as http from 'http';
 import * as fs from 'fs';
 import {Server} from 'socket.io';
-import axios from 'axios';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
 import {DeviceSocketManager} from './deviceSocketManager';
@@ -13,11 +12,12 @@ import {AdminSocketManager} from './adminSocketManager';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
 import {decode as decodeInvoice, Invoice} from '@node-lightning/invoice';
 import {Invoice as LNDInvoice, Invoice_InvoiceState as LNDInvoice_InvoiceState} from '../proto/lnd/lnrpc/lightning';
+import * as compression from 'compression';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
-const macaroon = fs.readFileSync(`${__dirname}/../config/admin.macaroon`).toString('hex');
 
 const app = express();
+app.use(compression({threshold: 0}));
 app.use(express.json());
 const server = http.createServer(app);
 
@@ -107,7 +107,7 @@ const authenticateDevice = (req: express.Request, res: express.Response) => {
 };
 
 app.get('*/bundle.js', (req, res) => {
-  res.send(bundle);
+  res.type('.js').send(bundle);
 });
 
 app.post('/api/createInvoice', async (req, res) => {
