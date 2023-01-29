@@ -151,15 +151,13 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
 
   useEffect(() => {
     const callbackId = deviceApi.subscribeToInvoicePaid((paidInvoice) => {
-      if (paidInvoice === invoiceRef.current) {
-        const webhook = invoiceToWebhook[paidInvoice];
-        if (webhook) {
-          // TODO - Handle any potential error from the webhook.
-          axios.get(webhook);
-        }
-        dispatch({type: 'showInvoiceIsPaid'});
-        setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
+      const webhook = invoiceToWebhook[paidInvoice];
+      if (webhook) {
+        // TODO - Handle any potential error from the webhook.
+        axios.get(webhook);
       }
+      dispatch({type: 'showInvoiceIsPaid'});
+      setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
     });
     return (() => {
       deviceApi.unsubscribeFromInvoicePaid(callbackId);
