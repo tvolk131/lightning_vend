@@ -27,7 +27,7 @@ jobs:
     - name: Build Backend
       run: |
         sudo apt-get update
-        cd motor_server
+        cd adafruit_motor_server
         cargo fmt -- --check
         cargo clippy -- -D warnings
         cargo build
