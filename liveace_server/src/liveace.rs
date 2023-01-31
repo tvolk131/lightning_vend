@@ -21,15 +21,17 @@ pub enum SerialError {
 
 pub struct CallResponseSerialPort {
     port: Box<dyn SerialPort>,
+    board_serial_number: String,
     supported_commands: HashSet<String>,
     timeout_to_retry: Duration,
     max_retries: u32,
 }
 
 impl CallResponseSerialPort {
-    pub fn new(port: Box<dyn SerialPort>) -> Result<Self, SerialError> {
+    pub fn new(port: Box<dyn SerialPort>, board_serial_number: String) -> Result<Self, SerialError> {
         let mut p = Self {
             port,
+            board_serial_number,
             supported_commands: HashSet::new(),
             timeout_to_retry: Duration::from_millis(20000),
             max_retries: 10,
@@ -40,6 +42,10 @@ impl CallResponseSerialPort {
         }
 
         Ok(p)
+    }
+
+    pub fn get_board_serial_number(&self) -> &str {
+        &self.board_serial_number
     }
 
     fn get_commands(&mut self) -> Result<Vec<String>, SerialError> {
