@@ -7,14 +7,14 @@ use liveace::CallResponseSerialPort;
 use rocket::State;
 use std::sync::Mutex;
 
-#[get("/commands/<board_serial_id>/<command>")]
+#[get("/commands/<board_serial_number>/<command>")]
 fn run_command_handler(
-    board_serial_id: String,
+    board_serial_number: String,
     command: String,
     arduino_command_ports: &State<Mutex<Vec<CallResponseSerialPort>>>,
 ) -> Result<rocket::response::content::Json<Option<String>>, rocket::response::status::NotFound<String>> {
     let mut unlocked_ports = arduino_command_ports.lock().unwrap();
-    let port = match unlocked_ports.iter_mut().find(|port| port.get_board_serial_id() == board_serial_id) {
+    let port = match unlocked_ports.iter_mut().find(|port| port.get_board_serial_number() == board_serial_number) {
         Some(port) => port,
         None => return Err(rocket::response::status::NotFound("Board serial id does not match any connected board".to_string()))
     };
@@ -36,7 +36,7 @@ fn list_commands_handler(arduino_command_ports: &State<Mutex<Vec<CallResponseSer
     let unlocked_ports = arduino_command_ports.lock().unwrap();
     for port in unlocked_ports.iter() {
         for command in port.get_supported_commands() {
-            commands.push(format!("{}/{}", port.get_board_serial_id(), command));
+            commands.push(format!("{}/{}", port.get_board_serial_number(), command));
         }
     }
     commands.sort();
@@ -78,12 +78,12 @@ fn try_get_call_response_serial_port_from_serial_port_info(serial_port_info: Ser
         Err(_) => return None
     };
 
-    let board_serial_id = match &usb_port_info.serial_number {
-        Some(board_serial_id) => board_serial_id,
+    let board_serial_number = match &usb_port_info.serial_number {
+        Some(board_serial_number) => board_serial_number,
         None => return None
     };
 
-    match CallResponseSerialPort::new(port, board_serial_id.clone()) {
+    match CallResponseSerialPort::new(port, board_serial_number.clone()) {
         Ok(call_response_serial_port) => Some(call_response_serial_port),
         Err(_) => None
     }
