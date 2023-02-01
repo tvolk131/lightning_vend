@@ -604,6 +604,7 @@ dependencies = [
  "linux-embedded-hal",
  "pwm-pca9685",
  "rocket",
+ "serde_json",
  "tokio",
  "tonic_lnd",
 ]
