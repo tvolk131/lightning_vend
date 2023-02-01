@@ -27,6 +27,7 @@ jobs:
     - name: Build Backends
       run: |
         sudo apt-get update
+        sudo apt-get install -y libudev-dev
         cd adafruit_motor_server
         cargo fmt -- --check
         cargo clippy -- -D warnings
