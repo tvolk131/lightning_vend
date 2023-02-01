@@ -17,7 +17,7 @@ jobs:
       with:
         node-version: 18
     - name: Install Rust Toolchain
-      uses: actions-rs/toolchain@v1.25.1
+      uses: actions-rs/toolchain@v1.0.6
       with:
         toolchain: stable
         override: true
@@ -28,6 +28,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libudev-dev
+        rustup update
         cd adafruit_motor_server
         cargo fmt -- --check
         cargo clippy -- -D warnings
