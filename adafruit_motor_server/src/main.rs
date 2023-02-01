@@ -18,8 +18,12 @@ fn spin_motor_handler(
 async fn rocket() -> _ {
     println!("Bootstrapping stepper motors...");
     let vend_coil = vend_coil::VendCoil::new(vend_coil::StepperMotor::Stepper1).unwrap();
+
+    let mut rocket_config = rocket::config::Config::default();
+    rocket_config.port = 21000;
     println!("Starting server...");
     rocket::build()
         .manage(Mutex::from(vend_coil))
+        .configure(rocket_config)
         .mount("/", routes![spin_motor_handler])
 }

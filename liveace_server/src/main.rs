@@ -53,9 +53,13 @@ async fn rocket() -> _ {
             arduino_command_ports.push(call_response_serial_port);
         }
     }
+
+    let mut rocket_config = rocket::config::Config::default();
+    rocket_config.port = 21000;
     println!("Starting server...");
     rocket::build()
         .manage(Mutex::from(arduino_command_ports))
+        .configure(rocket_config)
         .mount("/", routes![run_command_handler, list_commands_handler])
 }
 
