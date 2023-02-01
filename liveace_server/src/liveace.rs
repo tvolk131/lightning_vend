@@ -28,7 +28,10 @@ pub struct CallResponseSerialPort {
 }
 
 impl CallResponseSerialPort {
-    pub fn new(port: Box<dyn SerialPort>, board_serial_number: String) -> Result<Self, SerialError> {
+    pub fn new(
+        port: Box<dyn SerialPort>,
+        board_serial_number: String,
+    ) -> Result<Self, SerialError> {
         let mut p = Self {
             port,
             board_serial_number,

@@ -24,7 +24,7 @@ jobs:
         components: rustfmt, clippy
     - name: Install Webpack Dependencies and Test/Build Frontend
       run: cd client && npm i && npm run build-proto && npm test && npm run build-prod && cd ..
-    - name: Build Backend
+    - name: Build Backends
       run: |
         sudo apt-get update
         cd adafruit_motor_server
@@ -32,6 +32,10 @@ jobs:
         cargo clippy -- -D warnings
         cargo build
         cd ..
+        cd liveace_server
+        cargo fmt -- --check
+        cargo clippy -- -D warnings
+        cargo build
   deploy:
     needs: test
     runs-on: ubuntu-latest
