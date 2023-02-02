@@ -147,7 +147,7 @@ impl CallResponseSerialPort {
                             stringified_buffer += &text;
                         }
                     }
-                    Err(err) => println!("Got error: {}", err),
+                    Err(err) => println!("Got error: {err}"),
                 };
             }
             if stringified_buffer.ends_with('\n') {
