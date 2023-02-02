@@ -35,7 +35,7 @@ fn run_command_handler(
         )),
         Err(err) => {
             // TODO - NotFound isn't always going to be the right response here. Let's take more care to make sure we always return a relevant HTTP status code.
-            Err(rocket::response::status::NotFound(format!("{:?}", err)))
+            Err(rocket::response::status::NotFound(format!("{err:?}")))
         }
     }
 }

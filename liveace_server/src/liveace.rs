@@ -115,8 +115,8 @@ impl CallResponseSerialPort {
             }
         }
 
-        for char in format!("{}\n", command).chars() {
-            if let Err(err) = self.port.write_all(format!("{}", char).as_bytes()) {
+        for char in format!("{command}\n").chars() {
+            if let Err(err) = self.port.write_all(format!("{char}").as_bytes()) {
                 return Err(SerialError::IoError(err));
             }
             if let Err(err) = self.port.flush() {
