@@ -2,7 +2,9 @@
 extern crate rocket;
 use serialport::{SerialPortInfo, SerialPortType, UsbPortInfo};
 use std::time::Duration;
+mod command_executor;
 mod liveace;
+use command_executor::CommandExecutor;
 use liveace::CallResponseSerialPort;
 use rocket::State;
 use std::sync::Mutex;
@@ -47,7 +49,7 @@ fn list_commands_handler(
     let mut commands: Vec<String> = Vec::new();
     let unlocked_ports = arduino_command_ports.lock().unwrap();
     for port in unlocked_ports.iter() {
-        for command in port.get_supported_commands() {
+        for command in port.get_commands() {
             commands.push(format!("{}/{}", port.get_board_serial_number(), command));
         }
     }

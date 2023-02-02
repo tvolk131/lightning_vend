@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use std::io::{Read, Write};
 use std::time::Duration;
 
+use crate::command_executor::CommandExecutor;
+
 #[derive(serde::Deserialize, Debug)]
 struct ArduinoCommandResponse {
     status: String,
@@ -27,6 +29,26 @@ pub struct CallResponseSerialPort {
     max_retries: u32,
 }
 
+impl CommandExecutor<SerialError> for CallResponseSerialPort {
+    fn get_commands(&self) -> Box<dyn Iterator<Item = &String> + '_> {
+        Box::from(self.supported_commands.iter())
+    }
+
+    fn execute_command(&mut self, command: &str) -> Result<Option<serde_json::Value>, SerialError> {
+        for _ in 0..self.max_retries {
+            if let Ok(response) = self.execute_command_give_up_after_timeout(command) {
+                return Ok(response.response);
+            }
+        }
+        self.execute_command_give_up_after_timeout(command)
+            .map(|response| response.response)
+    }
+
+    fn get_executor_namespace(&self) -> &str {
+        "arduino"
+    }
+}
+
 impl CallResponseSerialPort {
     pub fn new(
         port: Box<dyn SerialPort>,
@@ -40,7 +62,7 @@ impl CallResponseSerialPort {
             max_retries: 10,
         };
 
-        for command in p.get_commands()? {
+        for command in p.get_commands_internal()? {
             p.supported_commands.insert(command);
         }
 
@@ -51,7 +73,7 @@ impl CallResponseSerialPort {
         &self.board_serial_number
     }
 
-    fn get_commands(&mut self) -> Result<Vec<String>, SerialError> {
+    fn get_commands_internal(&mut self) -> Result<Vec<String>, SerialError> {
         let response = match self.execute_command("list_commands") {
             Ok(response) => response,
             Err(err) => return Err(err),
@@ -74,23 +96,6 @@ impl CallResponseSerialPort {
         }
 
         Ok(command_strings)
-    }
-
-    pub fn get_supported_commands(&self) -> &HashSet<String> {
-        &self.supported_commands
-    }
-
-    pub fn execute_command(
-        &mut self,
-        command: &str,
-    ) -> Result<Option<serde_json::Value>, SerialError> {
-        for _ in 0..self.max_retries {
-            if let Ok(response) = self.execute_command_give_up_after_timeout(command) {
-                return Ok(response.response);
-            }
-        }
-        self.execute_command_give_up_after_timeout(command)
-            .map(|response| response.response)
     }
 
     fn execute_command_give_up_after_timeout(
