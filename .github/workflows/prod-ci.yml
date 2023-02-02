@@ -32,12 +32,12 @@ jobs:
         cd adafruit_motor_server
         cargo fmt -- --check
         cargo clippy -- -D warnings
-        cargo build
+        cargo check
         cd ..
         cd liveace_server
         cargo fmt -- --check
         cargo clippy -- -D warnings
-        cargo build
+        cargo check
   deploy:
     needs: test
     runs-on: ubuntu-latest
