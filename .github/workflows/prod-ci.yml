@@ -30,14 +30,14 @@ jobs:
         sudo apt-get install -y libudev-dev
         rustup update
         cd adafruit_motor_server
+        cargo check
         cargo fmt -- --check
         cargo clippy -- -D warnings
-        cargo check
         cd ..
         cd liveace_server
+        cargo check
         cargo fmt -- --check
         cargo clippy -- -D warnings
-        cargo check
   deploy:
     needs: test
     runs-on: ubuntu-latest
