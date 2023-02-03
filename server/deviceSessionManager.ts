@@ -42,7 +42,7 @@ export class DeviceSessionManager {
    * @returns The device data, and flag indicating whether `deviceSessionId`
    * mapped to an existing device.
    */
-  getOrCreateDeviceSession(deviceSessionId: string, lightningNodeOwnerPubkey: string, displayName: string): {deviceData: DeviceData, isNew: boolean} {
+  getOrCreateDeviceSession(deviceSessionId: string, lightningNodeOwnerPubkey: string, displayName: string, supportedExecutionCommands: string[]): {deviceData: DeviceData, isNew: boolean} {
     let isNew = false;
 
     if (!this.deviceSessionsBySessionId[deviceSessionId]) {
@@ -50,7 +50,8 @@ export class DeviceSessionManager {
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,
-        inventory: []
+        inventory: [],
+        supportedExecutionCommands
       };
 
       if (!this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey]) {

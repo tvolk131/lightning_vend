@@ -3,9 +3,12 @@ import {useState, useEffect, useRef, useCallback} from 'react';
 import {useTheme} from '@mui/material/styles';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {SelectionMenu} from './selectionMenu';
-import {Button, Chip, Paper, TextField, Typography} from '@mui/material';
+import {Alert, Button, Chip, Paper, TextField, Typography} from '@mui/material';
 import {Circle as CircleIcon} from '@mui/icons-material';
 import {deviceApi} from './api/deviceApi';
+import axios from 'axios';
+import {AsyncLoadableData} from './api/sharedApi';
+import {LoadingButton} from '@mui/lab';
 
 // Screensaver appears after one minute of inactivity.
 const SCREENSAVER_DELAY_MS = 60000;
@@ -29,6 +32,21 @@ export const DevicePage = () => {
   // the screensaver actually fades out rather than instantly disappearing.
   const [screensaverRendered, setScreensaverRendered] = useState(true);
   const screensaverTimeout = useRef<NodeJS.Timeout>();
+
+  const [supportedExecutionCommands, setSupportedExecutionCommands] = useState<AsyncLoadableData<string[]>>({state: 'loading'});
+
+  const loadSupportedExecutionCommands = () => {
+    setSupportedExecutionCommands({state: 'loading'});
+    axios.get('http://localhost:21000/listCommands')
+      .then((res) => {
+        let commands = res.data as string[];
+        setSupportedExecutionCommands({state: 'loaded', data: commands});
+      }).catch(() => {
+        setSupportedExecutionCommands({state: 'error'});
+      });
+  };
+
+  useEffect(loadSupportedExecutionCommands, []);
 
   const showLightningLogo = false;
 
@@ -88,17 +106,31 @@ export const DevicePage = () => {
                 </Typography>
                 <TextField value={nodeRegistrationPubkey} onChange={(e) => setNodeRegistrationPubkey(e.target.value)} label={'LN Node Pubkey'} style={{margin: '20px'}}/>
                 <TextField value={nodeRegistrationDisplayName} onChange={(e) => setNodeRegistrationDisplayName(e.target.value)} label={'Device Name'} style={{marginBottom: '20px'}}/>
-                <Button
+                <LoadingButton
                   variant={'contained'}
-                  disabled={!(nodeRegistrationPubkey.length && nodeRegistrationDisplayName.length)}
+                  disabled={!nodeRegistrationPubkey.length || !nodeRegistrationDisplayName.length}
+                  loading={supportedExecutionCommands.state === 'loading'}
                   onClick={() => {
-                    // TODO - Display a loading spinner until this promise resolves.
-                    deviceApi.registerDevice(nodeRegistrationPubkey, nodeRegistrationDisplayName);
+                    deviceApi.registerDevice(
+                      nodeRegistrationPubkey,
+                      nodeRegistrationDisplayName,
+                      supportedExecutionCommands.state === 'loaded' ? supportedExecutionCommands.data : []
+                    );
                   }}
                 >
                   Register
-                </Button>
+                </LoadingButton>
               </div>
+              {supportedExecutionCommands.state === 'error' && (
+                  <div style={{marginTop: '20px'}}>
+                    <Alert
+                      severity={'error'}
+                      action={<Button onClick={loadSupportedExecutionCommands}>Retry</Button>}
+                    >
+                      Failed to load device execution commands!
+                    </Alert>
+                  </div>
+              )}
             </Paper>
         )}
       </div>

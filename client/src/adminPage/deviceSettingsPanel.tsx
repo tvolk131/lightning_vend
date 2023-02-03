@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useState, useEffect} from 'react';
-import {Paper, Typography, InputAdornment, IconButton, OutlinedInput, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField} from '@mui/material';
+import {Paper, Typography, InputAdornment, IconButton, OutlinedInput, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Autocomplete} from '@mui/material';
 import {CheckCircle as CheckCircleIcon, Edit as EditIcon, Delete as DeleteIcon} from '@mui/icons-material';
 import {AdminDeviceView} from '../../../server/adminSessionManager';
 import {adminApi} from '../api/adminApi';
@@ -80,7 +80,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             <div style={{display: 'inline-block'}}>
               <Typography>Item Name: {inventoryItem.displayName}</Typography>
               <Typography>Price: {inventoryItem.priceSats} sats</Typography>
-              <Typography>Webhook: {inventoryItem.executionWebhook}</Typography>
+              <Typography>Execution Command: {inventoryItem.executionCommand}</Typography>
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
               adminApi.updateDeviceInventory(props.adminDeviceView.deviceData.deviceSessionId, props.adminDeviceView.deviceData.inventory.filter((i) => i !== inventoryItem));
@@ -96,8 +96,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Item will be immediately accessible on the device's UI. Keep in mind that
-              the execution webhook can use `localhost` to access the device itself.
+              Item will be immediately accessible on the device's UI.
             </DialogContentText>
             <TextField
               style={{display: 'flex', marginTop: '15px'}}
@@ -112,11 +111,9 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               value={`${newInventoryItem.priceSats}`}
               onChange={(e) => setNewInventoryItem({...newInventoryItem, priceSats: Math.max(Math.floor(Number(e.target.value)), 1)})}
             />
-            <TextField
-              style={{display: 'flex', marginTop: '15px'}}
-              label={'Execution Webhook'}
-              value={newInventoryItem.executionWebhook}
-              onChange={(e) => setNewInventoryItem({...newInventoryItem, executionWebhook: e.target.value})}
+            <Autocomplete
+              renderInput={(params) => <TextField {...params} style={{display: 'flex', marginTop: '15px'}} label={'Execution Command'} value={newInventoryItem.executionCommand} onChange={(e) => setNewInventoryItem({...newInventoryItem, executionCommand: e.target.value})}/>}
+              options={props.adminDeviceView.deviceData.supportedExecutionCommands}
             />
           </DialogContent>
           <DialogActions>
