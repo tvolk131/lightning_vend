@@ -71,7 +71,7 @@ impl LiVeAceSerialPort {
     ) -> Result<Self, SerialError> {
         let mut p = Self {
             port: Mutex::from(port),
-            namespace: format!("arduino:{}", board_serial_number),
+            namespace: format!("arduino:{board_serial_number}"),
             supported_commands: HashSet::new(),
             timeout_to_retry: Duration::from_millis(20000),
             max_retries: 10,
