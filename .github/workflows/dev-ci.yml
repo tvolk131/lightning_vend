@@ -29,12 +29,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libudev-dev
         rustup update
-        cd adafruit_motor_server
+        cd command_executor_server
         cargo check
+        cargo check --features "adafruit_motorkit"
+        cargo check --features "liveace"
+        cargo check --features "adafruit_motorkit liveace"
         cargo fmt -- --check
         cargo clippy -- -D warnings
+        cargo clippy --features "adafruit_motorkit" -- -D warnings
+        cargo clippy --features "liveace" -- -D warnings
+        cargo clippy --features "adafruit_motorkit liveace" -- -D warnings
         cd ..
-        cd liveace_server
-        cargo check
-        cargo fmt -- --check
-        cargo clippy -- -D warnings
