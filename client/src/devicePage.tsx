@@ -35,6 +35,7 @@ export const DevicePage = () => {
 
   const [supportedExecutionCommands, setSupportedExecutionCommands] = useState<AsyncLoadableData<string[]>>({state: 'loading'});
 
+  // TODO - Any time the page is refreshed, update the discovered execution commands to the backend.
   const loadSupportedExecutionCommands = () => {
     setSupportedExecutionCommands({state: 'loading'});
     axios.get('http://localhost:21000/listCommands')
