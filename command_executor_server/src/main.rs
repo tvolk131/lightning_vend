@@ -43,10 +43,10 @@ fn list_commands_handler(
     rocket::response::content::Json(serde_json::json!(commands).to_string())
 }
 
-struct CORS;
+struct Cors;
 
 #[rocket::async_trait]
-impl Fairing for CORS {
+impl Fairing for Cors {
     fn info(&self) -> Info {
         Info {
             name: "Add CORS headers to responses",
@@ -102,7 +102,7 @@ async fn rocket() -> _ {
             port: 21000,
             ..Default::default()
         })
-        .attach(CORS)
+        .attach(Cors)
         .mount("/", routes![run_command_handler, list_commands_handler])
 }
 
