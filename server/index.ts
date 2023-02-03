@@ -145,7 +145,24 @@ app.post('/api/registerDevice', (req, res) => {
   if (typeof req.body.displayName !== 'string' || req.body.displayName.length === 0) {
     return {response: res.status(400).send('Request body must have string property `displayName`.')};
   }
-  const {lightningNodeOwnerPubkey, displayName}: {lightningNodeOwnerPubkey: string, displayName: string} = req.body;
+  if (!Array.isArray(req.body.supportedExecutionCommands)) {
+    return {response: res.status(400).send('Request body must have string array property `supportedExecutionCommands`.')};
+  }
+  for (let i = 0; i < req.body.supportedExecutionCommands.length; i++) {
+    if (typeof req.body.supportedExecutionCommands[i] !== 'string') {
+      return {response: res.status(400).send('Request body must have string array property `supportedExecutionCommands`.')};
+    }
+  }
+
+  const {
+    lightningNodeOwnerPubkey,
+    displayName,
+    supportedExecutionCommands
+  }: {
+    lightningNodeOwnerPubkey: string,
+    displayName: string,
+    supportedExecutionCommands: string[]
+  } = req.body;
 
   let deviceSessionId;
 
@@ -158,7 +175,7 @@ app.post('/api/registerDevice', (req, res) => {
     deviceSessionId = makeUuid();
   }
 
-  const {isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, lightningNodeOwnerPubkey, displayName);
+  const {isNew} = deviceSessionManager.getOrCreateDeviceSession(deviceSessionId, lightningNodeOwnerPubkey, displayName, supportedExecutionCommands);
 
   // Note: No manual event trigger is needed here, since the client will automatically
   // disconnect and reconnect its socket, which triggers its own events.

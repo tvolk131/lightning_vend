@@ -22,7 +22,7 @@ it('renders inventory with 1 item', () => {
         {
           displayName: 'Test Item 1',
           priceSats: 1234,
-          executionWebhook: 'http://localhost:3000/actions/1'
+          executionCommand: 'action1'
         }
       ]}
     />
@@ -39,12 +39,12 @@ it('renders inventory with 2 items', () => {
         {
           displayName: 'Test Item 1',
           priceSats: 1000,
-          executionWebhook: 'http://localhost:3000/actions/1'
+          executionCommand: 'action1'
         },
         {
           displayName: 'Test Item 2',
           priceSats: 2000,
-          executionWebhook: 'http://localhost:3000/actions/2'
+          executionCommand: 'action2'
         }
       ]}
     />
@@ -61,17 +61,17 @@ it('renders inventory with 3 items', () => {
         {
           displayName: 'Test Item 1',
           priceSats: 1000,
-          executionWebhook: 'http://localhost:3000/actions/1'
+          executionCommand: 'action1'
         },
         {
           displayName: 'Test Item 2',
           priceSats: 2000,
-          executionWebhook: 'http://localhost:3000/actions/2'
+          executionCommand: 'action2'
         },
         {
           displayName: 'Test Item 3',
           priceSats: 3000,
-          executionWebhook: 'http://localhost:3000/actions/3'
+          executionCommand: 'action3'
         }
       ]}
     />
@@ -88,22 +88,22 @@ it('renders inventory with 4 items', () => {
         {
           displayName: 'Test Item 1',
           priceSats: 1000,
-          executionWebhook: 'http://localhost:3000/actions/1'
+          executionCommand: 'action1'
         },
         {
           displayName: 'Test Item 2',
           priceSats: 2000,
-          executionWebhook: 'http://localhost:3000/actions/2'
+          executionCommand: 'action2'
         },
         {
           displayName: 'Test Item 3',
           priceSats: 3000,
-          executionWebhook: 'http://localhost:3000/actions/3'
+          executionCommand: 'action3'
         },
         {
           displayName: 'Test Item 4',
           priceSats: 4000,
-          executionWebhook: 'http://localhost:3000/actions/4'
+          executionCommand: 'action4'
         }
       ]}
     />
@@ -120,27 +120,27 @@ it('renders inventory with 5 items', () => {
         {
           displayName: 'Test Item 1',
           priceSats: 1000,
-          executionWebhook: 'http://localhost:3000/actions/1'
+          executionCommand: 'action1'
         },
         {
           displayName: 'Test Item 2',
           priceSats: 2000,
-          executionWebhook: 'http://localhost:3000/actions/2'
+          executionCommand: 'action2'
         },
         {
           displayName: 'Test Item 3',
           priceSats: 3000,
-          executionWebhook: 'http://localhost:3000/actions/3'
+          executionCommand: 'action3'
         },
         {
           displayName: 'Test Item 4',
           priceSats: 4000,
-          executionWebhook: 'http://localhost:3000/actions/4'
+          executionCommand: 'action4'
         },
         {
           displayName: 'Test Item 5',
           priceSats: 5000,
-          executionWebhook: 'http://localhost:3000/actions/5'
+          executionCommand: 'action5'
         }
       ]}
     />

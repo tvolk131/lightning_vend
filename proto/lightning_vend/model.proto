@@ -13,6 +13,8 @@ message DeviceData {
   string lightning_node_owner_pubkey = 3;
 
   repeated InventoryItem inventory = 4;
+
+  repeated string supported_execution_commands = 5;
 }
 
 message InventoryItem {
@@ -20,5 +22,9 @@ message InventoryItem {
 
   int32 price_sats = 2;
 
-  string execution_webhook = 3;
+  // The command to run on the device upon successful item payment.
+  // Differs from `execution_webhook` above because this is _not_ an
+  // http/https string, but rather a command string that will be used
+  // to call a LightningVend Device Command
+  string execution_command = 3;
 }

@@ -8,7 +8,11 @@ mod command_executor;
 #[cfg(feature = "liveace")]
 use command_executor::liveace::LiVeAceSerialPort;
 use command_executor::{CommandExecutor, CommandExecutorManager, NamespacedCommandExecutor};
-use rocket::State;
+use rocket::{
+    fairing::{Fairing, Info, Kind},
+    http::Header,
+    Request, Response, State,
+};
 use std::sync::Mutex;
 
 #[get("/commands/<command>")]
@@ -37,6 +41,28 @@ fn list_commands_handler(
     let mut commands: Vec<&str> = command_executor_manager.get_commands().collect();
     commands.sort();
     rocket::response::content::Json(serde_json::json!(commands).to_string())
+}
+
+struct Cors;
+
+#[rocket::async_trait]
+impl Fairing for Cors {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
 }
 
 #[rocket::launch]
@@ -76,6 +102,7 @@ async fn rocket() -> _ {
             port: 21000,
             ..Default::default()
         })
+        .attach(Cors)
         .mount("/", routes![run_command_handler, list_commands_handler])
 }
 
