@@ -154,7 +154,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       const command = invoiceToExecutionCommand[paidInvoice];
       if (command) {
         // TODO - Handle any potential error from the webhook.
-        axios.get(`http://localhost:21000/${command}`);
+        axios.get(`http://localhost:21000/commands/${command}`);
       }
       dispatch({type: 'showInvoiceIsPaid'});
       setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);

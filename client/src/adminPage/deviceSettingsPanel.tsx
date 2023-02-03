@@ -112,8 +112,10 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               onChange={(e) => setNewInventoryItem({...newInventoryItem, priceSats: Math.max(Math.floor(Number(e.target.value)), 1)})}
             />
             <Autocomplete
-              renderInput={(params) => <TextField {...params} style={{display: 'flex', marginTop: '15px'}} label={'Execution Command'} value={newInventoryItem.executionCommand} onChange={(e) => setNewInventoryItem({...newInventoryItem, executionCommand: e.target.value})}/>}
+              renderInput={(params) => <TextField {...params} style={{display: 'flex', marginTop: '15px'}} label={'Execution Command'}/>}
               options={props.adminDeviceView.deviceData.supportedExecutionCommands}
+              onChange={(e, selectedCommand) => setNewInventoryItem({...newInventoryItem, executionCommand: selectedCommand || ''})}
+              value={newInventoryItem.executionCommand}
             />
           </DialogContent>
           <DialogActions>
