@@ -61,6 +61,9 @@
       "browser": true,
       "node": true
     },
+    "globals": {
+      "NodeJS": true
+    },
     "parser": "@typescript-eslint/parser",
     "plugins": [
       "@typescript-eslint",
@@ -74,7 +77,7 @@
       "comma-dangle": "error",
       "complexity": [
         "error",
-        10
+        13
       ],
       "max-len": ["error", 100],
       "new-parens": "error",
@@ -85,7 +88,8 @@
       "no-unused-vars": [
         "error",
         {
-          "varsIgnorePattern": "^_"
+          "varsIgnorePattern": "^_",
+          "args": "none"
         }
       ],
       "no-whitespace-before-property": "error",

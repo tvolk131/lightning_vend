@@ -396,8 +396,14 @@ app.get('*/', (req, res) => {
     <html>
     <head>
       <title>Lightning Vend</title>
-      <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css?family=Material+Icons&display=block" rel="stylesheet">
+      <link
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
+        rel="stylesheet"
+      >
+      <link
+        href="https://fonts.googleapis.com/css?family=Material+Icons&display=block"
+        rel="stylesheet"
+      >
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body style="margin:auto">
@@ -411,7 +417,7 @@ app.get('*/', (req, res) => {
 
 const port = Number(process.env.PORT) || 3000;
 server.listen(port, () => {
-  console.log(`Listening on *:${port}`);
+  console.log(`Listening on *:${port}`); // eslint-disable-line no-console
 });
 
 lightning.subscribeInvoices({})
@@ -425,6 +431,4 @@ lightning.subscribeInvoices({})
         deviceSocketManager.emitInvoicePaid(deviceSessionId, invoice.paymentRequest);
       }
     }
-  })
-  .on('end', () => console.log('SubscribeInvoices ended!'))
-  .on('status', (status: any) => console.log('SubscribeInvoices status: ', status));
+  });
