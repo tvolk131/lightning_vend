@@ -23,7 +23,7 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Install Webpack Dependencies and Test/Build Frontend
-      run: cd client && npm i && npm run build-proto && npm test && npm run build-prod && cd ..
+      run: cd client && npm i && npm run build-proto && npm test && npm run lint && npm run build-prod && cd ..
     - name: Build Backends
       run: |
         sudo apt-get update
