@@ -1,4 +1,4 @@
-import {DeviceData, InventoryItem} from "../proto/lightning_vend/model";
+import {DeviceData, InventoryItem} from '../proto/lightning_vend/model';
 
 export const tryCastToInventoryArray = (inventory: any): InventoryItem[] | undefined => {
   if (!Array.isArray(inventory)) {
@@ -42,7 +42,12 @@ export class DeviceSessionManager {
    * @returns The device data, and flag indicating whether `deviceSessionId`
    * mapped to an existing device.
    */
-  getOrCreateDeviceSession(deviceSessionId: string, lightningNodeOwnerPubkey: string, displayName: string, supportedExecutionCommands: string[]): {deviceData: DeviceData, isNew: boolean} {
+  getOrCreateDeviceSession(
+    deviceSessionId: string,
+    lightningNodeOwnerPubkey: string,
+    displayName: string,
+    supportedExecutionCommands: string[]
+  ): {deviceData: DeviceData, isNew: boolean} {
     let isNew = false;
 
     if (!this.deviceSessionsBySessionId[deviceSessionId]) {
@@ -87,7 +92,10 @@ export class DeviceSessionManager {
    * successfully written, or rejects if the `deviceSessionId` is invalid or the
    * write failed for any reason.
    */
-  updateDeviceData(deviceSessionId: string, mutateFn: (deviceData: DeviceData) => DeviceData): Promise<DeviceData> {
+  updateDeviceData(
+    deviceSessionId: string,
+    mutateFn: (deviceData: DeviceData) => DeviceData
+  ): Promise<DeviceData> {
     return new Promise((resolve, reject) => {
       const deviceData = this.deviceSessionsBySessionId[deviceSessionId];
       if (deviceData) {
@@ -105,4 +113,4 @@ export class DeviceSessionManager {
       return deviceData.lightningNodeOwnerPubkey;
     }
   }
-};
+}

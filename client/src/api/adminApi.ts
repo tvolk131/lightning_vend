@@ -1,12 +1,13 @@
-import axios from 'axios';
-import {useState, useEffect} from 'react';
-import {InventoryItem} from '../../../proto/lightning_vend/model';
-import {AdminData} from '../../../server/adminSessionManager';
-import {socketIoAdminPath} from '../../../shared/constants';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
+import {useEffect, useState} from 'react';
+import {AdminData} from '../../../server/adminSessionManager';
+import {InventoryItem} from '../../../proto/lightning_vend/model';
+import axios from 'axios';
+import {socketIoAdminPath} from '../../../shared/constants';
 
 class AdminApi extends ReactSocket {
-  private adminDataManager = new SubscribableDataManager<AsyncLoadableData<AdminData>>({state: 'loading'});
+  private adminDataManager =
+    new SubscribableDataManager<AsyncLoadableData<AdminData>>({state: 'loading'});
 
   constructor() {
     super(socketIoAdminPath);
@@ -46,16 +47,16 @@ class AdminApi extends ReactSocket {
 
   useLoadableAdminData(): AsyncLoadableData<AdminData> {
     const [data, setData] = useState<AsyncLoadableData<AdminData>>(this.adminDataManager.getData());
-  
+
     useEffect(() => {
       const callbackId = this.adminDataManager.subscribe(setData);
       return () => {
         this.adminDataManager.unsubscribe(callbackId);
       };
     }, []);
-  
+
     return data;
-  };
+  }
 }
 
 export const adminApi = new AdminApi();

@@ -44,6 +44,7 @@
     "@types/react-test-renderer": "^17.0.2",
     "@typescript-eslint/eslint-plugin": "^5.46.0",
     "eslint": "^8.29.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "fork-ts-checker-webpack-plugin": "^6.4.0",
     "jest": "^29.3.1",
     "nodemon": "^2.0.20",
@@ -57,7 +58,11 @@
   "eslintConfig": {
     "env": {
       "jest": true,
-      "browser": true
+      "browser": true,
+      "node": true
+    },
+    "globals": {
+      "NodeJS": true
     },
     "parser": "@typescript-eslint/parser",
     "plugins": [
@@ -72,9 +77,9 @@
       "comma-dangle": "error",
       "complexity": [
         "error",
-        10
+        13
       ],
-      "max-len": "error",
+      "max-len": ["error", 100],
       "new-parens": "error",
       "no-console": "error",
       "no-multiple-empty-lines": "error",
@@ -83,7 +88,8 @@
       "no-unused-vars": [
         "error",
         {
-          "varsIgnorePattern": "^_"
+          "varsIgnorePattern": "^_",
+          "args": "none"
         }
       ],
       "no-whitespace-before-property": "error",

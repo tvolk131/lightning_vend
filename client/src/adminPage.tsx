@@ -1,9 +1,21 @@
-import {Button, TextField, CircularProgress, List, ListItemButton, ListItemText, ListItemIcon, Paper, Grid, useTheme, Typography} from '@mui/material';
 import * as React from 'react';
-import {useState} from 'react';
-import {adminApi,} from './api/adminApi';
+import {
+  Button,
+  CircularProgress,
+  Grid,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  TextField,
+  Typography,
+  useTheme
+} from '@mui/material';
 import {Circle as CircleIcon} from '@mui/icons-material';
 import {DeviceSettingsPanel} from './adminPage/deviceSettingsPanel';
+import {adminApi} from './api/adminApi';
+import {useState} from 'react';
 
 // TODO - Flesh out and clean up admin page.
 export const AdminPage = () => {
@@ -11,10 +23,6 @@ export const AdminPage = () => {
   const loadableAdminData = adminApi.useLoadableAdminData();
 
   const theme = useTheme();
-
-  if (loadableAdminData.state === 'loaded') {
-    loadableAdminData.data.devices
-  }
 
   const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
 
@@ -25,7 +33,12 @@ export const AdminPage = () => {
       {loadableAdminData.state === 'loading' && <CircularProgress/>}
       {loadableAdminData.state === 'error' && (
         <div>
-          <TextField value={nodeRegistrationPubkey} onChange={(e) => setNodeRegistrationPubkey(e.target.value)} label={'LN Node Pubkey'} style={{margin: '20px'}}/>
+          <TextField
+            value={nodeRegistrationPubkey}
+            onChange={(e) => setNodeRegistrationPubkey(e.target.value)}
+            label={'LN Node Pubkey'}
+            style={{margin: '20px'}}
+          />
           <Button
             variant={'contained'}
             disabled={!nodeRegistrationPubkey.length}
@@ -62,7 +75,9 @@ export const AdminPage = () => {
           <Grid item xs={12} sm={8}>
             {
               loadableAdminData.data.devices[selectedDeviceIndex] ?
-                <DeviceSettingsPanel adminDeviceView={loadableAdminData.data.devices[selectedDeviceIndex]}/>
+                <DeviceSettingsPanel
+                  adminDeviceView={loadableAdminData.data.devices[selectedDeviceIndex]}
+                />
                 :
                 <Paper><Typography variant={'h2'}>No Device Selected</Typography></Paper>
             }

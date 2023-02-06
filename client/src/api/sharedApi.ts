@@ -1,6 +1,6 @@
-import {io, Socket} from 'socket.io-client';
+import {Socket, io} from 'socket.io-client';
+import {useEffect, useState} from 'react';
 import {makeUuid} from '../../../shared/uuid';
-import {useState, useEffect} from 'react';
 
 type ConnectionStatus = 'connected' | 'disconnected';
 
@@ -14,7 +14,9 @@ export class ReactSocket {
   protected socket: Socket;
 
   /** List of callbacks used to update consumers of changes to the socket's connection status. */
-  private connectionStatusCallbacks: {[key: string]: ((connectionStatus: ConnectionStatus) => void)} = {};
+  private connectionStatusCallbacks: {
+    [key: string]: ((connectionStatus: ConnectionStatus) => void)
+  } = {};
 
   /**
    * The number of active uses of the `useSocket` hook.
@@ -44,18 +46,19 @@ export class ReactSocket {
    * @returns The current connection status to the backend server.
    */
   useConnectionStatus(): ConnectionStatus {
-    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(this.socket.connected ? 'connected' : 'disconnected');
+    const [connectionStatus, setConnectionStatus] =
+      useState<ConnectionStatus>(this.socket.connected ? 'connected' : 'disconnected');
 
     useEffect(() => {
       const callbackId = this.subscribeToConnectionStatus((connectionStatus) => {
         setConnectionStatus(connectionStatus);
       });
-  
+
       return () => {
         this.unsubscribeFromConnectionStatus(callbackId);
-      }
+      };
     }, []);
-  
+
     return connectionStatus;
   }
 
@@ -72,13 +75,13 @@ export class ReactSocket {
       }
 
       this.useSocketCount += 1;
-  
+
       return () => {
         this.useSocketCount -= 1;
         if (this.useSocketCount === 0) {
           this.socket.disconnect();
         }
-      }
+      };
     }, []);
   }
 
@@ -90,11 +93,15 @@ export class ReactSocket {
   }
 
   /**
-   * Sets up an event listener that is called any time the connection status to the backend server changes.
+   * Sets up an event listener that is called any time
+   * the connection status to the backend server changes.
    * @param callback A function that should be called any time the connection status changes.
-   * @returns A callback id, which can be passed to `unsubscribeFromConnectionStatus` to remove the callback. 
+   * @returns A callback id, which can be passed to `unsubscribeFromConnectionStatus` to remove the
+   * callback.
    */
-  private subscribeToConnectionStatus(callback: (connectionStatus: ConnectionStatus) => void): string {
+  private subscribeToConnectionStatus(
+    callback: (connectionStatus: ConnectionStatus) => void
+  ): string {
     const callbackId = makeUuid();
     this.connectionStatusCallbacks[callbackId] = callback;
     return callbackId;
@@ -121,7 +128,7 @@ export class SubscribableEventManager<T> {
 
   unsubscribe(callbackId: string): boolean {
     return delete this.callbacks[callbackId];
-  };
+  }
 
   emitEvent(event: T) {
     for (let callbackId in this.callbacks) {
@@ -146,7 +153,7 @@ export class SubscribableDataManager<T> {
 
   unsubscribe(callbackId: string): boolean {
     return this.eventManager.unsubscribe(callbackId);
-  };
+  }
 
   setData(newData: T) {
     this.data = newData;
@@ -158,4 +165,7 @@ export class SubscribableDataManager<T> {
   }
 }
 
-export type AsyncLoadableData<T> = {state: 'loading'} | {state: 'error'} | {state: 'loaded', data: T};
+export type AsyncLoadableData<T> =
+  {state: 'loading'} |
+  {state: 'error'} |
+  {state: 'loaded', data: T};

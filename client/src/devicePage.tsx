@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {useState, useEffect, useRef, useCallback} from 'react';
-import {useTheme} from '@mui/material/styles';
-import {LightningNetworkLogo} from './lightningNetworkLogo';
-import {SelectionMenu} from './selectionMenu';
 import {Alert, Button, Chip, Paper, TextField, Typography} from '@mui/material';
-import {Circle as CircleIcon} from '@mui/icons-material';
-import {deviceApi} from './api/deviceApi';
-import axios from 'axios';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {AsyncLoadableData} from './api/sharedApi';
+import {Circle as CircleIcon} from '@mui/icons-material';
+import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {LoadingButton} from '@mui/lab';
+import {SelectionMenu} from './selectionMenu';
+import axios from 'axios';
+import {deviceApi} from './api/deviceApi';
+import {useTheme} from '@mui/material/styles';
 
 // Screensaver appears after one minute of inactivity.
 const SCREENSAVER_DELAY_MS = 60000;
@@ -24,7 +24,7 @@ export const DevicePage = () => {
 
   const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
   const [nodeRegistrationDisplayName, setNodeRegistrationDisplayName] = useState('');
-  
+
   // Whether the screensaver should be displaying.
   const [screensaverActive, setScreensaverActive] = useState(true);
   // This state is used specifically for fading in and out smoothly.
@@ -33,7 +33,8 @@ export const DevicePage = () => {
   const [screensaverRendered, setScreensaverRendered] = useState(true);
   const screensaverTimeout = useRef<NodeJS.Timeout>();
 
-  const [supportedExecutionCommands, setSupportedExecutionCommands] = useState<AsyncLoadableData<string[]>>({state: 'loading'});
+  const [supportedExecutionCommands, setSupportedExecutionCommands] =
+    useState<AsyncLoadableData<string[]>>({state: 'loading'});
 
   // TODO - Any time the page is refreshed, update the discovered execution commands to the backend.
   const loadSupportedExecutionCommands = () => {
@@ -96,17 +97,30 @@ export const DevicePage = () => {
         )}
         {/* TODO - If loadableDeviceData.state === 'loading' then display a loading spinner. */}
         {/* TODO - Make the registration process easier by doing a few things:
-            1. Replace the TextField with an Autocomplete component that dynamically fetches node pubkeys that match what is typed.
-            2. Check for the right text length and possibly even ping LND to make sure the proposed node is real and has active channels.
-          */}
+            1. Replace the TextField with an Autocomplete component that dynamically fetches node
+               pubkeys that match what is typed.
+            2. Check for the right text length and possibly even ping LND to make sure the proposed
+               node is real and has active channels.
+        */}
         {loadableDeviceData.state === 'error' && (
             <Paper style={{height: `${centerSquareSize}px`, width: `${centerSquareSize}px`}}>
               <div style={{padding: '20px', textAlign: 'center'}}>
                 <Typography>
-                  Device is not setup! Please enter the Lightning Network node pubkey that you would like to pair this device to.
+                  Device is not setup! Please enter the Lightning Network
+                  node pubkey that you would like to pair this device to.
                 </Typography>
-                <TextField value={nodeRegistrationPubkey} onChange={(e) => setNodeRegistrationPubkey(e.target.value)} label={'LN Node Pubkey'} style={{margin: '20px'}}/>
-                <TextField value={nodeRegistrationDisplayName} onChange={(e) => setNodeRegistrationDisplayName(e.target.value)} label={'Device Name'} style={{marginBottom: '20px'}}/>
+                <TextField
+                  value={nodeRegistrationPubkey}
+                  onChange={(e) => setNodeRegistrationPubkey(e.target.value)}
+                  label={'LN Node Pubkey'}
+                  style={{margin: '20px'}}
+                />
+                <TextField
+                  value={nodeRegistrationDisplayName}
+                  onChange={(e) => setNodeRegistrationDisplayName(e.target.value)}
+                  label={'Device Name'}
+                  style={{marginBottom: '20px'}}
+                />
                 <LoadingButton
                   variant={'contained'}
                   disabled={!nodeRegistrationPubkey.length || !nodeRegistrationDisplayName.length}
@@ -115,7 +129,10 @@ export const DevicePage = () => {
                     deviceApi.registerDevice(
                       nodeRegistrationPubkey,
                       nodeRegistrationDisplayName,
-                      supportedExecutionCommands.state === 'loaded' ? supportedExecutionCommands.data : []
+                      supportedExecutionCommands.state === 'loaded' ?
+                        supportedExecutionCommands.data
+                        :
+                        []
                     );
                   }}
                 >

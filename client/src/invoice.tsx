@@ -1,7 +1,7 @@
-import {Paper} from '@mui/material';
+import * as React from 'react';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {CheckCircleOutline} from '@mui/icons-material';
-import * as React from 'react';
+import {Paper} from '@mui/material';
 import QRCode from 'react-qr-code';
 
 interface InvoiceProps {
