@@ -1,10 +1,28 @@
 import * as React from 'react';
-import {useState, useEffect} from 'react';
-import {Paper, Typography, InputAdornment, IconButton, OutlinedInput, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Autocomplete} from '@mui/material';
-import {CheckCircle as CheckCircleIcon, Edit as EditIcon, Delete as DeleteIcon} from '@mui/icons-material';
+import {
+  Autocomplete,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  InputAdornment,
+  OutlinedInput,
+  Paper,
+  TextField,
+  Typography
+} from '@mui/material';
+import {
+  CheckCircle as CheckCircleIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon
+} from '@mui/icons-material';
+import {useEffect, useState} from 'react';
 import {AdminDeviceView} from '../../../server/adminSessionManager';
-import {adminApi} from '../api/adminApi';
 import {InventoryItem} from '../../../proto/lightning_vend/model';
+import {adminApi} from '../api/adminApi';
 
 interface DeviceSettingsPanelProps {
   adminDeviceView: AdminDeviceView
@@ -21,7 +39,9 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
 
   const updateDisplayName = () => {
     if (props.adminDeviceView) {
-      adminApi.updateDeviceDisplayName(props.adminDeviceView.deviceData.deviceSessionId, newDisplayName).then(() => setIsEditingDisplayName(false));
+      adminApi
+        .updateDeviceDisplayName(props.adminDeviceView.deviceData.deviceSessionId, newDisplayName)
+        .then(() => setIsEditingDisplayName(false));
     }
   };
 
@@ -63,8 +83,23 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
           />
         ) : (
           <div style={{display: 'flex'}}>
-            <Typography variant={'h2'} style={{padding: '23.5px 14px 23.75px', width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{props.adminDeviceView.deviceData.displayName}</Typography>
-            <IconButton size={'large'} style={{marginTop: '35px', marginRight: '14px', height: '100%'}} onClick={() => setIsEditingDisplayName(!isEditingDisplayName)}>
+            <Typography
+              variant={'h2'}
+              style={{
+                padding: '23.5px 14px 23.75px',
+                width: '100%',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {props.adminDeviceView.deviceData.displayName}
+            </Typography>
+            <IconButton
+              size={'large'}
+              style={{marginTop: '35px', marginRight: '14px', height: '100%'}}
+              onClick={() => setIsEditingDisplayName(!isEditingDisplayName)}
+            >
               <EditIcon/>
             </IconButton>
           </div>
@@ -83,14 +118,20 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               <Typography>Execution Command: {inventoryItem.executionCommand}</Typography>
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
-              adminApi.updateDeviceInventory(props.adminDeviceView.deviceData.deviceSessionId, props.adminDeviceView.deviceData.inventory.filter((i) => i !== inventoryItem));
+              adminApi.updateDeviceInventory(
+                props.adminDeviceView.deviceData.deviceSessionId,
+                props.adminDeviceView.deviceData.inventory.filter((i) => i !== inventoryItem)
+              );
             }}>
               <DeleteIcon/>
             </IconButton>
           </Paper>
         ))}
         <Button onClick={() => setShowAddInventoryItemDialog(true)}>Add Item</Button>
-        <Dialog open={showAddInventoryItemDialog} onClose={() => setShowAddInventoryItemDialog(false)}>
+        <Dialog
+          open={showAddInventoryItemDialog}
+          onClose={() => setShowAddInventoryItemDialog(false)}
+        >
           <DialogTitle>
             Add Inventory Item
           </DialogTitle>
@@ -102,19 +143,40 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               style={{display: 'flex', marginTop: '15px'}}
               label={'Name'}
               value={newInventoryItem.displayName}
-              onChange={(e) => setNewInventoryItem({...newInventoryItem, displayName: e.target.value})}
+              onChange={
+                (e) => setNewInventoryItem({
+                  ...newInventoryItem,
+                  displayName: e.target.value
+                })
+              }
             />
             <TextField
               style={{display: 'flex', marginTop: '15px'}}
               label={'Price (Sats)'}
               type={'number'}
               value={`${newInventoryItem.priceSats}`}
-              onChange={(e) => setNewInventoryItem({...newInventoryItem, priceSats: Math.max(Math.floor(Number(e.target.value)), 1)})}
+              onChange={
+                (e) => setNewInventoryItem({
+                  ...newInventoryItem,
+                  priceSats: Math.max(Math.floor(Number(e.target.value)), 1)
+                })
+              }
             />
             <Autocomplete
-              renderInput={(params) => <TextField {...params} style={{display: 'flex', marginTop: '15px'}} label={'Execution Command'}/>}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  style={{display: 'flex', marginTop: '15px'}}
+                  label={'Execution Command'}
+                />
+              )}
               options={props.adminDeviceView.deviceData.supportedExecutionCommands}
-              onChange={(e, selectedCommand) => setNewInventoryItem({...newInventoryItem, executionCommand: selectedCommand || ''})}
+              onChange={
+                (e, selectedCommand) => setNewInventoryItem({
+                  ...newInventoryItem,
+                  executionCommand: selectedCommand || ''
+                })
+              }
               value={newInventoryItem.executionCommand}
             />
           </DialogContent>
@@ -124,7 +186,11 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             </Button>
             <Button onClick={() => {
               // TODO - Show a loading spinner until this promise resolves below.
-              adminApi.updateDeviceInventory(props.adminDeviceView.deviceData.deviceSessionId, [...props.adminDeviceView.deviceData.inventory, newInventoryItem])
+              adminApi
+                .updateDeviceInventory(
+                  props.adminDeviceView.deviceData.deviceSessionId,
+                  [...props.adminDeviceView.deviceData.inventory, newInventoryItem]
+                )
                 .then(() => {
                   setNewInventoryItem(emptyInventoryItem);
                   setShowAddInventoryItemDialog(false);

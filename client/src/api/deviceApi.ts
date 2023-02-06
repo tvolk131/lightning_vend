@@ -1,13 +1,14 @@
-import axios from 'axios';
-import {useState, useEffect} from 'react';
-import {DeviceData} from '../../../proto/lightning_vend/model';
-import {socketIoDevicePath} from '../../../shared/constants';
-import {makeUuid} from '../../../shared/uuid';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
+import {useEffect, useState} from 'react';
+import {DeviceData} from '../../../proto/lightning_vend/model';
+import axios from 'axios';
+import {makeUuid} from '../../../shared/uuid';
+import {socketIoDevicePath} from '../../../shared/constants';
 
 class DeviceApi extends ReactSocket {
   private invoicePaidCallbacks: {[key: string]: ((invoice: string) => void)} = {};
-  private deviceDataManager = new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
+  private deviceDataManager =
+    new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
 
   constructor() {
     super(socketIoDevicePath);
@@ -35,13 +36,14 @@ class DeviceApi extends ReactSocket {
   /**
    * Sets up an event listener that is called any time an invoice related to this client is paid.
    * @param callback A function that should be called any time an invoice is paid.
-   * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the callback. 
+   * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the
+   * callback.
    */
   subscribeToInvoicePaid(callback: (invoice: string) => void): string {
     const callbackId = makeUuid();
     this.invoicePaidCallbacks[callbackId] = callback;
     return callbackId;
-  };
+  }
 
   /**
    * Removes an event listener created from `subscribeToInvoicePaid`.
@@ -50,28 +52,38 @@ class DeviceApi extends ReactSocket {
    */
   unsubscribeFromInvoicePaid(callbackId: string): boolean {
     return delete this.invoicePaidCallbacks[callbackId];
-  };
+  }
 
-  async registerDevice(lightningNodeOwnerPubkey: string, displayName: string, supportedExecutionCommands: string[]): Promise<void> {
-    await axios.post(`/api/registerDevice`, {lightningNodeOwnerPubkey, displayName, supportedExecutionCommands});
+  async registerDevice(
+    lightningNodeOwnerPubkey: string,
+    displayName: string,
+    supportedExecutionCommands: string[]
+  ): Promise<void> {
+    await axios.post('/api/registerDevice', {
+      lightningNodeOwnerPubkey,
+      displayName,
+      supportedExecutionCommands
+    });
     this.disconnectAndReconnectSocket();
   }
 
   useLoadableDeviceData(): AsyncLoadableData<DeviceData> {
-    const [data, setData] = useState<AsyncLoadableData<DeviceData>>(this.deviceDataManager.getData());
-  
+    const [data, setData] =
+      useState<AsyncLoadableData<DeviceData>>(this.deviceDataManager.getData());
+
     useEffect(() => {
       const callbackId = this.deviceDataManager.subscribe(setData);
       return () => {
         this.deviceDataManager.unsubscribe(callbackId);
       };
     }, []);
-  
+
     return data;
-  };
+  }
 
   /**
-   * Fetches a Lightning Network invoice that can be subscribed to for further payment updates using `subscribeToInvoicePaid`.
+   * Fetches a Lightning Network invoice that can be subscribed to for further payment updates
+   * using `subscribeToInvoicePaid`.
    * @param valueSats The value in satoshis that the invoice is for.
    * @returns A Lightning Network invoice.
    */

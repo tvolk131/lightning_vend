@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {render} from 'react-dom';
+import {RouterProvider, createBrowserRouter} from 'react-router-dom';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
-import {blue} from '@mui/material/colors';
-import {DevicePage} from './devicePage';
-import {createBrowserRouter, RouterProvider} from 'react-router-dom';
-import {LandingPage} from './landingPage';
-import {AdminPage} from './adminPage';
-import {NotFoundPage} from './notFoundPage';
-import {Helmet} from 'react-helmet';
 import {adminPagePath, devicePagePath} from '../../shared/constants';
+import {AdminPage} from './adminPage';
+import {DevicePage} from './devicePage';
+import {Helmet} from 'react-helmet';
+import {LandingPage} from './landingPage';
+import {NotFoundPage} from './notFoundPage';
+import {blue} from '@mui/material/colors';
+import {render} from 'react-dom';
 
 const router = createBrowserRouter([
   {

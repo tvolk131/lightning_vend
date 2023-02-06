@@ -1,7 +1,7 @@
 import {Server, Socket} from 'socket.io';
-import {parse} from 'cookie';
-import {adminSessionCookieName} from '.';
 import {AdminData} from './adminSessionManager';
+import {adminSessionCookieName} from '.';
+import {parse} from 'cookie';
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -9,12 +9,19 @@ import {AdminData} from './adminSessionManager';
  * Handles connections/disconnections automatically.
  */
 export class AdminSocketManager {
-  private activeSocketsBySocketId: {[socketId: string]: {socket: Socket, nodePubkey: string | undefined}} = {};
+  private activeSocketsBySocketId: {
+    [socketId: string]: {socket: Socket, nodePubkey: string | undefined}
+  } = {};
   private activeSocketsByNodePubkey: {[nodePubkey: string]: Socket[]} = {};
-  private getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined;
+  private getNodePubkeyFromAdminSessionId:
+    (adminSessionId: string) => string | undefined;
   private getAdminData: (lightningNodePubkey: string) => AdminData | undefined;
 
-  constructor (server: Server, getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined, getAdminData: (lightningNodePubkey: string) => AdminData | undefined) {
+  constructor (
+    server: Server,
+    getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined,
+    getAdminData: (lightningNodePubkey: string) => AdminData | undefined
+  ) {
     this.getNodePubkeyFromAdminSessionId = getNodePubkeyFromAdminSessionId;
     this.getAdminData = getAdminData;
 
@@ -81,7 +88,8 @@ export class AdminSocketManager {
     delete this.activeSocketsBySocketId[socket.id];
 
     if (nodePubkey) {
-      this.activeSocketsByNodePubkey[nodePubkey] = this.activeSocketsByNodePubkey[nodePubkey].filter((s) => s !== socket);
+      this.activeSocketsByNodePubkey[nodePubkey] =
+        this.activeSocketsByNodePubkey[nodePubkey].filter((s) => s !== socket);
 
       if (this.activeSocketsByNodePubkey[nodePubkey].length === 0) {
         delete this.activeSocketsByNodePubkey[nodePubkey];
@@ -92,4 +100,4 @@ export class AdminSocketManager {
   private static getAdminSessionId(socket: Socket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[adminSessionCookieName];
   }
-};
+}

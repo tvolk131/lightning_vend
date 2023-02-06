@@ -48,4 +48,4 @@ export class AdminSessionManager {
   getNodePubkeyFromSessionId(adminSessionId: string): string | undefined {
     return this.adminSessions[adminSessionId];
   }
-};
+}

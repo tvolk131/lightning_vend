@@ -1,12 +1,21 @@
-import {CircularProgress, Paper, Typography, Fab, Zoom, Alert, Dialog, Slide, PaperProps} from '@mui/material';
-import {Cancel as CancelIcon} from '@mui/icons-material';
 import * as React from 'react';
-import {CSSProperties, useEffect, useRef, useReducer} from 'react';
-import {deviceApi} from './api/deviceApi';
-import {Invoice} from './invoice';
+import {
+  Alert,
+  CircularProgress,
+  Dialog,
+  Fab,
+  Paper,
+  Slide,
+  Typography,
+  Zoom
+} from '@mui/material';
+import {CSSProperties, useEffect, useReducer, useRef} from 'react';
+import {Cancel as CancelIcon} from '@mui/icons-material';
 import {InventoryItem} from '../../proto/lightning_vend/model';
+import {Invoice} from './invoice';
 import {TransitionProps} from '@mui/material/transitions';
 import axios from 'axios';
+import {deviceApi} from './api/deviceApi';
 
 // TODO - Store this in LocalStorage so that reloading the page doesn't break existing invoices.
 const invoiceToExecutionCommand: {[invoice: string]: string} = {};
@@ -23,7 +32,7 @@ const SlideDownTransition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
   },
-  ref: React.Ref<unknown>,
+  ref: React.Ref<unknown>
 ) {
   return <Slide direction={'down'} ref={ref} {...props} />;
 });
@@ -47,8 +56,18 @@ const SelectionItem = (props: SelectionItemProps) => {
         }}
         onClick={props.onClick}
       >
-        <Typography variant={props.isOnlySelectionItem ? 'h3' : 'h6'} style={{padding: props.isOnlySelectionItem ? '60px' : '20px'}}>{props.inventoryItem.displayName}</Typography>
-        <Typography variant={props.isOnlySelectionItem ? 'h5' : undefined} style={{padding: '20px'}}>{props.inventoryItem.priceSats} sats</Typography>
+        <Typography
+          variant={props.isOnlySelectionItem ? 'h3' : 'h6'}
+          style={{padding: props.isOnlySelectionItem ? '60px' : '20px'}}
+        >
+          {props.inventoryItem.displayName}
+        </Typography>
+        <Typography
+          variant={props.isOnlySelectionItem ? 'h5' : undefined}
+          style={{padding: '20px'}}
+        >
+          {props.inventoryItem.priceSats} sats
+        </Typography>
       </Paper>
     </div>
   );
@@ -180,9 +199,19 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   if (props.inventory.length === 0) {
     return (
       <Paper style={{height: `${props.size}px`, width: `${props.size}px`, position: 'relative'}}>
-        <div style={{padding: `20px`, textAlign: 'center', position: 'absolute', top: '50%', transform: 'translateY(-50%)'}}>
+        <div
+          style={{
+            padding: '20px',
+            textAlign: 'center',
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)'
+          }}
+        >
           <Typography variant={'h5'}>Inventory is empty!</Typography>
-          <Typography>If you are the owner of this machine, head over to the admin page to add some items.</Typography>
+          <Typography>
+            If you are the owner of this machine, head over to the admin page to add some items.
+          </Typography>
         </div>
       </Paper>
     );
@@ -213,12 +242,25 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   ));
 
   if (props.inventory.length > 4) {
-    // TODO - This branch doesn't use `state.showInvoiceLoadError`. Make sure it displays a proper error message!
+    // TODO - This branch doesn't use `state.showInvoiceLoadError`.
+    // Make sure it displays a proper error message!
     return (
-      <div style={{padding: `${spaceBetweenItems}px`, display: 'flex', flexWrap: 'wrap', justifyContent: 'center'}}>
+      <div
+        style={{
+          padding: `${spaceBetweenItems}px`,
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}
+      >
         <Dialog
           open={state.loadingInvoice || state.showInvoice}
-          PaperComponent={state.loadingInvoice ? (props: PaperProps) => (<CircularProgress size={loadingSpinnerSize}/>) : Paper}
+          PaperComponent={
+            state.loadingInvoice ?
+              () => (<CircularProgress size={loadingSpinnerSize}/>)
+              :
+              Paper
+          }
           TransitionComponent={state.loadingInvoice ? undefined : SlideDownTransition}
           transitionDuration={state.loadingInvoice ? undefined : 500}
           onClose={() => {
@@ -239,7 +281,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
   const getInventoryItems = () => {
     if (props.inventory.length === 1) {
       const inventoryItem = props.inventory[0];
-  
+
       return (
         <SelectionItem
           inventoryItem={inventoryItem}
@@ -293,7 +335,13 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
           <div
             style={innerSideStyles}
           >
-            <Paper style={{height: `${props.size}px`, width: `${props.size}px`, position: 'relative'}}>
+            <Paper
+              style={{
+                height: `${props.size}px`,
+                width: `${props.size}px`,
+                position: 'relative'
+              }}
+            >
               {
                 state.loadingInvoice &&
                   <CircularProgress
@@ -328,7 +376,15 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       </div>
       {state.showInvoiceLoadError && (
         <div style={{position: 'relative'}}>
-          <div style={{position: 'absolute', paddingTop: '20px', width: 'max-content', left: '50%', transform: 'translateX(-50%)'}}>
+          <div
+            style={{
+              position: 'absolute',
+              paddingTop: '20px',
+              width: 'max-content',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}
+          >
             <Alert severity={'error'}>Failed to fetch an invoice! Try again.</Alert>
           </div>
         </div>
@@ -341,7 +397,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             left: '50%',
             transform: 'translate(-50%)',
             padding: `${showCancelButton ? 20 : 0}px`,
-            transition: `padding ${transitionTimeSecs}s`,
+            transition: `padding ${transitionTimeSecs}s`
         }}
         >
           <Zoom timeout={transitionTimeSecs * 1000} in={showCancelButton} unmountOnExit>

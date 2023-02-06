@@ -1,8 +1,8 @@
 import {Server, Socket} from 'socket.io';
-import {parse} from 'cookie';
-import {deviceSessionCookieName} from '.';
-import {SubscribableEventManager} from '../client/src/api/sharedApi';
 import {DeviceData} from '../proto/lightning_vend/model';
+import {SubscribableEventManager} from '../client/src/api/sharedApi';
+import {deviceSessionCookieName} from '.';
+import {parse} from 'cookie';
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -12,7 +12,8 @@ import {DeviceData} from '../proto/lightning_vend/model';
 export class DeviceSocketManager {
   private activeSocketsBySocketId: {[socketId: string]: Socket} = {};
   private activeSocketsByDeviceSessionId: {[deviceSessionId: string]: Socket} = {};
-  private onDeviceConnectionStatusChangeEventManager: SubscribableEventManager<DeviceConnectionStatusEvent> = new SubscribableEventManager();
+  private onDeviceConnectionStatusChangeEventManager =
+    new SubscribableEventManager<DeviceConnectionStatusEvent>();
 
   constructor (server: Server, getDeviceData: (deviceSessionId: string) => DeviceData | undefined) {
     server.on('connection', (socket) => {
@@ -24,7 +25,7 @@ export class DeviceSocketManager {
       } else {
         socket.emit('updateDeviceData', undefined);
       }
-    
+
       socket.on('disconnect', () => {
         this.removeSocket(socket);
       });
@@ -52,10 +53,12 @@ export class DeviceSocketManager {
   }
 
   isDeviceConnected(deviceSessionId: string): boolean {
-    return !!this.activeSocketsByDeviceSessionId[deviceSessionId]
+    return !!this.activeSocketsByDeviceSessionId[deviceSessionId];
   }
 
-  subscribeToDeviceConnectionStatus(callback: (event: DeviceConnectionStatusEvent) => void): string {
+  subscribeToDeviceConnectionStatus(
+    callback: (event: DeviceConnectionStatusEvent) => void
+  ): string {
     return this.onDeviceConnectionStatusChangeEventManager.subscribe(callback);
   }
 
@@ -107,9 +110,9 @@ export class DeviceSocketManager {
   private static getDeviceSessionId(socket: Socket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[deviceSessionCookieName];
   }
-};
+}
 
 interface DeviceConnectionStatusEvent {
   deviceSessionId: string,
   isOnline: boolean
-};
+}
