@@ -3,17 +3,21 @@ import * as express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
-import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
-import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
 import {
+  ChannelGraphRequest,
   InvoiceSubscription,
   Invoice as LNDInvoice,
-  Invoice_InvoiceState as LNDInvoice_InvoiceState
+  Invoice_InvoiceState as LNDInvoice_InvoiceState,
+  NodeInfo,
+  NodeInfoRequest
 } from '../proto/lnd/lnrpc/lightning';
+import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
+import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
 import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {DeviceSocketManager} from './deviceSocketManager';
+import {LightningNodeSearcher} from './lightningNodeSearcher';
 import {Server} from 'socket.io';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
@@ -405,6 +409,30 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
     adminSocketManager.updateAdminData(lightningNodePubkey);
     res.status(200).send();
   });
+});
+
+const lightningNodeSearcher = new LightningNodeSearcher();
+
+lightning.DescribeGraph(ChannelGraphRequest.create()).then((channelGraph) => {
+  channelGraph.nodes.forEach((node) => lightningNodeSearcher.upsertNode(node));
+});
+
+lightning.SubscribeChannelGraph({})
+  .subscribe((graphTopologyUpdate) => {
+    for (let i = 0; i < graphTopologyUpdate.nodeUpdates.length; i++) {
+      let nodeUpdate = graphTopologyUpdate.nodeUpdates[i];
+      lightning.GetNodeInfo(NodeInfoRequest.create({pubKey: nodeUpdate.identityKey}))
+        .then((rawNodeInfo: any) => {
+          const nodeInfo = NodeInfo.fromJSON(rawNodeInfo);
+          if (nodeInfo.node) {
+            lightningNodeSearcher.upsertNode(nodeInfo.node);
+          }
+        });
+    }
+  });
+
+app.get('/api/searchLightningNodes/:text', (req, res) => {
+  return res.json(lightningNodeSearcher.search(req.params.text));
 });
 
 app.get('*/', (req, res) => {

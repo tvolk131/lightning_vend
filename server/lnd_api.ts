@@ -35,12 +35,13 @@ const macaroonCreds = grpc.credentials.createFromMetadataGenerator((_args, callb
 });
 
 const credentials = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
+const channelOptions = {'grpc.max_receive_message_length': 20000000};
 const lnrpcDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const lnrpc = lnrpcDescriptor.lnrpc as grpc.GrpcObject;
 const Lightning = lnrpc.Lightning as typeof grpc.Client;
 // TODO - Use an environment variable for the LN node URL.
 const lightningClient = new Lightning(
-  'lightningvend.m.voltageapp.io:10009', credentials);
+  'lightningvend.m.voltageapp.io:10009', credentials, channelOptions);
 
 export const lightning = new LightningClientImpl({
   request: (service, method, data) => {
