@@ -287,7 +287,12 @@ export const DevicePage = () => {
           }
         }}
       >
-        <Typography variant={'h3'}>Tap Me!</Typography>
+        <Typography
+          color={theme.palette.text.primary}
+          variant={'h3'}
+        >
+          Tap Me!
+        </Typography>
       </div>
     </div>
   );

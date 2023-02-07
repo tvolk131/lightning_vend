@@ -49,13 +49,15 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-  const isDarkMode = true; // TODO - Add a way for users to be able to set this.
+  // TODO - Add a way for users to be able to set this.
+  const isDarkMode = false;
 
   const theme = createTheme({
     palette: {
       primary: {main: '#F7931A'},
       secondary: blue,
-      mode: isDarkMode ? 'dark' : 'light'
+      mode: isDarkMode ? 'dark' : 'light',
+      background: isDarkMode ? undefined : {default: '#E7EBF0'}
     }
   });
 
