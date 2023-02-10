@@ -1,0 +1,14 @@
+{
+  "name": "rust-test",
+  "version": "0.1.0",
+  "description": "",
+  "main": "lib/index.js",
+  "author": "Tommy Volk <tvolk131@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "neon-cli": "^0.10.1"
+  },
+  "scripts": {
+    "build": "neon build --release"
+  }
+}

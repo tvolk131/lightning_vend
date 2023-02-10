@@ -16,6 +16,7 @@ import {Server} from 'socket.io';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
+import '../rust-test/lib';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 
