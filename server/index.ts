@@ -9,6 +9,7 @@ import {
   Invoice as LNDInvoice,
   Invoice_InvoiceState as LNDInvoice_InvoiceState
 } from '../proto/lnd/lnrpc/lightning';
+import {addInvoice, init as initRsLib} from '../rust-test/lib';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {DeviceSocketManager} from './deviceSocketManager';
@@ -16,7 +17,6 @@ import {Server} from 'socket.io';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
-import {init as initRsLib, addInvoice} from '../rust-test/lib';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 
@@ -179,12 +179,10 @@ app.post('/api/createInvoice', async (req, res) => {
     return response;
   }
 
-  const preCreatedInvoice = LNDInvoice.create({
-    value: req.body.valueSats,
-    expiry: 300 // 300 seconds -> 5 minutes.
-  });
-
-  const addInvoiceResponse = await addInvoice(req.body.valueSats, 300 /* 300 seconds -> 5 minutes. */);
+  const addInvoiceResponse = await addInvoice(
+    req.body.valueSats,
+    300 // 300 seconds -> 5 minutes.
+  );
   invoicesToDeviceSessionIds[addInvoiceResponse.paymentRequest] = deviceData.deviceSessionId;
   res.send(addInvoiceResponse.paymentRequest);
 });
