@@ -16,7 +16,7 @@ import {Server} from 'socket.io';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
-import '../rust-test/lib';
+import {init as initRsLib, addInvoice} from '../rust-test/lib';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 
@@ -184,11 +184,9 @@ app.post('/api/createInvoice', async (req, res) => {
     expiry: 300 // 300 seconds -> 5 minutes.
   });
 
-  lightning.addInvoice(preCreatedInvoice, (_: any, rawInvoice: any) => {
-    const invoice = LNDInvoice.fromJSON(rawInvoice);
-    invoicesToDeviceSessionIds[invoice.paymentRequest] = deviceData.deviceSessionId;
-    res.send(invoice.paymentRequest);
-  });
+  const addInvoiceResponse = await addInvoice(req.body.valueSats, 300 /* 300 seconds -> 5 minutes. */);
+  invoicesToDeviceSessionIds[addInvoiceResponse.paymentRequest] = deviceData.deviceSessionId;
+  res.send(addInvoiceResponse.paymentRequest);
 });
 
 app.post('/api/registerDevice', (req, res) => {
@@ -416,9 +414,11 @@ app.get('*/', (req, res) => {
   `);
 });
 
-const port = Number(process.env.PORT) || 3000;
-server.listen(port, () => {
-  console.log(`Listening on *:${port}`); // eslint-disable-line no-console
+initRsLib().then(() => {
+  const port = Number(process.env.PORT) || 3000;
+  server.listen(port, () => {
+    console.log(`Listening on *:${port}`); // eslint-disable-line no-console
+  });
 });
 
 lightning.subscribeInvoices({})

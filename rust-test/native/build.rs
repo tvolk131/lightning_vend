@@ -14,6 +14,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .out_dir("./src/proto")
         .compile_well_known_types(true)
+        .type_attribute(".lnrpc", "#[derive(serde::Serialize, serde::Deserialize)]")
+        .type_attribute(".lnrpc", "#[serde(rename_all = \"camelCase\")]")
         .compile(
             &[
                 "../../proto/lightning_vend/model.proto",

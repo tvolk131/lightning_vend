@@ -9,6 +9,6 @@
     "neon-cli": "^0.10.1"
   },
   "scripts": {
-    "build": "neon build --release"
+    "build": "neon build"
   }
 }
