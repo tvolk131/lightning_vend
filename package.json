@@ -5,9 +5,10 @@
     "check-typescript-types": "tsc --noEmit --skipLibCheck",
     "build-prod": "webpack --mode production",
     "build-dev": "webpack --watch --mode development",
+    "build-dev-no-watch": "webpack --mode development",
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "start-prod": "ts-node ./server/index.ts",
-    "start-dev": "nodemon ./server/index.ts",
+    "start-dev": "nodemon ./server/index.ts --watch server --watch client/out/bundle.js",
     "build-proto": "sh proto/build.sh"
   },
   "author": "Tommy Volk",

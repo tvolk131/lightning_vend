@@ -1,7 +1,7 @@
 # See https://www.gitpod.io/docs/introduction/learn-gitpod/gitpod-yaml for tips on how to modify this file.
 
 tasks:
-  - init: npm install
+  - init: npm install && npm run build-proto
   - name: MongoDB
     command: mkdir -p /workspace/data && mongod --dbpath /workspace/data
 

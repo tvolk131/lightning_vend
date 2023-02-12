@@ -1,0 +1,16 @@
+{
+	"name": "Ubuntu",
+	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/devcontainers/features/rust:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"rust-lang.rust-analyzer"
+			]
+		}
+	},
+	"onCreateCommand": "cd client && npm i && npm run build-proto && npm run build-dev-no-watch && cd .. && cd command_executor_server && cargo build && cd .."
+}

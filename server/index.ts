@@ -45,12 +45,20 @@ const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
 };
 
 const adminSocketManager = new AdminSocketManager(
-  new Server(server, {path: socketIoAdminPath}),
+  new Server(server, {
+    path: socketIoAdminPath,
+    pingInterval: 5000,
+    pingTimeout: 4000
+  }),
   (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId),
   getAdminData
 );
 const deviceSocketManager = new DeviceSocketManager(
-  new Server(server, {path: socketIoDevicePath}),
+  new Server(server, {
+    path: socketIoDevicePath,
+    pingInterval: 5000,
+    pingTimeout: 4000
+  }),
   (deviceSessionId) => deviceSessionManager.getDeviceData(deviceSessionId)
 );
 
@@ -396,14 +404,6 @@ app.get('*/', (req, res) => {
     <html>
     <head>
       <title>Lightning Vend</title>
-      <link
-        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
-        rel="stylesheet"
-      >
-      <link
-        href="https://fonts.googleapis.com/css?family=Material+Icons&display=block"
-        rel="stylesheet"
-      >
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body style="margin:auto">
