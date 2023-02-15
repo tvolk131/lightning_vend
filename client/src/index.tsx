@@ -33,6 +33,7 @@ const router = createBrowserRouter([
 const testClient = new DeviceServiceClient(
   'https://tvolk131-ominous-fiesta-5g6qrxwxwq27r6v-50052.preview.app.github.dev/');
 testClient.subscribeToDeviceUpdates(new Empty()).on('data', (data) => {
+  // eslint-disable-next-line no-console
   console.log(data);
 });
 
