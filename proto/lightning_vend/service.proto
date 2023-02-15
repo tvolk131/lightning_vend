@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package lightning_vend;
+
+import "google/protobuf/empty.proto";
+
+service AdminService {
+    rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+}
+
+service DeviceService {
+    rpc SubscribeToDeviceUpdates(google.protobuf.Empty) returns (stream DeviceUpdate);
+}
+
+message ListDevicesRequest {}
+
+message ListDevicesResponse {}
+
+message DeviceUpdate {}

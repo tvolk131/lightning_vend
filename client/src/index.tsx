@@ -4,6 +4,8 @@ import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {adminPagePath, devicePagePath} from '../../shared/constants';
 import {AdminPage} from './adminPage';
 import {DevicePage} from './devicePage';
+import {DeviceServiceClient} from '../../proto_out/proto/lightning_vend/ServiceServiceClientPb';
+import {Empty} from 'google-protobuf/google/protobuf/empty_pb';
 import {Helmet} from 'react-helmet';
 import {LandingPage} from './landingPage';
 import {NotFoundPage} from './notFoundPage';
@@ -27,6 +29,12 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage/>
   }
 ]);
+
+const testClient = new DeviceServiceClient(
+  'https://tvolk131-ominous-fiesta-5g6qrxwxwq27r6v-50052.preview.app.github.dev/');
+testClient.subscribeToDeviceUpdates(new Empty()).on('data', (data) => {
+  console.log(data);
+});
 
 const App = () => {
   const isDarkMode = true; // TODO - Add a way for users to be able to set this.
