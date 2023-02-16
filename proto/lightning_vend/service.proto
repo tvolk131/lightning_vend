@@ -3,9 +3,11 @@ syntax = "proto3";
 package lightning_vend;
 
 import "google/protobuf/empty.proto";
+import "lightning_vend/model.proto";
 
 service AdminService {
     rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+    rpc SubscribeToAdminUpdates(google.protobuf.Empty) returns (stream AdminUpdate);
 }
 
 service DeviceService {
@@ -14,6 +16,10 @@ service DeviceService {
 
 message ListDevicesRequest {}
 
-message ListDevicesResponse {}
+message ListDevicesResponse {
+    repeated DeviceData devices = 1;
+}
+
+message AdminUpdate {}
 
 message DeviceUpdate {}

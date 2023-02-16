@@ -4,7 +4,7 @@ import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {adminPagePath, devicePagePath} from '../../shared/constants';
 import {AdminPage} from './adminPage';
 import {DevicePage} from './devicePage';
-import {DeviceServiceClient} from '../../proto_out/proto/lightning_vend/ServiceServiceClientPb';
+import {DeviceServiceClient} from '../../proto_ts_gen/lightning_vend/ServiceServiceClientPb';
 import {Empty} from 'google-protobuf/google/protobuf/empty_pb';
 import {Helmet} from 'react-helmet';
 import {LandingPage} from './landingPage';
@@ -34,7 +34,19 @@ const testClient = new DeviceServiceClient(
   'https://tvolk131-ominous-fiesta-5g6qrxwxwq27r6v-50052.preview.app.github.dev/');
 testClient.subscribeToDeviceUpdates(new Empty()).on('data', (data) => {
   // eslint-disable-next-line no-console
-  console.log(data);
+  console.log('Data: ', data);
+}).on('metadata', (metadata) => {
+  // eslint-disable-next-line no-console
+  console.log('Metadata: ', metadata);
+}).on('error', (error) => {
+  // eslint-disable-next-line no-console
+  console.log('RPC Error: ', error);
+}).on('status', (status) => {
+  // eslint-disable-next-line no-console
+  console.log('Status: ', status);
+}).on('end', () => {
+  // eslint-disable-next-line no-console
+  console.log('RPC has ended!');
 });
 
 const App = () => {

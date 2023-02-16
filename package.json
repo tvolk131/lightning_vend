@@ -9,8 +9,8 @@
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "start-prod": "ts-node ./server/index.ts",
     "start-dev": "nodemon ./server/index.ts --watch server --watch client/out/bundle.js",
-    "build-proto": "sh proto/build.sh",
-    "build-grpc-web-proto": "npm install -g protoc-gen-grpc-web && mkdir -p proto_out && protoc -I=. ./proto/lightning_vend/service.proto ./proto/lightning_vend/model.proto --js_out=import_style=commonjs,binary:./proto_out --grpc-web_out=import_style=typescript,mode=grpcwebtext:./proto_out"
+    "build-proto": "sh proto/build.sh && npm run build-grpc-web-proto",
+    "build-grpc-web-proto": "sudo apt-get update && sudo apt-get install -y protobuf-compiler && npm install -g protoc-gen-grpc-web && cd proto && mkdir -p ../proto_ts_gen && protoc -I=. ./lightning_vend/service.proto ./lightning_vend/model.proto ./lnd/lnrpc/lightning.proto --js_out=import_style=commonjs,binary:../proto_ts_gen --grpc-web_out=import_style=typescript,mode=grpcwebtext:../proto_ts_gen"
   },
   "author": "Tommy Volk",
   "dependencies": {

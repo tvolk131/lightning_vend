@@ -17,7 +17,7 @@ bundle.js.LICENSE.txt
 *.macaroon
 *.cert
 /proto/**/*.ts
-/proto_out/
+/proto_ts_gen/
 
 # Editor directories and files
 .vscode/*
