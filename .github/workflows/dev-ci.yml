@@ -40,3 +40,7 @@ jobs:
         cargo clippy --features "liveace" -- -D warnings
         cargo clippy --features "adafruit_motorkit liveace" -- -D warnings
         cd ..
+        cd proto
+        ./api-linter --version
+        ./api-linter lightning_vend/*.proto --disable-rule core::0191::java-multiple-files --disable-rule core::0127::http-annotation --disable-rule core::0131::method-signature --disable-rule core::0133::http-uri-parent --disable-rule core::0191::java-package --disable-rule core::0215::versioned-packages --disable-rule core::0131::response-message-name --disable-rule core::0192::has-comments --disable-rule core::0191::java-outer-classname --disable-rule core::0131::request-name-required --disable-rule core::0131::request-unknown-fields --disable-rule core::0192::only-leading-comments
+        cd ..
