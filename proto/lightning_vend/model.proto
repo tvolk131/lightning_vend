@@ -2,29 +2,179 @@ syntax = "proto3";
 
 package lightning_vend;
 
-message DeviceData {
-  // TODO - Replace `device_session_id` with `device_session_id_hash` since the raw value should not be sent over the wire except as a cookie.
-  string device_session_id = 1;
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/timestamp.proto";
+import "lnrpc/lightning.proto";
 
-  string display_name = 2;
+// Top-level resource representing a user.
+message User {
+  option (google.api.resource) = {
+    type: "api.lightning_vend.com/User"
+    pattern: "users/{user}"
+  };
 
-  // TODO - Replace with the line below.
-  // string owner_user_id = 3;
-  string lightning_node_owner_pubkey = 3;
+  // The resource name of the user.
+  string name = 1 [(google.api.field_behavior) = IMMUTABLE];
 
-  repeated InventoryItem inventory = 4;
+  // When the user was created.
+  google.protobuf.Timestamp create_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY, (google.api.field_behavior) = IMMUTABLE];
 
-  repeated string supported_execution_commands = 5;
+  // When the user was last modified.
+  google.protobuf.Timestamp update_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  message AuthId {
+    oneof id_type {
+      string ln_node_pubkey = 1;
+    }
+  }
+
+  AuthId auth_id = 4 [(google.api.field_behavior) = INPUT_ONLY];
+
+}
+
+// Resource belonging to a user. Represents a physical vending machine.
+message Device {
+  option (google.api.resource) = {
+    type: "api.lightning_vend.com/Device"
+    pattern: "users/{user}/devices/{device}"
+  };
+
+  // The resource name of the device.
+  string name = 1 [(google.api.field_behavior) = IMMUTABLE];
+
+  // When the user was created.
+  google.protobuf.Timestamp create_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY, (google.api.field_behavior) = IMMUTABLE];
+
+  // When the user was last modified.
+  google.protobuf.Timestamp update_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The display name of the device.
+  string display_name = 4;
+
+  repeated InventoryItem inventory_items = 5;
+
+  repeated string supported_execution_commands = 6;
 }
 
 message InventoryItem {
+  // The display name of the inventory item.
   string display_name = 1;
 
-  int32 price_sats = 2;
+  Price price = 2;
 
-  // The command to run on the device upon successful item payment.
-  // Differs from `execution_webhook` above because this is _not_ an
-  // http/https string, but rather a command string that will be used
-  // to call a LightningVend Device Command
+  // The command to run on the device upon successful payment.
   string execution_command = 3;
+}
+
+message Price {
+  oneof denomination {
+    // Bitcoin amount in sats.
+    int32 btc_sats = 1;
+
+    // US Dollar amount in cents.
+    int32 usd_cents = 2;
+  }
+}
+
+// Resource belonging to a user. Represents a user attempting to purchase an item on a device owned by the user.
+message PurchaseOrder {
+  option (google.api.resource) = {
+    type: "api.lightning_vend.com/PurchaseOrder"
+    pattern: "users/{user}/purchaseOrders/{purchase_order}"
+  };
+
+  // The resource name of the purchase order.
+  string name = 1;
+
+  // When the purchase order was created.
+  google.protobuf.Timestamp create_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY, (google.api.field_behavior) = IMMUTABLE];
+
+  // When the purchase order was last modified.
+  google.protobuf.Timestamp update_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  string device = 4;
+
+  lnrpc.Invoice invoice = 5;
+
+  // The inventory item used to make the purchase order.
+  // This is a snapshot from when the purchase order
+  // was created, and will not change if the associated
+  // inventory item is updated or deleted.
+  InventoryItem inventory_item = 6;
+
+  // Simplified State Flow Diagram
+  //  _________________________________________________________
+  // /                                                         \
+  // |  AWAITING_PAYMENT-----------------------                 |
+  // |      |                                  \                |
+  // |      v                                   \               |
+  // |  PAYMENT_VERIFIED------                   \              |
+  // |      |                 \                   |             |
+  // |      v                  v                  v             |
+  // |  SUCCEEDED  EXECUTION_COMMAND_FAILED  PAYMENT_TIMED_OUT  |
+  // \__________________________________________________________/
+  //
+  //
+  // Full State Flow Diagram
+  //  ______________________________________________________________________________________________________
+  // /                                                                                                      \
+  // |      [Call CreatePurchaseOrder RPC]                                                                   |
+  // |                    |                                                                                  |
+  // |           [Invoice is created]                                                                        |
+  // |                    |                                                                                  |
+  // |                    v                                                                                  |
+  // |             AWAITING_PAYMENT----------------------[Invoice expires]----------------------             |
+  // |                    |                                                                      \           |
+  // |             [Invoice is paid]                                                              |          |
+  // |                    |                                                                       |          |
+  // |                    v                                                                       |          |
+  // |             PAYMENT_VERIFIED-----------------------------------                            |          |
+  // |                    |                                           \                           |          |
+  // |  [Call MarkPurchaseOrderSucceeded RPC]          [Call MarkPurchaseOrderFailed RPC]         |          |
+  // |                    |                                            |                          |          |
+  // |                    v                                            v                          v          |
+  // |                SUCCEEDED                             EXECUTION_COMMAND_FAILED      PAYMENT_TIMED_OUT  |
+  // \_______________________________________________________________________________________________________/
+  //
+  enum State {
+    // Unspecified state. Value is not used.
+    STATE_UNSPECIFIED = 0;
+
+    // Invoice is active but still unpaid.
+    // This is the starting state for a
+    // newly created purchase order
+    // This state will automatically transition to one of
+    // two states based on when/if the user who created the
+    // purchase order pays the invoice associated with it.
+    // As soon as the invoice is paid, state becomes PAYMENT_VERIVIED.
+    // If left unpaid, state becomes PAYMENT_TIMED_OUT when the invoice expires.
+    AWAITING_PAYMENT = 1;
+
+    // Invoice timed out without being paid.
+    // This is a final and immutable resting state.
+    PAYMENT_TIMED_OUT = 2;
+
+    // The invoice associated with this purchase order has been paid.
+    // The device has not yet executed the necessary command.
+    // This is a resting state and will not automatically change.
+    // In order to push this state to a final immutable resting
+    // state, one of two RPCs must be called by the client:
+    // * If the execution command succeeded, MarkPurchaseOrderSucceeded
+    //   will move the purchase order into the SUCCEEDED state.
+    // * If the execution command failed, MarkPurchaseOrderFailed will
+    //   move the purchase order into the EXECUTION_COMMAND_FAILED state.
+    PAYMENT_VERIVIED = 3;
+
+    // Invoice has been paid but the command failed to be executed.
+    // This is a final and immutable resting state.
+    EXECUTION_COMMAND_FAILED = 4;
+
+    // Invoice has been paid and the command has been executed.
+    // This is a final and immutable resting state.
+    SUCCEEDED = 5;
+  }
+
+  // The state of the purchase order.
+  State state = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 }

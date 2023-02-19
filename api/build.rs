@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &[
                 "../proto/lightning_vend/model.proto",
                 "../proto/lightning_vend/service.proto",
-                "../proto/lnd/lnrpc/lightning.proto",
+                "../proto/lnrpc/lightning.proto",
             ],
             &["../proto"],
         )?;

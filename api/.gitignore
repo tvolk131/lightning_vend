@@ -1,3 +1,4 @@
+/src/proto/google.api.rs
 /src/proto/google.protobuf.rs
 /src/proto/lightning_vend.rs
 /src/proto/lnrpc.rs

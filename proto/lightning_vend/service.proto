@@ -2,24 +2,219 @@ syntax = "proto3";
 
 package lightning_vend;
 
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
 import "lightning_vend/model.proto";
 
-service AdminService {
-    rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
-    rpc SubscribeToAdminUpdates(google.protobuf.Empty) returns (stream AdminUpdate);
+// LightningVend Service.
+service LightningVendService {
+    // ( ---------------------- )
+    // ( -- Standard Methods -- )
+    // ( ---------------------- )
+
+    // Returns a Device.
+    rpc GetDevice(GetDeviceRequest) returns (Device) {
+        option (google.api.method_signature) = "name";
+    };
+
+    // Lists Devices.
+    rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse) {
+        option (google.api.method_signature) = "parent";
+    };
+
+    // Creates a Device.
+    rpc CreateDevice(CreateDeviceRequest) returns (Device) {
+        option (google.api.method_signature) = "parent,device";
+    };
+
+    // Updates a Device.
+    rpc UpdateDevice(UpdateDeviceRequest) returns (Device) {
+        option (google.api.method_signature) = "device,update_mask";
+    };
+
+    // Deletes a Device.
+    rpc DeleteDevice(DeleteDeviceRequest) returns (google.protobuf.Empty) {
+        option (google.api.method_signature) = "name";
+    };
+
+    // Lists PurchaseOrders.
+    rpc ListPurchaseOrders(ListPurchaseOrdersRequest) returns (ListPurchaseOrdersResponse) {
+        option (google.api.method_signature) = "parent";
+    };
+
+    // Creates a PurchaseOrder.
+    rpc CreatePurchaseOrder(CreatePurchaseOrderRequest) returns (PurchaseOrder) {
+        option (google.api.method_signature) = "parent,purchase_order";
+    };
+
+    // Updates a PurchaseOrder.
+    rpc UpdatePurchaseOrder(UpdatePurchaseOrderRequest) returns (PurchaseOrder) {
+        option (google.api.method_signature) = "purchase_order,update_mask";
+    };
+
+
+    // ( -------------------- )
+    // ( -- Custom Methods -- )
+    // ( -------------------- )
+
+    // Gets a user or creates one if it does not exist, in a single atomic operation.
+    // This method of creating users may seem strange. The reason we have a 'get-or-create' instead
+    // of a simpler 'create' rpc is because of the way account creation works. We don't distinguish
+    // between account creation and a normal sign-in to the end user. So, at login time we need to
+    // treat every user the same regardless of whether they've signed in before since we don't know
+    // that ahead of time. With the get-or-create pattern we provide all data we might need if a new
+    // user needs to be created, and ignore it if the user already exists.
+    rpc GetOrCreateUser (GetOrCreateUserRequest) returns (User);
+
+    // Mark a paid-for purchase order as fully executed.
+    // This should be called after any necessary post-payment actions have finished.
+    // Will return `FAILED_PRECONDITION` if the purchase order is not yet paid for.
+    rpc MarkPurchaseOrderSucceeded (MarkPurchaseOrderSucceededRequest) returns (PurchaseOrder);
+
+    // Mark a paid-for purchase order as failed.
+    // This should be called after any necessary post-payment actions have been attempted and deemed unsuccessful.
+    // Will return `FAILED_PRECONDITION` if the purchase order is not yet paid for.
+    rpc MarkPurchaseOrderFailed (MarkPurchaseOrderFailedRequest) returns (PurchaseOrder);
+
+    // Subscribe to a stream containing all purchase orders that enter(ed) the `PAYMENT_VERIFIED` state.
+    rpc SubscribePurchaseOrderPayments(SubscribePurchaseOrderPaymentsRequest) returns (stream PurchaseOrder);
+
 }
 
-service DeviceService {
-    rpc SubscribeToDeviceUpdates(google.protobuf.Empty) returns (stream DeviceUpdate);
+// Request message for GetDevice.
+message GetDeviceRequest {
+    // The name of the device to retrieve.
+    // Format: users/{user}/devices/{device}.
+    string name = 1 [(google.api.field_behavior) = REQUIRED, (google.api.resource_reference) = {type: "api.lightning_vend.com/Device"}];
 }
 
-message ListDevicesRequest {}
+// Request message for ListDevices.
+message ListDevicesRequest {
+    // The parent user.
+    // Format: users/{user}.
+    string parent = 1 [(google.api.field_behavior) = REQUIRED, (google.api.resource_reference) = {type: "api.lightning_vend.com/User"}];
 
+    // The maximum page size.
+    // If unspecified, at most 50 items will be returned.
+    // The maximum value is 1000; values above 1000 will be coerced to 1000.
+    int32 page_size = 2;
+
+    // Page token returned from a previous ListDevices rpc.
+    string page_token = 3;
+}
+
+// Response message for ListDevices.
 message ListDevicesResponse {
-    repeated DeviceData devices = 1;
+    // The requested devices.
+    repeated Device devices = 1;
+
+    // Opaque string. Can be passed to a subsequent
+    // request to retrieve the next page of items.
+    string next_page_token = 2;
+
+    // The total number of items in the list specified in the request.
+    int64 total_size = 3;
 }
 
-message AdminUpdate {}
+// Request message for CreateDevice.
+message CreateDeviceRequest {
+    // The parent user.
+    // Format: users/{user}.
+    string parent = 1 [(google.api.field_behavior) = REQUIRED, (google.api.resource_reference) = {type: "api.lightning_vend.com/User"}];
 
-message DeviceUpdate {}
+    // The device to create.
+    Device device = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for UpdateDevice.
+message UpdateDeviceRequest {
+    // The device to update.
+    Device device = 1 [(google.api.field_behavior) = REQUIRED];
+  
+    // The list of fields to be updated.
+    google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for DeleteDevice.
+message DeleteDeviceRequest {
+    // The name of the device to delete.
+    // Format: users/{user}/devices/{device}.
+    string name = 1 [(google.api.field_behavior) = REQUIRED, (google.api.resource_reference) = {type: "api.lightning_vend.com/Device"}];
+}
+
+// Request message for ListPurchaseOrders.
+message ListPurchaseOrdersRequest {
+    // The parent user.
+    // Format: users/{user}.
+    string parent = 1 [(google.api.field_behavior) = REQUIRED, (google.api.resource_reference) = {type: "api.lightning_vend.com/User"}];
+
+    // The maximum page size.
+    // If unspecified, at most 50 items will be returned.
+    // The maximum value is 1000; values above 1000 will be coerced to 1000.
+    int32 page_size = 2;
+
+    // Page token returned from a previous ListPurchaseOrders rpc.
+    string page_token = 3;
+}
+
+// Response message for ListPurchaseOrders.
+message ListPurchaseOrdersResponse {
+    // The requested purchase orders.
+    repeated PurchaseOrder purchase_orders = 1;
+
+    // Opaque string. Can be passed to a subsequent
+    // request to retrieve the next page of items.
+    string next_page_token = 2;
+
+    // The total number of items in the list specified in the request.
+    int64 total_size = 3;
+}
+
+// Request message for CreatePurchaseOrder.
+message CreatePurchaseOrderRequest {
+    // The parent user.
+    // Format: users/{user}.
+    string parent = 1 [(google.api.field_behavior) = REQUIRED, (google.api.resource_reference) = {type: "api.lightning_vend.com/User"}];
+
+    // The purchase order to create.
+    PurchaseOrder purchase_order = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for UpdatePurchaseOrder.
+message UpdatePurchaseOrderRequest {
+    // The purchase order to update.
+    PurchaseOrder purchase_order = 1 [(google.api.field_behavior) = REQUIRED];
+  
+    // The list of fields to be updated.
+    google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for GetOrCreateUser.
+message GetOrCreateUserRequest {
+    // Used to create the user if it does not exist yet.
+    User user = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for MarkPurchaseOrderSucceeded.
+message MarkPurchaseOrderSucceededRequest {
+    // The name of the device to retrieve.
+    // Format: users/{user}/purchaseOrders/{purchase_order}.
+    string name = 1;
+}
+
+// Request message for MarkPurchaseOrderFailed.
+message MarkPurchaseOrderFailedRequest {
+    // The name of the device to retrieve.
+    // Format: users/{user}/purchaseOrders/{purchase_order}.
+    string name = 1;
+}
+
+// Request message for SubscribePurchaseOrderPayments.
+message SubscribePurchaseOrderPaymentsRequest {
+    // Whether to send all existing purchase orders that
+    // are already in the `PAYMENT_VERIFIED` state upfront.
+    bool include_current_payment_verified_purchase_orders = 1;
+}

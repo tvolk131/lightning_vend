@@ -1,101 +1,111 @@
 use super::proto::google::protobuf::Empty;
-use super::proto::lightning_vend::admin_service_server::AdminService;
-use super::proto::lightning_vend::device_service_server::DeviceService;
-use crate::proto::lightning_vend::{AdminUpdate, DeviceUpdate, ListDevicesRequest, ListDevicesResponse};
+use super::proto::lightning_vend::{
+    lightning_vend_service_server::LightningVendService, CreateDeviceRequest,
+    CreatePurchaseOrderRequest, DeleteDeviceRequest, Device, GetDeviceRequest,
+    GetOrCreateUserRequest, ListDevicesRequest, ListDevicesResponse, ListPurchaseOrdersRequest,
+    ListPurchaseOrdersResponse, MarkPurchaseOrderFailedRequest, MarkPurchaseOrderSucceededRequest,
+    PurchaseOrder, SubscribePurchaseOrderPaymentsRequest, UpdateDeviceRequest,
+    UpdatePurchaseOrderRequest, User,
+};
 use futures::Stream;
 use std::pin::Pin;
-use tokio::sync::mpsc;
-use tokio_stream::wrappers::ReceiverStream;
-use tonic::{Response, Status};
+use tonic::{Request, Response, Status};
 
-pub struct AdminServiceImpl {}
+pub struct LightningVendServiceImpl {
+}
 
-impl AdminServiceImpl {
+impl LightningVendServiceImpl {
     pub fn new() -> Self {
         Self {}
     }
 }
 
 #[tonic::async_trait]
-impl AdminService for AdminServiceImpl {
-    type SubscribeToAdminUpdatesStream =
-        Pin<Box<dyn Stream<Item = Result<AdminUpdate, Status>> + Send>>;
+impl LightningVendService for LightningVendServiceImpl {
+    type SubscribePurchaseOrderPaymentsStream =
+        Pin<Box<dyn Stream<Item = Result<PurchaseOrder, Status>> + Send>>;
+
+    async fn get_device(
+        &self,
+        request: Request<GetDeviceRequest>,
+    ) -> Result<Response<Device>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
 
     async fn list_devices(
         &self,
-        request: tonic::Request<ListDevicesRequest>,
-    ) -> Result<tonic::Response<ListDevicesResponse>, Status> {
-        Err(Status::unimplemented("RPC is unimplemented."))
+        request: Request<ListDevicesRequest>,
+    ) -> Result<Response<ListDevicesResponse>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
     }
 
-    async fn subscribe_to_admin_updates(
+    async fn create_device(
         &self,
-        request: tonic::Request<Empty>,
-    ) -> Result<tonic::Response<Self::SubscribeToAdminUpdatesStream>, Status> {
-        let (tx, rx) = mpsc::channel(128);
-
-        tokio::spawn(async move {
-            for _ in 0..10 {
-                match tx.send(Result::<_, Status>::Ok(AdminUpdate {})).await {
-                    Ok(_) => {
-                        println!("Admin update was sent to client!");
-                    }
-                    Err(_) => {
-                        println!("Admin update failed to send!");
-                    }
-                }
-                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-            }
-        });
-
-        Ok(Response::new(
-            Box::pin(ReceiverStream::new(rx)) as Self::SubscribeToAdminUpdatesStream
-        ))
+        request: Request<CreateDeviceRequest>,
+    ) -> Result<Response<Device>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
     }
-}
 
-pub struct DeviceServiceImpl {}
-
-impl DeviceServiceImpl {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-#[tonic::async_trait]
-impl DeviceService for DeviceServiceImpl {
-    type SubscribeToDeviceUpdatesStream =
-        Pin<Box<dyn Stream<Item = Result<DeviceUpdate, Status>> + Send>>;
-
-    async fn subscribe_to_device_updates(
+    async fn update_device(
         &self,
-        request: tonic::Request<Empty>,
-    ) -> Result<tonic::Response<Self::SubscribeToDeviceUpdatesStream>, Status> {
-        let (tx, rx) = mpsc::channel(128);
+        request: Request<UpdateDeviceRequest>,
+    ) -> Result<Response<Device>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
 
-        println!("Channel opened!");
-        println!("Metadata: {:#?}", request.metadata());
+    async fn delete_device(
+        &self,
+        request: Request<DeleteDeviceRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
 
-        tokio::spawn(async move {
-            for _ in 0..10 {
-                match tx.send(Result::<_, Status>::Ok(DeviceUpdate {})).await {
-                    Ok(_) => {
-                        println!("Device update was sent to client!");
-                    }
-                    Err(_) => {
-                        println!("Device update failed to send!");
-                    }
-                }
-                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-            }
-            tx.closed().await;
-            println!("Channel closed!");
-        });
+    async fn list_purchase_orders(
+        &self,
+        request: Request<ListPurchaseOrdersRequest>,
+    ) -> Result<Response<ListPurchaseOrdersResponse>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
 
-        let mut response = Response::new(Box::pin(ReceiverStream::new(rx)) as Self::SubscribeToDeviceUpdatesStream);
-        let metadata = response.metadata_mut();
-        metadata.insert("set-cookie", tonic::metadata::AsciiMetadataValue::from_static("grpctest=hello-world-123-test; domain=https://tvolk131-ominous-fiesta-5g6qrxwxwq27r6v-3000.preview.app.github.dev"));
+    async fn create_purchase_order(
+        &self,
+        request: Request<CreatePurchaseOrderRequest>,
+    ) -> Result<Response<PurchaseOrder>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
 
-        Ok(response)
+    async fn update_purchase_order(
+        &self,
+        request: Request<UpdatePurchaseOrderRequest>,
+    ) -> Result<Response<PurchaseOrder>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
+
+    async fn get_or_create_user(
+        &self,
+        request: Request<GetOrCreateUserRequest>,
+    ) -> Result<Response<User>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
+
+    async fn mark_purchase_order_succeeded(
+        &self,
+        request: Request<MarkPurchaseOrderSucceededRequest>,
+    ) -> Result<Response<PurchaseOrder>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
+
+    async fn mark_purchase_order_failed(
+        &self,
+        request: Request<MarkPurchaseOrderFailedRequest>,
+    ) -> Result<Response<PurchaseOrder>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
+    }
+
+    async fn subscribe_purchase_order_payments(
+        &self,
+        request: Request<SubscribePurchaseOrderPaymentsRequest>,
+    ) -> Result<tonic::Response<Self::SubscribePurchaseOrderPaymentsStream>, Status> {
+        Err(Status::unimplemented("RPC is not yet implemented."))
     }
 }
