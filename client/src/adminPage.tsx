@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  Button,
   CircularProgress,
   Grid,
   List,
@@ -8,12 +7,12 @@ import {
   ListItemIcon,
   ListItemText,
   Paper,
-  TextField,
   Typography,
   useTheme
 } from '@mui/material';
 import {Circle as CircleIcon} from '@mui/icons-material';
 import {DeviceSettingsPanel} from './adminPage/deviceSettingsPanel';
+import {LoginBox} from './adminPage/loginBox';
 import {adminApi} from './api/adminApi';
 import {useState} from 'react';
 
@@ -24,33 +23,12 @@ export const AdminPage = () => {
 
   const theme = useTheme();
 
-  const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
-
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
 
   return (
     <div style={{padding: theme.spacing(2), margin: 'auto', maxWidth: '1000px'}}>
       {loadableAdminData.state === 'loading' && <CircularProgress/>}
-      {loadableAdminData.state === 'error' && (
-        <div>
-          <TextField
-            value={nodeRegistrationPubkey}
-            onChange={(e) => setNodeRegistrationPubkey(e.target.value)}
-            label={'LN Node Pubkey'}
-            style={{margin: '20px'}}
-          />
-          <Button
-            variant={'contained'}
-            disabled={!nodeRegistrationPubkey.length}
-            onClick={() => {
-              // TODO - Display a loading spinner until this promise resolves.
-              adminApi.registerAdmin(nodeRegistrationPubkey);
-            }}
-          >
-            Register
-          </Button>
-        </div>
-      )}
+      {loadableAdminData.state === 'error' && <LoginBox/>}
       {loadableAdminData.state === 'loaded' && (
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
