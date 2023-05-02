@@ -83,7 +83,10 @@
         "error",
         13
       ],
-      "max-len": ["error", 100],
+      "max-len": [
+        "error",
+        100
+      ],
       "new-parens": "error",
       "no-console": "error",
       "no-multiple-empty-lines": "error",
