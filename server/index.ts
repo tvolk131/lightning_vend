@@ -9,6 +9,7 @@ import {
   Invoice as LNDInvoice,
   Invoice_InvoiceState as LNDInvoice_InvoiceState
 } from '../proto/lnd/lnrpc/lightning';
+import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {DeviceSocketManager} from './deviceSocketManager';
@@ -276,11 +277,12 @@ app.post('/api/registerDevice', (req, res) => {
   }
 });
 
-// TODO - CRITICAL - This is currently a completely unauthorized login method
-// where you simply declare that you're the owner of a particular node to login
-// as that node. We need to add some method of actually verifying this. Maybe
-// do something similar to https://lightningnetwork.plus/.
-app.get('/api/registerAdmin/:lightningNodePubkey', (req, res) => {
+app.get('/api/getLnAuthMessage', async (req, res) => {
+  // Generate an unsigned message that's valid for 5 minutes.
+  res.send(createSignableMessageWithTTL(60 * 5));
+});
+
+app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
   let adminSessionId;
 
   if (req.headers.cookie) {
@@ -292,15 +294,22 @@ app.get('/api/registerAdmin/:lightningNodePubkey', (req, res) => {
     adminSessionId = makeUuid();
   }
 
+  let lnNodePubkey;
+  try {
+    lnNodePubkey = await verifyMessage(req.params.message, req.params.signature);
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+
   const {isNew} = adminSessionManager.getOrCreateAdminSession(
     adminSessionId,
-    req.params.lightningNodePubkey
+    lnNodePubkey
   );
 
   if (isNew) {
-    res.cookie(adminSessionCookieName, adminSessionId, {path: '/'}).send();
+    return res.cookie(adminSessionCookieName, adminSessionId, {path: '/'}).send();
   } else {
-    res.status(400).send('Device is already registered!');
+    return res.status(400).send('Device is already registered!');
   }
 });
 

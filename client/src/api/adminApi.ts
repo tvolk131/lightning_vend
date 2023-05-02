@@ -26,8 +26,12 @@ class AdminApi extends ReactSocket {
     });
   }
 
-  async registerAdmin(lightningNodePubkey: string): Promise<void> {
-    await axios.get(`/api/registerAdmin/${lightningNodePubkey}`);
+  async getLnAuthMessage(): Promise<string> {
+    return (await axios.get('/api/getLnAuthMessage')).data;
+  }
+
+  async registerAdmin(message: string, signature: string): Promise<void> {
+    await axios.get(`/api/registerAdmin/${message}/${signature}`);
     this.disconnectAndReconnectSocket();
   }
 
