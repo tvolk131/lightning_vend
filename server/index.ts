@@ -6,6 +6,7 @@ import {AdminData, AdminSessionManager} from './adminSessionManager';
 import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
 import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
 import {
+  InvoiceSubscription,
   Invoice as LNDInvoice,
   Invoice_InvoiceState as LNDInvoice_InvoiceState
 } from '../proto/lnd/lnrpc/lightning';
@@ -181,14 +182,12 @@ app.post('/api/createInvoice', async (req, res) => {
 
   const preCreatedInvoice = LNDInvoice.create({
     value: req.body.valueSats,
-    expiry: 300 // 300 seconds -> 5 minutes.
+    expiry: '300' // 300 seconds -> 5 minutes.
   });
 
-  lightning.addInvoice(preCreatedInvoice, (_: any, rawInvoice: any) => {
-    const invoice = LNDInvoice.fromJSON(rawInvoice);
-    invoicesToDeviceSessionIds[invoice.paymentRequest] = deviceData.deviceSessionId;
-    res.send(invoice.paymentRequest);
-  });
+  const addInvoiceResponse = await lightning.AddInvoice(preCreatedInvoice);
+  invoicesToDeviceSessionIds[addInvoiceResponse.paymentRequest] = deviceData.deviceSessionId;
+  res.send(addInvoiceResponse.paymentRequest);
 });
 
 app.post('/api/registerDevice', (req, res) => {
@@ -429,9 +428,8 @@ server.listen(port, () => {
   console.log(`Listening on *:${port}`); // eslint-disable-line no-console
 });
 
-lightning.subscribeInvoices({})
-  .on('data', (rawInvoice: any) => {
-    const invoice = LNDInvoice.fromJSON(rawInvoice);
+lightning.SubscribeInvoices(InvoiceSubscription.create())
+  .subscribe((invoice) => {
     if (invoice.state === LNDInvoice_InvoiceState.SETTLED && invoice.paymentRequest) {
       const deviceSessionId = invoicesToDeviceSessionIds[invoice.paymentRequest];
       if (deviceSessionId) {

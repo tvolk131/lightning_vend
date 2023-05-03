@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
+import {LightningClientImpl} from '../proto/lnd/lnrpc/lightning';
+import {Observable} from 'rxjs';
 
 const loaderOptions: protoLoader.Options = {
   keepCase: false,
@@ -34,7 +36,58 @@ const macaroonCreds = grpc.credentials.createFromMetadataGenerator((_args, callb
 
 const credentials = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
 const lnrpcDescriptor = grpc.loadPackageDefinition(packageDefinition);
-const lnrpc = lnrpcDescriptor.lnrpc;
+const lnrpc = lnrpcDescriptor.lnrpc as grpc.GrpcObject;
+const Lightning = lnrpc.Lightning as typeof grpc.Client;
 // TODO - Use an environment variable for the LN node URL.
-export const lightning =
-  new (lnrpc as any).Lightning('lightningvend.m.voltageapp.io:10009', credentials);
+const lightningClient = new Lightning(
+  'lightningvend.m.voltageapp.io:10009', credentials);
+
+export const lightning = new LightningClientImpl({
+  request: (service, method, data) => {
+    return new Promise((resolve, reject) => {
+      lightningClient.makeUnaryRequest(
+        `/${service}/${method}`,
+        x => Buffer.from(x),
+        x => x,
+        data,
+        null,
+        null,
+        (err, res) => {
+          if (err) {
+            return reject(err);
+          } else if (res) {
+            return resolve(res);
+          } else {
+            return reject('No data returned from GRPC!');
+          }
+        }
+      );
+    });
+  },
+  clientStreamingRequest: (service, method, data) => {
+    throw 'Client streaming is unimplemented!';
+  },
+  serverStreamingRequest: (service, method, data) => {
+    return new Observable((subscriber) => {
+      const stream = lightningClient.makeServerStreamRequest(
+        `/${service}/${method}`,
+        x => Buffer.from(x),
+        x => x,
+        data
+      );
+
+      (async () => {
+        try {
+          for await (const value of stream) {
+            subscriber.next(value);
+          }
+        } catch (err) {
+          subscriber.error(err);
+        }
+      })();
+    });
+  },
+  bidirectionalStreamingRequest: (service, method, data) => {
+    throw 'Bidirectional streaming is unimplemented!';
+  }
+});
