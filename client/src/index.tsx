@@ -8,7 +8,7 @@ import {Helmet} from 'react-helmet';
 import {LandingPage} from './landingPage';
 import {NotFoundPage} from './notFoundPage';
 import {blue} from '@mui/material/colors';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 
 const router = createBrowserRouter([
   {
@@ -52,8 +52,9 @@ const App = () => {
   );
 };
 
-render((
+const root = createRoot(document.getElementById('app')!);
+root.render(
   <React.StrictMode>
     <App/>
   </React.StrictMode>
-), document.getElementById('app'));
+);
