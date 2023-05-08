@@ -10,7 +10,7 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
-import {Circle as CircleIcon} from '@mui/icons-material';
+import CircleIcon from '@mui/icons-material/Circle';
 import {DeviceSettingsPanel} from './adminPage/deviceSettingsPanel';
 import {LoginBox} from './adminPage/loginBox';
 import {adminApi} from './api/adminApi';

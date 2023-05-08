@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Alert, Button, Chip, Paper, TextField, Typography} from '@mui/material';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {AsyncLoadableData} from './api/sharedApi';
-import {Circle as CircleIcon} from '@mui/icons-material';
+import CircleIcon from '@mui/icons-material/Circle';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {LoadingButton} from '@mui/lab';
 import {SelectionMenu} from './selectionMenu';

@@ -5,32 +5,39 @@ const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-const config: webpack.Configuration = {
-  entry: `${SRC_DIR}/index.tsx`,
-  output: {
-    filename: 'bundle.js',
-    path: DIST_DIR
-  },
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: {
-          loader: 'ts-loader',
-          options: {
-            transpileOnly: true
+export default (_: any, {watch, mode}: {watch?: boolean, mode?: string}): webpack.Configuration => {
+  const maxBundleSize = mode === 'production' ? 1200000 : 6000000;
+
+  return {
+    entry: `${SRC_DIR}/index.tsx`,
+    output: {
+      filename: 'bundle.js',
+      path: DIST_DIR
+    },
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true
+            }
           }
         }
-      }
-    ]
-  },
-  resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
-  },
-  plugins: [
-    new ForkTsCheckerWebpackPlugin()
-    // new BundleAnalyzerPlugin() // Uncomment for bundle analysis
-  ]
+      ]
+    },
+    resolve: {
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+    },
+    plugins: [
+      new ForkTsCheckerWebpackPlugin()
+      // new BundleAnalyzerPlugin() // Uncomment for bundle analysis
+    ],
+    performance: {
+      maxAssetSize: maxBundleSize,
+      maxEntrypointSize: maxBundleSize,
+      hints: 'error'
+    }
+  };
 };
-
-export default config;

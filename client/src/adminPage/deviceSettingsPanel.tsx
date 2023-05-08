@@ -14,13 +14,11 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import {
-  CheckCircle as CheckCircleIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon
-} from '@mui/icons-material';
 import {useEffect, useState} from 'react';
 import {AdminDeviceView} from '../../../server/adminSessionManager';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import {InventoryItem} from '../../../proto/lightning_vend/model';
 import {adminApi} from '../api/adminApi';
 

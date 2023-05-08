@@ -1,12 +1,10 @@
 import * as React from 'react';
-import {
-  Bolt as BoltIcon,
-  Dashboard as DashboardIcon,
-  Tune as TuneIcon
-} from '@mui/icons-material';
 import {Box, Button, Typography, useTheme} from '@mui/material';
 import {CSSProperties, ReactNode, useEffect, useState} from 'react';
 import {animated, useSpring} from '@react-spring/web';
+import BoltIcon from '@mui/icons-material/Bolt';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import TuneIcon from '@mui/icons-material/Tune';
 import {Tweet} from 'react-twitter-widgets';
 import {adminPagePath} from '../../shared/constants';
 import {useNavigate} from 'react-router-dom';

@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import {useEffect, useState} from 'react';
 import {AsyncLoadableData} from '../api/sharedApi';
-import {ContentCopy as ContentCopyIcon} from '@mui/icons-material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {CountdownTimer} from './countdownTimer';
 import {LoadingButton} from '@mui/lab';
 import {adminApi} from '../api/adminApi';

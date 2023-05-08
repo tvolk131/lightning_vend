@@ -10,7 +10,7 @@ import {
   Zoom
 } from '@mui/material';
 import {CSSProperties, useEffect, useReducer, useRef} from 'react';
-import {Cancel as CancelIcon} from '@mui/icons-material';
+import CancelIcon from '@mui/icons-material/Cancel';
 import {InventoryItem} from '../../proto/lightning_vend/model';
 import {Invoice} from './invoice';
 import {TransitionProps} from '@mui/material/transitions';
