@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircleIcon from '@mui/icons-material/Circle';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
-import {LoadingButton} from '@mui/lab';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Paper from '@mui/material/Paper';
 import {SelectionMenu} from './selectionMenu';
 import TextField from '@mui/material/TextField';
