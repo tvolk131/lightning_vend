@@ -39,8 +39,6 @@ export const LandingPage = () => {
     <Box sx={{
       height: '100vh',
       overflow: 'auto',
-      background: theme.palette.background.default,
-      color: theme.palette.text.primary,
       textAlign: 'center',
       alignItems: 'center',
       justifyContent: 'center',

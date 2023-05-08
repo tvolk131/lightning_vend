@@ -3,8 +3,8 @@ import {RouterProvider, createBrowserRouter} from 'react-router-dom';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {adminPagePath, devicePagePath} from '../../shared/constants';
 import {AdminPage} from './adminPage';
+import Box from '@mui/material/Box';
 import {DevicePage} from './devicePage';
-import {Helmet} from 'react-helmet';
 import {LandingPage} from './landingPage';
 import {NotFoundPage} from './notFoundPage';
 import {blue} from '@mui/material/colors';
@@ -44,10 +44,13 @@ const App = () => {
       {/* This meta tag makes the mobile experience
       much better by preventing text from being tiny. */}
       <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
-      <Helmet>
-        <style>{`body { background-color: ${theme.palette.background.default}; }`}</style>
-      </Helmet>
-      <RouterProvider router={router}/>
+      <Box sx={{
+        color: theme.palette.text.primary,
+        background: theme.palette.background.default,
+        height: '100vh'
+      }}>
+        <RouterProvider router={router}/>
+      </Box>
     </ThemeProvider>
   );
 };
