@@ -1,19 +1,17 @@
 import * as React from 'react';
-import {
-  Alert,
-  CircularProgress,
-  Dialog,
-  Fab,
-  Paper,
-  Slide,
-  Typography,
-  Zoom
-} from '@mui/material';
 import {CSSProperties, useEffect, useReducer, useRef} from 'react';
+import Alert from '@mui/material/Alert';
 import CancelIcon from '@mui/icons-material/Cancel';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import Fab from '@mui/material/Fab';
 import {InventoryItem} from '../../proto/lightning_vend/model';
 import {Invoice} from './invoice';
+import Paper from '@mui/material/Paper';
+import Slide from '@mui/material/Slide';
 import {TransitionProps} from '@mui/material/transitions';
+import Typography from '@mui/material/Typography';
+import Zoom from '@mui/material/Zoom';
 import axios from 'axios';
 import {deviceApi} from './api/deviceApi';
 

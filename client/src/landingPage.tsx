@@ -1,13 +1,16 @@
 import * as React from 'react';
-import {Box, Button, Typography, useTheme} from '@mui/material';
 import {CSSProperties, ReactNode, useEffect, useState} from 'react';
 import {animated, useSpring} from '@react-spring/web';
 import BoltIcon from '@mui/icons-material/Bolt';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import TuneIcon from '@mui/icons-material/Tune';
 import {Tweet} from 'react-twitter-widgets';
+import Typography from '@mui/material/Typography';
 import {adminPagePath} from '../../shared/constants';
 import {useNavigate} from 'react-router-dom';
+import {useTheme} from '@mui/material/styles';
 import {useTrackVisibility} from 'react-intersection-observer-hook';
 
 export const LandingPage = () => {

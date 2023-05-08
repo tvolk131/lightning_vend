@@ -1,11 +1,16 @@
 import * as React from 'react';
-import {Alert, Button, Chip, Paper, TextField, Typography} from '@mui/material';
 import {useCallback, useEffect, useRef, useState} from 'react';
+import Alert from '@mui/material/Alert';
 import {AsyncLoadableData} from './api/sharedApi';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import CircleIcon from '@mui/icons-material/Circle';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import {LoadingButton} from '@mui/lab';
+import Paper from '@mui/material/Paper';
 import {SelectionMenu} from './selectionMenu';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import {deviceApi} from './api/deviceApi';
 import {useTheme} from '@mui/material/styles';

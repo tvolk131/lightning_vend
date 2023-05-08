@@ -1,20 +1,18 @@
 import * as React from 'react';
-import {
-  CircularProgress,
-  Grid,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Paper,
-  Typography,
-  useTheme
-} from '@mui/material';
 import CircleIcon from '@mui/icons-material/Circle';
+import CircularProgress from '@mui/material/CircularProgress';
 import {DeviceSettingsPanel} from './adminPage/deviceSettingsPanel';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import {LoginBox} from './adminPage/loginBox';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import {adminApi} from './api/adminApi';
 import {useState} from 'react';
+import {useTheme} from '@mui/material/styles';
 
 // TODO - Flesh out and clean up admin page.
 export const AdminPage = () => {
