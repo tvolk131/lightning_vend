@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
-import {CheckCircleOutline} from '@mui/icons-material';
-import {Paper} from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline';
+import Paper from '@mui/material/Paper';
 import QRCode from 'react-qr-code';
 
 interface InvoiceProps {
@@ -51,7 +51,7 @@ export const Invoice = (props: InvoiceProps) => {
             }}
           >
             <div style={{padding: `${(size - greenCheckSizePx) / 2}px`}}>
-              <CheckCircleOutline
+              <CheckCircleIcon
                 color={'success'}
                 style={{
                   height: `${greenCheckSizePx}px`,

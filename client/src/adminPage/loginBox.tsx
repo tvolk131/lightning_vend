@@ -1,19 +1,17 @@
 import * as React from 'react';
-import {
-  Button,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  OutlinedInput,
-  Paper,
-  TextField,
-  Typography
-} from '@mui/material';
 import {useEffect, useState} from 'react';
 import {AsyncLoadableData} from '../api/sharedApi';
-import {ContentCopy as ContentCopyIcon} from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {CountdownTimer} from './countdownTimer';
-import {LoadingButton} from '@mui/lab';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import LoadingButton from '@mui/lab/LoadingButton';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import {adminApi} from '../api/adminApi';
 import {getMessageExpiration} from '../../../shared/lnAuthBrowserSafe';
 

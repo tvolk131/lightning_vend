@@ -1,6 +1,7 @@
 import * as React from 'react';
-import {Paper, Typography} from '@mui/material';
 import {useEffect, useState} from 'react';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 
 interface CountdownTimerProps {
   targetDate: Date,
