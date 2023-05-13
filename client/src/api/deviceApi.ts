@@ -58,17 +58,16 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
     return this.invoicePaidCallbacks.delete(callbackId);
   }
 
-  public async registerDevice(
-    lightningNodeOwnerPubkey: string,
-    displayName: string,
-    supportedExecutionCommands: string[]
-  ): Promise<void> {
-    await axios.post('/api/registerDevice', {
-      lightningNodeOwnerPubkey,
-      displayName,
-      supportedExecutionCommands
+  public async getDeviceSetupCode(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.socket.emit('getDeviceSetupCode', (deviceSetupCode) => {
+        if (deviceSetupCode) {
+          return resolve(deviceSetupCode);
+        } else {
+          return reject();
+        }
+      });
     });
-    this.disconnectAndReconnectSocket();
   }
 
   public useLoadableDevice(): AsyncLoadableData<Device> {

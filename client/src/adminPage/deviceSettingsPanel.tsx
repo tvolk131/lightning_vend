@@ -5,6 +5,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
+import {DeviceName} from '../../../shared/proto';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -35,9 +36,13 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
 
   const updateDisplayName = () => {
     if (props.adminDeviceView) {
-      adminApi
-        .updateDeviceDisplayName(props.adminDeviceView.device.deviceSessionId, newDisplayName)
-        .then(() => setIsEditingDisplayName(false));
+      const deviceName = DeviceName.parse(props.adminDeviceView.device.name);
+      // TODO - Indicate to the user if `deviceName` is undefined.
+      if (deviceName) {
+        adminApi
+          .updateDeviceDisplayName(deviceName, newDisplayName)
+          .then(() => setIsEditingDisplayName(false));
+      }
     }
   };
 
@@ -114,10 +119,14 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               <Typography>Execution Command: {inventoryItem.executionCommand}</Typography>
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
-              adminApi.updateDeviceInventory(
-                props.adminDeviceView.device.deviceSessionId,
-                props.adminDeviceView.device.inventory.filter((i) => i !== inventoryItem)
-              );
+              const deviceName = DeviceName.parse(props.adminDeviceView.device.name);
+              // TODO - Indicate to the user if `deviceName` is undefined.
+              if (deviceName) {
+                adminApi.updateDeviceInventory(
+                  deviceName,
+                  props.adminDeviceView.device.inventory.filter((i) => i !== inventoryItem)
+                );
+              }
             }}>
               <DeleteIcon/>
             </IconButton>
@@ -182,15 +191,20 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             </Button>
             <Button onClick={() => {
               // TODO - Show a loading spinner until this promise resolves below.
-              adminApi
-                .updateDeviceInventory(
-                  props.adminDeviceView.device.deviceSessionId,
-                  [...props.adminDeviceView.device.inventory, newInventoryItem]
-                )
-                .then(() => {
-                  setNewInventoryItem(emptyInventoryItem);
-                  setShowAddInventoryItemDialog(false);
-                });
+
+              const deviceName = DeviceName.parse(props.adminDeviceView.device.name);
+              // TODO - Indicate to the user if `deviceName` is undefined.
+              if (deviceName) {
+                adminApi
+                  .updateDeviceInventory(
+                    deviceName,
+                    [...props.adminDeviceView.device.inventory, newInventoryItem]
+                  )
+                  .then(() => {
+                    setNewInventoryItem(emptyInventoryItem);
+                    setShowAddInventoryItemDialog(false);
+                  });
+              }
             }}>
               Add
             </Button>
