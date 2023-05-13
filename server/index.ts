@@ -42,7 +42,7 @@ const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
   return {
     lightningNodePubkey,
     deviceViews: deviceSessionManager
-      .getDeviceSessionsBelongingToNodePubkey(lightningNodePubkey)
+      .getDevicesBelongingToNodePubkey(lightningNodePubkey)
       .map((device) => {
         return {
           isOnline: deviceSocketManager.isDeviceConnected(device.deviceSessionId),

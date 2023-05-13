@@ -149,7 +149,7 @@ describe('DeviceSessionManager', () => {
     });
   });
 
-  describe('getDeviceSessionsBelongingToNodePubkey', () => {
+  describe('getDevicesBelongingToNodePubkey', () => {
     it('should return the device sessions belonging to a specific node pubkey', () => {
       const nodePubkey = 'pubkey1';
 
@@ -183,7 +183,7 @@ describe('DeviceSessionManager', () => {
       );
 
       const deviceSessions =
-        deviceSessionManager.getDeviceSessionsBelongingToNodePubkey(nodePubkey);
+        deviceSessionManager.getDevicesBelongingToNodePubkey(nodePubkey);
 
       expect(deviceSessions).toHaveLength(2);
       expect(deviceSessions).toContainEqual(device1);
@@ -194,7 +194,7 @@ describe('DeviceSessionManager', () => {
       const nodePubkey = 'nonExistingPubkey';
 
       const deviceSessions =
-        deviceSessionManager.getDeviceSessionsBelongingToNodePubkey(nodePubkey);
+        deviceSessionManager.getDevicesBelongingToNodePubkey(nodePubkey);
 
       expect(deviceSessions).toHaveLength(0);
     });

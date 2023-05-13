@@ -18,7 +18,7 @@ export class DeviceSessionManager {
   private deviceSessionsBySessionId: Map<string, Device> = new Map();
   private deviceSessionIdsByNodePubkey: Map<string, string[]> = new Map();
 
-  public getDeviceSessionsBelongingToNodePubkey(nodePubkey: string): Device[] {
+  public getDevicesBelongingToNodePubkey(nodePubkey: string): Device[] {
     const deviceSessionIds = this.deviceSessionIdsByNodePubkey.get(nodePubkey);
 
     if (deviceSessionIds === undefined) {
