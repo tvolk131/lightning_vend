@@ -3,28 +3,30 @@ syntax = "proto3";
 package lightning_vend;
 
 message Device {
-  // TODO - Replace `device_session_id` with `device_session_id_hash` since the raw value should not be sent over the wire except as a cookie.
+  // TODO - Replace `device_session_id` with `name`.
+  // The unique identifier for the device.
   string device_session_id = 1;
 
+  // The display name of the device.
   string display_name = 2;
 
-  // TODO - Replace with the line below.
-  // string owner_user_id = 3;
+  // The public key of the lightning node that owns the device.
   string lightning_node_owner_pubkey = 3;
 
+  // The inventory items available for purchase on the device.
   repeated InventoryItem inventory = 4;
 
+  // The item purchase commands that the device supports.
   repeated string supported_execution_commands = 5;
 }
 
 message InventoryItem {
+  // The display name of the inventory item.
   string display_name = 1;
 
+  // The price of the inventory item in satoshis.
   int32 price_sats = 2;
 
   // The command to run on the device upon successful item payment.
-  // Differs from `execution_webhook` above because this is _not_ an
-  // http/https string, but rather a command string that will be used
-  // to call a LightningVend Device Command
   string execution_command = 3;
 }
