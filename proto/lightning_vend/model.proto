@@ -2,6 +2,17 @@ syntax = "proto3";
 
 package lightning_vend;
 
+message User {
+  // The resource name of the user.
+  // Format: users/{user}
+  string name = 1;
+
+  oneof auth_id {
+    // The user's Lightning Node public key.
+    string lightning_node_pubkey = 2;
+  }
+}
+
 message Device {
   // TODO - Replace `device_session_id` with `name`.
   // The unique identifier for the device.
