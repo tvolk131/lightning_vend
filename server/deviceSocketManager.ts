@@ -10,8 +10,7 @@ import {parse} from 'cookie';
  * Handles connections/disconnections automatically.
  */
 export class DeviceSocketManager {
-  private activeSocketsBySocketId: {[socketId: string]: Socket} = {};
-  private activeSocketsByDeviceSessionId: {[deviceSessionId: string]: Socket} = {};
+  private socketsByDeviceSessionId: Map<string, Socket> = new Map();
   private onDeviceConnectionStatusChangeEventManager =
     new SubscribableEventManager<DeviceConnectionStatusEvent>();
 
@@ -53,7 +52,7 @@ export class DeviceSocketManager {
   }
 
   isDeviceConnected(deviceSessionId: string): boolean {
-    return !!this.activeSocketsByDeviceSessionId[deviceSessionId];
+    return this.socketsByDeviceSessionId.has(deviceSessionId);
   }
 
   subscribeToDeviceConnectionStatus(
@@ -74,7 +73,7 @@ export class DeviceSocketManager {
    * @returns Whether there is an open socket to the device.
    */
   private sendMessageToDevice(deviceSessionId: string, eventName: string, eventData: any): boolean {
-    const socket = this.activeSocketsByDeviceSessionId[deviceSessionId];
+    const socket = this.socketsByDeviceSessionId.get(deviceSessionId);
 
     if (socket) {
       return socket.emit(eventName, eventData);
@@ -84,10 +83,9 @@ export class DeviceSocketManager {
   }
 
   private addSocket(socket: Socket) {
-    this.activeSocketsBySocketId[socket.id] = socket;
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
-      this.activeSocketsByDeviceSessionId[deviceSessionId] = socket;
+      this.socketsByDeviceSessionId.set(deviceSessionId, socket);
       this.onDeviceConnectionStatusChangeEventManager.emitEvent({
         deviceSessionId,
         isOnline: true
@@ -96,10 +94,9 @@ export class DeviceSocketManager {
   }
 
   private removeSocket(socket: Socket) {
-    delete this.activeSocketsBySocketId[socket.id];
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
-      delete this.activeSocketsByDeviceSessionId[deviceSessionId];
+      this.socketsByDeviceSessionId.delete(deviceSessionId);
       this.onDeviceConnectionStatusChangeEventManager.emitEvent({
         deviceSessionId,
         isOnline: false

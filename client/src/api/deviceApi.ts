@@ -6,7 +6,7 @@ import {makeUuid} from '../../../shared/uuid';
 import {socketIoDevicePath} from '../../../shared/constants';
 
 class DeviceApi extends ReactSocket {
-  private invoicePaidCallbacks: {[key: string]: ((invoice: string) => void)} = {};
+  private invoicePaidCallbacks: Map<string, ((invoice: string) => void)> = new Map();
   private deviceDataManager =
     new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
 
@@ -27,9 +27,9 @@ class DeviceApi extends ReactSocket {
     });
 
     this.socket.on('invoicePaid', (invoice) => {
-      for (let callbackId in this.invoicePaidCallbacks) {
-        this.invoicePaidCallbacks[callbackId](invoice);
-      }
+      this.invoicePaidCallbacks.forEach((callback) => {
+        callback(invoice);
+      });
     });
   }
 
@@ -41,7 +41,7 @@ class DeviceApi extends ReactSocket {
    */
   subscribeToInvoicePaid(callback: (invoice: string) => void): string {
     const callbackId = makeUuid();
-    this.invoicePaidCallbacks[callbackId] = callback;
+    this.invoicePaidCallbacks.set(callbackId, callback);
     return callbackId;
   }
 
@@ -51,7 +51,7 @@ class DeviceApi extends ReactSocket {
    * @returns Whether the callback was successfully removed. True means it was removed.
    */
   unsubscribeFromInvoicePaid(callbackId: string): boolean {
-    return delete this.invoicePaidCallbacks[callbackId];
+    return this.invoicePaidCallbacks.delete(callbackId);
   }
 
   async registerDevice(

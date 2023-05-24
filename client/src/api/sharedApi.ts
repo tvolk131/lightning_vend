@@ -14,9 +14,8 @@ export class ReactSocket {
   protected socket: Socket;
 
   /** List of callbacks used to update consumers of changes to the socket's connection status. */
-  private connectionStatusCallbacks: {
-    [key: string]: ((connectionStatus: ConnectionStatus) => void)
-  } = {};
+  private connectionStatusCallbacks:
+    Map<string, ((connectionStatus: ConnectionStatus) => void)> = new Map();
 
   /**
    * The number of active uses of the `useSocket` hook.
@@ -30,14 +29,14 @@ export class ReactSocket {
     this.socket = io({path, autoConnect: false});
 
     this.socket.on('connect', () => {
-      for (let callbackId in this.connectionStatusCallbacks) {
-        this.connectionStatusCallbacks[callbackId]('connected');
-      }
+      this.connectionStatusCallbacks.forEach((callback) => {
+        callback('connected');
+      });
     });
     this.socket.on('disconnect', () => {
-      for (let callbackId in this.connectionStatusCallbacks) {
-        this.connectionStatusCallbacks[callbackId]('disconnected');
-      }
+      this.connectionStatusCallbacks.forEach((callback) => {
+        callback('disconnected');
+      });
     });
   }
 
@@ -103,7 +102,7 @@ export class ReactSocket {
     callback: (connectionStatus: ConnectionStatus) => void
   ): string {
     const callbackId = makeUuid();
-    this.connectionStatusCallbacks[callbackId] = callback;
+    this.connectionStatusCallbacks.set(callbackId, callback);
     return callbackId;
   }
 
@@ -113,27 +112,27 @@ export class ReactSocket {
    * @returns Whether the callback was successfully removed. True means it was removed.
    */
   private unsubscribeFromConnectionStatus(callbackId: string): boolean {
-    return delete this.connectionStatusCallbacks[callbackId];
+    return this.connectionStatusCallbacks.delete(callbackId);
   }
 }
 
 export class SubscribableEventManager<T> {
-  private callbacks: {[key: string]: ((event: T) => void)} = {};
+  private callbacks: Map<string, ((event: T) => void)> = new Map();
 
   subscribe(callback: (event: T) => void): string {
     const callbackId = makeUuid();
-    this.callbacks[callbackId] = callback;
+    this.callbacks.set(callbackId, callback);
     return callbackId;
   }
 
   unsubscribe(callbackId: string): boolean {
-    return delete this.callbacks[callbackId];
+    return this.callbacks.delete(callbackId);
   }
 
   emitEvent(event: T) {
-    for (let callbackId in this.callbacks) {
-      this.callbacks[callbackId](event);
-    }
+    this.callbacks.forEach((callback) => {
+      callback(event);
+    });
   }
 }
 
