@@ -1,8 +1,17 @@
+import {
+  DeviceClientToServerEvents,
+  DeviceInterServerEvents,
+  DeviceServerToClientEvents,
+  DeviceSocketData
+} from '../shared/deviceSocketTypes';
 import {Server, Socket} from 'socket.io';
 import {DeviceData} from '../proto/lightning_vend/model';
+import {EventNames} from 'socket.io/dist/typed-events';
 import {SubscribableEventManager} from '../client/src/api/sharedApi';
 import {deviceSessionCookieName} from '.';
 import {parse} from 'cookie';
+
+type DeviceSocket = Socket<DeviceClientToServerEvents, DeviceServerToClientEvents>;
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -10,11 +19,17 @@ import {parse} from 'cookie';
  * Handles connections/disconnections automatically.
  */
 export class DeviceSocketManager {
-  private socketsByDeviceSessionId: Map<string, Socket> = new Map();
+  private socketsByDeviceSessionId: Map<string, DeviceSocket> = new Map();
   private onDeviceConnectionStatusChangeEventManager =
     new SubscribableEventManager<DeviceConnectionStatusEvent>();
 
-  constructor (server: Server, getDeviceData: (deviceSessionId: string) => DeviceData | undefined) {
+  constructor (
+    server: Server<DeviceClientToServerEvents,
+                   DeviceServerToClientEvents,
+                   DeviceInterServerEvents,
+                   DeviceSocketData>,
+    getDeviceData: (deviceSessionId: string) => DeviceData | undefined
+  ) {
     server.on('connection', (socket) => {
       this.addSocket(socket);
 
@@ -72,7 +87,11 @@ export class DeviceSocketManager {
    * @param eventData The event data.
    * @returns Whether there is an open socket to the device.
    */
-  private sendMessageToDevice(deviceSessionId: string, eventName: string, eventData: any): boolean {
+  private sendMessageToDevice(
+    deviceSessionId: string,
+    eventName: EventNames<DeviceServerToClientEvents>,
+    eventData: any
+  ): boolean {
     const socket = this.socketsByDeviceSessionId.get(deviceSessionId);
 
     if (socket) {
@@ -82,7 +101,7 @@ export class DeviceSocketManager {
     return false;
   }
 
-  private addSocket(socket: Socket) {
+  private addSocket(socket: DeviceSocket) {
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       this.socketsByDeviceSessionId.set(deviceSessionId, socket);
@@ -93,7 +112,7 @@ export class DeviceSocketManager {
     }
   }
 
-  private removeSocket(socket: Socket) {
+  private removeSocket(socket: DeviceSocket) {
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       this.socketsByDeviceSessionId.delete(deviceSessionId);
@@ -104,7 +123,7 @@ export class DeviceSocketManager {
     }
   }
 
-  private static getDeviceSessionId(socket: Socket): string | undefined {
+  private static getDeviceSessionId(socket: DeviceSocket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[deviceSessionCookieName];
   }
 }

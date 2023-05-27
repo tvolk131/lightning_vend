@@ -2,6 +2,12 @@ import * as compression from 'compression';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
+import {
+  AdminClientToServerEvents,
+  AdminInterServerEvents,
+  AdminServerToClientEvents,
+  AdminSocketData
+} from '../shared/adminSocketTypes';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
 import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
 import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
@@ -47,7 +53,10 @@ const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
 };
 
 const adminSocketManager = new AdminSocketManager(
-  new Server(server, {
+  new Server<AdminClientToServerEvents,
+             AdminServerToClientEvents,
+             AdminInterServerEvents,
+             AdminSocketData>(server, {
     path: socketIoAdminPath,
     pingInterval: 5000,
     pingTimeout: 4000
@@ -56,7 +65,10 @@ const adminSocketManager = new AdminSocketManager(
   getAdminData
 );
 const deviceSocketManager = new DeviceSocketManager(
-  new Server(server, {
+  new Server<AdminClientToServerEvents,
+             AdminServerToClientEvents,
+             AdminInterServerEvents,
+             AdminSocketData>(server, {
     path: socketIoDevicePath,
     pingInterval: 5000,
     pingTimeout: 4000

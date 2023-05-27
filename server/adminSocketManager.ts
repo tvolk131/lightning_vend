@@ -1,7 +1,15 @@
+import {
+  AdminClientToServerEvents,
+  AdminInterServerEvents,
+  AdminServerToClientEvents,
+  AdminSocketData
+} from '../shared/adminSocketTypes';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from './adminSessionManager';
 import {adminSessionCookieName} from '.';
 import {parse} from 'cookie';
+
+type AdminSocket = Socket<AdminClientToServerEvents, AdminServerToClientEvents>;
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -10,13 +18,16 @@ import {parse} from 'cookie';
  */
 export class AdminSocketManager {
   private nodePubkeysBySocketId: Map<string, string> = new Map();
-  private socketsByNodePubkey: Map<string, Socket[]> = new Map();
+  private socketsByNodePubkey: Map<string, AdminSocket[]> = new Map();
   private getNodePubkeyFromAdminSessionId:
     (adminSessionId: string) => string | undefined;
   private getAdminData: (lightningNodePubkey: string) => AdminData | undefined;
 
   constructor (
-    server: Server,
+    server: Server<AdminClientToServerEvents,
+                   AdminServerToClientEvents,
+                   AdminInterServerEvents,
+                   AdminSocketData>,
     getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined,
     getAdminData: (lightningNodePubkey: string) => AdminData | undefined
   ) {
@@ -34,7 +45,7 @@ export class AdminSocketManager {
     });
   }
 
-  private getAdminDataForSocket(socket: Socket): AdminData | undefined {
+  private getAdminDataForSocket(socket: AdminSocket): AdminData | undefined {
     const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
     if (adminSessionId) {
       const lightningNodePubkey = this.getNodePubkeyFromAdminSessionId(adminSessionId);
@@ -63,7 +74,7 @@ export class AdminSocketManager {
     return false;
   }
 
-  private addSocket(socket: Socket) {
+  private addSocket(socket: AdminSocket) {
     const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
     let nodePubkey;
     if (adminSessionId) {
@@ -84,7 +95,7 @@ export class AdminSocketManager {
     }
   }
 
-  private removeSocket(socket: Socket) {
+  private removeSocket(socket: AdminSocket) {
     const nodePubkey = this.nodePubkeysBySocketId.get(socket.id);
     this.nodePubkeysBySocketId.delete(socket.id);
 
@@ -101,7 +112,7 @@ export class AdminSocketManager {
     }
   }
 
-  private static getAdminSessionId(socket: Socket): string | undefined {
+  private static getAdminSessionId(socket: AdminSocket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[adminSessionCookieName];
   }
 }

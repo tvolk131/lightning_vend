@@ -1,5 +1,6 @@
 import {Socket, io} from 'socket.io-client';
 import {useEffect, useState} from 'react';
+import {EventsMap} from 'socket.io/dist/typed-events';
 import {makeUuid} from '../../../shared/uuid';
 
 type ConnectionStatus = 'connected' | 'disconnected';
@@ -9,9 +10,9 @@ type ConnectionStatus = 'connected' | 'disconnected';
  * All created instances should be treated as static for the lifetime of the React app.
  * The underlying socket is disconnected by default - see `useSocket` for details.
  */
-export class ReactSocket {
+export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends EventsMap> {
   /** The underlying socket. */
-  protected socket: Socket;
+  protected socket: Socket<ListenEvents, EmitEvents>;
 
   /** List of callbacks used to update consumers of changes to the socket's connection status. */
   private connectionStatusCallbacks:
