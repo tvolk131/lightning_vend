@@ -25,7 +25,7 @@ export const DevicePage = () => {
 
   deviceApi.useSocket();
   const connectionStatus = deviceApi.useConnectionStatus();
-  const loadableDeviceData = deviceApi.useLoadableDeviceData();
+  const loadableDevice = deviceApi.useLoadableDevice();
 
   const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
   const [nodeRegistrationDisplayName, setNodeRegistrationDisplayName] = useState('');
@@ -93,21 +93,21 @@ export const DevicePage = () => {
         )
       }
       <div style={{width: 'fit-content', margin: 'auto'}}>
-        {loadableDeviceData.state === 'loaded' && (
+        {loadableDevice.state === 'loaded' && (
             <SelectionMenu
               size={centerSquareSize}
               canShowInvoice={connectionStatus === 'connected' && !screensaverActive}
-              inventory={loadableDeviceData.data.inventory}
+              inventory={loadableDevice.data.inventory}
             />
         )}
-        {/* TODO - If loadableDeviceData.state === 'loading' then display a loading spinner. */}
+        {/* TODO - If loadableDevice.state === 'loading' then display a loading spinner. */}
         {/* TODO - Make the registration process easier by doing a few things:
             1. Replace the TextField with an Autocomplete component that dynamically fetches node
                pubkeys that match what is typed.
             2. Check for the right text length and possibly even ping LND to make sure the proposed
                node is real and has active channels.
         */}
-        {loadableDeviceData.state === 'error' && (
+        {loadableDevice.state === 'error' && (
             <Paper style={{height: `${centerSquareSize}px`, width: `${centerSquareSize}px`}}>
               <div style={{padding: '20px', textAlign: 'center'}}>
                 <Typography>

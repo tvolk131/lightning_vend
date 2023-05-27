@@ -5,7 +5,7 @@ import {
   DeviceSocketData
 } from '../shared/deviceSocketTypes';
 import {Server, Socket} from 'socket.io';
-import {DeviceData} from '../proto/lightning_vend/model';
+import {Device} from '../proto/lightning_vend/model';
 import {EventNames} from 'socket.io/dist/typed-events';
 import {SubscribableEventManager} from '../client/src/api/sharedApi';
 import {deviceSessionCookieName} from '.';
@@ -28,16 +28,16 @@ export class DeviceSocketManager {
                    DeviceServerToClientEvents,
                    DeviceInterServerEvents,
                    DeviceSocketData>,
-    getDeviceData: (deviceSessionId: string) => DeviceData | undefined
+    getDevice: (deviceSessionId: string) => Device | undefined
   ) {
     server.on('connection', (socket) => {
       this.addSocket(socket);
 
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
       if (deviceSessionId) {
-        socket.emit('updateDeviceData', getDeviceData(deviceSessionId));
+        socket.emit('updateDevice', getDevice(deviceSessionId));
       } else {
-        socket.emit('updateDeviceData', undefined);
+        socket.emit('updateDevice', undefined);
       }
 
       socket.on('disconnect', () => {
@@ -57,13 +57,13 @@ export class DeviceSocketManager {
   }
 
   /**
-   * Sends an `updateDeviceData` event to the specified device.
+   * Sends an `updateDevice` event to the specified device.
    * @param deviceSessionId The device to send the event to.
-   * @param deviceData The new device data to send.
+   * @param device The new device to send.
    * @returns Whether there is an open socket to the device.
    */
-  updateDeviceData(deviceSessionId: string, deviceData: DeviceData): boolean {
-    return this.sendMessageToDevice(deviceSessionId, 'updateDeviceData', deviceData);
+  updateDevice(deviceSessionId: string, device: Device): boolean {
+    return this.sendMessageToDevice(deviceSessionId, 'updateDevice', device);
   }
 
   isDeviceConnected(deviceSessionId: string): boolean {

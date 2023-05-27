@@ -1,4 +1,4 @@
-import {DeviceData} from '../proto/lightning_vend/model';
+import {Device} from '../proto/lightning_vend/model';
 
 export interface AdminData {
   lightningNodePubkey: string,
@@ -7,7 +7,7 @@ export interface AdminData {
 
 export interface AdminDeviceView {
   isOnline: boolean
-  deviceData: DeviceData
+  device: Device
 }
 
 /**

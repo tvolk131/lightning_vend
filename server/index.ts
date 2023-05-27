@@ -43,10 +43,10 @@ const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
     lightningNodePubkey,
     devices: deviceSessionManager
       .getDeviceSessionsBelongingToNodePubkey(lightningNodePubkey)
-      .map((deviceData) => {
+      .map((device) => {
         return {
-          isOnline: deviceSocketManager.isDeviceConnected(deviceData.deviceSessionId),
-          deviceData
+          isOnline: deviceSocketManager.isDeviceConnected(device.deviceSessionId),
+          device
         };
       })
   };
@@ -73,7 +73,7 @@ const deviceSocketManager = new DeviceSocketManager(
     pingInterval: 5000,
     pingTimeout: 4000
   }),
-  (deviceSessionId) => deviceSessionManager.getDeviceData(deviceSessionId)
+  deviceSessionManager.getDevice.bind(deviceSessionManager)
 );
 
 deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
@@ -159,8 +159,8 @@ const authenticateDevice = (req: express.Request, res: express.Response) => {
     };
   }
 
-  const deviceData = deviceSessionManager.getDeviceData(deviceSessionId);
-  if (!deviceData) {
+  const device = deviceSessionManager.getDevice(deviceSessionId);
+  if (!device) {
     return {
       response: res
         .status(401)
@@ -168,7 +168,7 @@ const authenticateDevice = (req: express.Request, res: express.Response) => {
     };
   }
 
-  return {deviceData};
+  return {device};
 };
 
 app.get('*/bundle.js', (req, res) => {
@@ -193,7 +193,7 @@ app.post('/api/createInvoice', async (req, res) => {
     };
   }
 
-  const {response, deviceData} = authenticateDevice(req, res);
+  const {response, device} = authenticateDevice(req, res);
   if (response) {
     return response;
   }
@@ -204,7 +204,7 @@ app.post('/api/createInvoice', async (req, res) => {
   });
 
   const addInvoiceResponse = await lightning.AddInvoice(preCreatedInvoice);
-  invoicesToDeviceSessionIds.set(addInvoiceResponse.paymentRequest, deviceData.deviceSessionId);
+  invoicesToDeviceSessionIds.set(addInvoiceResponse.paymentRequest, device.deviceSessionId);
   res.send(addInvoiceResponse.paymentRequest);
 });
 
@@ -367,11 +367,11 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
     };
   }
 
-  await deviceSessionManager.updateDeviceData(deviceSessionId, (deviceData) => {
-    deviceData.displayName = displayName;
-    return deviceData;
-  }).then((deviceData) => {
-    deviceSocketManager.updateDeviceData(deviceSessionId, deviceData);
+  await deviceSessionManager.updateDevice(deviceSessionId, (device) => {
+    device.displayName = displayName;
+    return device;
+  }).then((device) => {
+    deviceSocketManager.updateDevice(deviceSessionId, device);
     adminSocketManager.updateAdminData(lightningNodePubkey);
     res.status(200).send();
   });
@@ -415,11 +415,11 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
     };
   }
 
-  await deviceSessionManager.updateDeviceData(deviceSessionId, (deviceData) => {
-    deviceData.inventory = newInventory;
-    return deviceData;
-  }).then((deviceData) => {
-    deviceSocketManager.updateDeviceData(deviceSessionId, deviceData);
+  await deviceSessionManager.updateDevice(deviceSessionId, (device) => {
+    device.inventory = newInventory;
+    return device;
+  }).then((device) => {
+    deviceSocketManager.updateDevice(deviceSessionId, device);
     adminSocketManager.updateAdminData(lightningNodePubkey);
     res.status(200).send();
   });
