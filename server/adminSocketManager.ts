@@ -1,7 +1,15 @@
+import {
+  AdminClientToServerEvents,
+  AdminInterServerEvents,
+  AdminServerToClientEvents,
+  AdminSocketData
+} from '../shared/adminSocketTypes';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from './adminSessionManager';
 import {adminSessionCookieName} from '.';
 import {parse} from 'cookie';
+
+type AdminSocket = Socket<AdminClientToServerEvents, AdminServerToClientEvents>;
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -9,16 +17,17 @@ import {parse} from 'cookie';
  * Handles connections/disconnections automatically.
  */
 export class AdminSocketManager {
-  private activeSocketsBySocketId: {
-    [socketId: string]: {socket: Socket, nodePubkey: string | undefined}
-  } = {};
-  private activeSocketsByNodePubkey: {[nodePubkey: string]: Socket[]} = {};
+  private nodePubkeysBySocketId: Map<string, string> = new Map();
+  private socketsByNodePubkey: Map<string, AdminSocket[]> = new Map();
   private getNodePubkeyFromAdminSessionId:
     (adminSessionId: string) => string | undefined;
   private getAdminData: (lightningNodePubkey: string) => AdminData | undefined;
 
   constructor (
-    server: Server,
+    server: Server<AdminClientToServerEvents,
+                   AdminServerToClientEvents,
+                   AdminInterServerEvents,
+                   AdminSocketData>,
     getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined,
     getAdminData: (lightningNodePubkey: string) => AdminData | undefined
   ) {
@@ -36,7 +45,7 @@ export class AdminSocketManager {
     });
   }
 
-  private getAdminDataForSocket(socket: Socket): AdminData | undefined {
+  private getAdminDataForSocket(socket: AdminSocket): AdminData | undefined {
     const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
     if (adminSessionId) {
       const lightningNodePubkey = this.getNodePubkeyFromAdminSessionId(adminSessionId);
@@ -53,7 +62,7 @@ export class AdminSocketManager {
    * @returns Whether there are any open sockets to the admin.
    */
   updateAdminData(nodePubkey: string): boolean {
-    const sockets = this.activeSocketsByNodePubkey[nodePubkey];
+    const sockets = this.socketsByNodePubkey.get(nodePubkey);
 
     // Only get admin data if a relevant admin is currently connected.
     if (sockets && sockets.length) {
@@ -65,39 +74,45 @@ export class AdminSocketManager {
     return false;
   }
 
-  private addSocket(socket: Socket) {
+  private addSocket(socket: AdminSocket) {
     const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
     let nodePubkey;
     if (adminSessionId) {
       nodePubkey = this.getNodePubkeyFromAdminSessionId(adminSessionId);
     }
 
-    this.activeSocketsBySocketId[socket.id] = {socket, nodePubkey};
+    if (nodePubkey) {
+      this.nodePubkeysBySocketId.set(socket.id, nodePubkey);
+    }
 
     if (nodePubkey) {
-      if (this.activeSocketsByNodePubkey[nodePubkey] === undefined) {
-        this.activeSocketsByNodePubkey[nodePubkey] = [];
+      let sockets = this.socketsByNodePubkey.get(nodePubkey);
+      if (!sockets) {
+        sockets = [];
+        this.socketsByNodePubkey.set(nodePubkey, sockets);
       }
-
-      this.activeSocketsByNodePubkey[nodePubkey].push(socket);
+      sockets.push(socket);
     }
   }
 
-  private removeSocket(socket: Socket) {
-    const {nodePubkey} = this.activeSocketsBySocketId[socket.id];
-    delete this.activeSocketsBySocketId[socket.id];
+  private removeSocket(socket: AdminSocket) {
+    const nodePubkey = this.nodePubkeysBySocketId.get(socket.id);
+    this.nodePubkeysBySocketId.delete(socket.id);
 
     if (nodePubkey) {
-      this.activeSocketsByNodePubkey[nodePubkey] =
-        this.activeSocketsByNodePubkey[nodePubkey].filter((s) => s !== socket);
-
-      if (this.activeSocketsByNodePubkey[nodePubkey].length === 0) {
-        delete this.activeSocketsByNodePubkey[nodePubkey];
+      let sockets = this.socketsByNodePubkey.get(nodePubkey);
+      if (sockets) {
+        sockets = sockets.filter((s) => s !== socket);
+        if (sockets.length) {
+          this.socketsByNodePubkey.set(nodePubkey, sockets);
+        } else {
+          this.socketsByNodePubkey.delete(nodePubkey);
+        }
       }
     }
   }
 
-  private static getAdminSessionId(socket: Socket): string | undefined {
+  private static getAdminSessionId(socket: AdminSocket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[adminSessionCookieName];
   }
 }

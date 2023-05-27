@@ -1,5 +1,6 @@
 import {DeviceData, InventoryItem} from '../proto/lightning_vend/model';
 
+// TODO - Move this somewhere that makes more sense.
 export const tryCastToInventoryArray = (inventory: any): InventoryItem[] | undefined => {
   if (!Array.isArray(inventory)) {
     return undefined;
@@ -14,11 +15,15 @@ export const tryCastToInventoryArray = (inventory: any): InventoryItem[] | undef
  * TODO - Read/write using non-volatile storage.
  */
 export class DeviceSessionManager {
-  private deviceSessionsBySessionId: {[deviceSessionId: string]: DeviceData} = {};
-  private deviceSessionIdsByNodePubkey: {[nodePubkey: string]: string[]} = {};
+  private deviceSessionsBySessionId: Map<string, DeviceData> = new Map();
+  private deviceSessionIdsByNodePubkey: Map<string, string[]> = new Map();
 
   getDeviceSessionsBelongingToNodePubkey(nodePubkey: string): DeviceData[] {
-    const deviceSessionIds = this.deviceSessionIdsByNodePubkey[nodePubkey] || [];
+    const deviceSessionIds = this.deviceSessionIdsByNodePubkey.get(nodePubkey);
+
+    if (deviceSessionIds === undefined) {
+      return [];
+    }
 
     const deviceDataList: DeviceData[] = [];
     deviceSessionIds.forEach((deviceSessionId) => {
@@ -50,8 +55,10 @@ export class DeviceSessionManager {
   ): {deviceData: DeviceData, isNew: boolean} {
     let isNew = false;
 
-    if (!this.deviceSessionsBySessionId[deviceSessionId]) {
-      this.deviceSessionsBySessionId[deviceSessionId] = {
+    let deviceData = this.deviceSessionsBySessionId.get(deviceSessionId);
+
+    if (!deviceData) {
+      deviceData = {
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,
@@ -59,16 +66,20 @@ export class DeviceSessionManager {
         supportedExecutionCommands
       };
 
-      if (!this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey]) {
-        this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey] = [];
+      this.deviceSessionsBySessionId.set(deviceSessionId, deviceData);
+
+      let deviceIds = this.deviceSessionIdsByNodePubkey.get(lightningNodeOwnerPubkey);
+      if (!deviceIds) {
+        deviceIds = [];
+        this.deviceSessionIdsByNodePubkey.set(lightningNodeOwnerPubkey, deviceIds);
       }
-      this.deviceSessionIdsByNodePubkey[lightningNodeOwnerPubkey].push(deviceSessionId);
+      deviceIds.push(deviceSessionId);
 
       isNew = true;
     }
 
     return {
-      deviceData: this.deviceSessionsBySessionId[deviceSessionId],
+      deviceData,
       isNew
     };
   }
@@ -80,7 +91,7 @@ export class DeviceSessionManager {
    * with the given `deviceSessionId` does not exist.
    */
   getDeviceData(deviceSessionId: string): DeviceData | undefined {
-    return this.deviceSessionsBySessionId[deviceSessionId];
+    return this.deviceSessionsBySessionId.get(deviceSessionId);
   }
 
   /**
@@ -97,10 +108,11 @@ export class DeviceSessionManager {
     mutateFn: (deviceData: DeviceData) => DeviceData
   ): Promise<DeviceData> {
     return new Promise((resolve, reject) => {
-      const deviceData = this.deviceSessionsBySessionId[deviceSessionId];
+      const deviceData = this.deviceSessionsBySessionId.get(deviceSessionId);
       if (deviceData) {
-        this.deviceSessionsBySessionId[deviceSessionId] = mutateFn(deviceData);
-        resolve(deviceData);
+        const mutatedDeviceData = mutateFn(deviceData);
+        this.deviceSessionsBySessionId.set(deviceSessionId, mutatedDeviceData);
+        resolve(mutatedDeviceData);
       } else {
         reject();
       }
@@ -108,7 +120,7 @@ export class DeviceSessionManager {
   }
 
   getDeviceOwnerPubkey(deviceSessionId: string): string | undefined {
-    const deviceData = this.deviceSessionsBySessionId[deviceSessionId];
+    const deviceData = this.deviceSessionsBySessionId.get(deviceSessionId);
     if (deviceData) {
       return deviceData.lightningNodeOwnerPubkey;
     }

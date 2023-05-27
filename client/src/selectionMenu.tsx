@@ -16,7 +16,7 @@ import axios from 'axios';
 import {deviceApi} from './api/deviceApi';
 
 // TODO - Store this in LocalStorage so that reloading the page doesn't break existing invoices.
-const invoiceToExecutionCommand: {[invoice: string]: string} = {};
+const invoiceToExecutionCommand: Map<string, string> = new Map();
 
 interface SelectionItemProps {
   inventoryItem: InventoryItem,
@@ -168,7 +168,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
 
   useEffect(() => {
     const callbackId = deviceApi.subscribeToInvoicePaid((paidInvoice) => {
-      const command = invoiceToExecutionCommand[paidInvoice];
+      const command = invoiceToExecutionCommand.get(paidInvoice);
       if (command) {
         // TODO - Handle any potential error from the webhook.
         axios.get(`http://localhost:21000/commands/${command}`);
@@ -220,7 +220,7 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       if (!state.disableItemSelection) {
         dispatch({type: 'showLoadingInvoice'});
         deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
-          invoiceToExecutionCommand[invoice] = inventoryItem.executionCommand;
+          invoiceToExecutionCommand.set(invoice, inventoryItem.executionCommand);
           dispatch({type: 'showInvoice', invoice});
         }).catch(() => {
           dispatch({type: 'hideInvoiceAndShowLoadError'});

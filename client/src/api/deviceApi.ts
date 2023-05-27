@@ -1,19 +1,23 @@
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
+import {
+  DeviceClientToServerEvents,
+  DeviceServerToClientEvents
+} from '../../../shared/deviceSocketTypes';
 import {useEffect, useState} from 'react';
 import {DeviceData} from '../../../proto/lightning_vend/model';
 import axios from 'axios';
 import {makeUuid} from '../../../shared/uuid';
 import {socketIoDevicePath} from '../../../shared/constants';
 
-class DeviceApi extends ReactSocket {
-  private invoicePaidCallbacks: {[key: string]: ((invoice: string) => void)} = {};
+class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToServerEvents> {
+  private invoicePaidCallbacks: Map<string, ((invoice: string) => void)> = new Map();
   private deviceDataManager =
     new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
 
   constructor() {
     super(socketIoDevicePath);
 
-    this.socket.on('updateDeviceData', (deviceData: DeviceData | undefined) => {
+    this.socket.on('updateDeviceData', (deviceData) => {
       if (deviceData) {
         this.deviceDataManager.setData({
           state: 'loaded',
@@ -27,9 +31,9 @@ class DeviceApi extends ReactSocket {
     });
 
     this.socket.on('invoicePaid', (invoice) => {
-      for (let callbackId in this.invoicePaidCallbacks) {
-        this.invoicePaidCallbacks[callbackId](invoice);
-      }
+      this.invoicePaidCallbacks.forEach((callback) => {
+        callback(invoice);
+      });
     });
   }
 
@@ -41,7 +45,7 @@ class DeviceApi extends ReactSocket {
    */
   subscribeToInvoicePaid(callback: (invoice: string) => void): string {
     const callbackId = makeUuid();
-    this.invoicePaidCallbacks[callbackId] = callback;
+    this.invoicePaidCallbacks.set(callbackId, callback);
     return callbackId;
   }
 
@@ -51,7 +55,7 @@ class DeviceApi extends ReactSocket {
    * @returns Whether the callback was successfully removed. True means it was removed.
    */
   unsubscribeFromInvoicePaid(callbackId: string): boolean {
-    return delete this.invoicePaidCallbacks[callbackId];
+    return this.invoicePaidCallbacks.delete(callbackId);
   }
 
   async registerDevice(

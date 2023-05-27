@@ -1,3 +1,7 @@
+import {
+  AdminClientToServerEvents,
+  AdminServerToClientEvents
+} from '../../../shared/adminSocketTypes';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
 import {useEffect, useState} from 'react';
 import {AdminData} from '../../../server/adminSessionManager';
@@ -5,14 +9,14 @@ import {InventoryItem} from '../../../proto/lightning_vend/model';
 import axios from 'axios';
 import {socketIoAdminPath} from '../../../shared/constants';
 
-class AdminApi extends ReactSocket {
+class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServerEvents> {
   private adminDataManager =
     new SubscribableDataManager<AsyncLoadableData<AdminData>>({state: 'loading'});
 
   constructor() {
     super(socketIoAdminPath);
 
-    this.socket.on('updateAdminData', (adminData: AdminData | undefined) => {
+    this.socket.on('updateAdminData', (adminData) => {
       if (adminData) {
         this.adminDataManager.setData({
           state: 'loaded',

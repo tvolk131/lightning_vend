@@ -2,6 +2,12 @@ import * as compression from 'compression';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
+import {
+  AdminClientToServerEvents,
+  AdminInterServerEvents,
+  AdminServerToClientEvents,
+  AdminSocketData
+} from '../shared/adminSocketTypes';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
 import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
 import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
@@ -47,7 +53,10 @@ const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
 };
 
 const adminSocketManager = new AdminSocketManager(
-  new Server(server, {
+  new Server<AdminClientToServerEvents,
+             AdminServerToClientEvents,
+             AdminInterServerEvents,
+             AdminSocketData>(server, {
     path: socketIoAdminPath,
     pingInterval: 5000,
     pingTimeout: 4000
@@ -56,7 +65,10 @@ const adminSocketManager = new AdminSocketManager(
   getAdminData
 );
 const deviceSocketManager = new DeviceSocketManager(
-  new Server(server, {
+  new Server<AdminClientToServerEvents,
+             AdminServerToClientEvents,
+             AdminInterServerEvents,
+             AdminSocketData>(server, {
     path: socketIoDevicePath,
     pingInterval: 5000,
     pingTimeout: 4000
@@ -83,14 +95,20 @@ const isInvoiceExpired = (invoice: Invoice): boolean => {
 
 // TODO - Persist this in a MongoDB collection and use
 // a TTL to automatically clean up expired invoices.
-const invoicesToDeviceSessionIds: {[invoice: string]: string} = {};
+const invoicesToDeviceSessionIds: Map<string, string> = new Map();
+
 // Once per minute, flush all expired invoices.
 setInterval(() => {
-  Object.keys(invoicesToDeviceSessionIds)
-      .filter((invoice) => isInvoiceExpired(decodeInvoice(invoice)))
-      .forEach((expiredInvoice) => {
-        delete invoicesToDeviceSessionIds[expiredInvoice];
-      });
+  const invoicesToDelete: string[] = [];
+  Array.from(invoicesToDeviceSessionIds.entries()).forEach(([invoice, sessionId]) => {
+    if (isInvoiceExpired(decodeInvoice(invoice))) {
+      invoicesToDelete.push(invoice);
+    }
+  });
+
+  invoicesToDelete.forEach(invoice => {
+    invoicesToDeviceSessionIds.delete(invoice);
+  });
 }, 60000);
 
 const authenticateAdmin = (req: express.Request, res: express.Response) => {
@@ -186,7 +204,7 @@ app.post('/api/createInvoice', async (req, res) => {
   });
 
   const addInvoiceResponse = await lightning.AddInvoice(preCreatedInvoice);
-  invoicesToDeviceSessionIds[addInvoiceResponse.paymentRequest] = deviceData.deviceSessionId;
+  invoicesToDeviceSessionIds.set(addInvoiceResponse.paymentRequest, deviceData.deviceSessionId);
   res.send(addInvoiceResponse.paymentRequest);
 });
 
@@ -431,7 +449,7 @@ server.listen(port, () => {
 lightning.SubscribeInvoices(InvoiceSubscription.create())
   .subscribe((invoice) => {
     if (invoice.state === LNDInvoice_InvoiceState.SETTLED && invoice.paymentRequest) {
-      const deviceSessionId = invoicesToDeviceSessionIds[invoice.paymentRequest];
+      const deviceSessionId = invoicesToDeviceSessionIds.get(invoice.paymentRequest);
       if (deviceSessionId) {
         // TODO - Check if this message was sent (i.e. if the device is online) and
         // save the event to retry later if the device is currently offline.
