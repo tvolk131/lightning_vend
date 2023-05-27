@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package lightning_vend;
 
-message DeviceData {
+message Device {
   // TODO - Replace `device_session_id` with `device_session_id_hash` since the raw value should not be sent over the wire except as a cookie.
   string device_session_id = 1;
 

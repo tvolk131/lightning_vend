@@ -1,4 +1,4 @@
-import {DeviceData} from '../proto/lightning_vend/model';
+import {Device} from '../proto/lightning_vend/model';
 import {DeviceSessionManager} from './deviceSessionManager';
 
 describe('DeviceSessionManager', () => {
@@ -15,14 +15,14 @@ describe('DeviceSessionManager', () => {
       const displayName = 'Device 1';
       const supportedExecutionCommands = ['command1', 'command2'];
 
-      const {deviceData, isNew} = deviceSessionManager.getOrCreateDeviceSession(
+      const {device, isNew} = deviceSessionManager.getOrCreateDeviceSession(
         deviceSessionId,
         lightningNodeOwnerPubkey,
         displayName,
         supportedExecutionCommands
       );
 
-      expect(deviceData).toEqual({
+      expect(device).toEqual({
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,
@@ -39,7 +39,7 @@ describe('DeviceSessionManager', () => {
       const supportedExecutionCommands = ['command1', 'command2'];
 
       const {
-        deviceData: deviceData1,
+        device: device1,
         isNew: isNew1
       } = deviceSessionManager.getOrCreateDeviceSession(
         deviceSessionId,
@@ -48,10 +48,10 @@ describe('DeviceSessionManager', () => {
         supportedExecutionCommands
       );
 
-      deviceData1.displayName = 'Updated Display Name';
+      device1.displayName = 'Updated Display Name';
 
       const {
-        deviceData: deviceData2,
+        device: device2,
         isNew: isNew2
       } = deviceSessionManager.getOrCreateDeviceSession(
         deviceSessionId,
@@ -60,7 +60,7 @@ describe('DeviceSessionManager', () => {
         ['newCommand']
       );
 
-      expect(deviceData2).toEqual({
+      expect(device2).toEqual({
         deviceSessionId,
         displayName: 'Updated Display Name',
         lightningNodeOwnerPubkey,
@@ -72,8 +72,8 @@ describe('DeviceSessionManager', () => {
     });
   });
 
-  describe('getDeviceData', () => {
-    it('should return the device data for an existing device session', () => {
+  describe('getDevice', () => {
+    it('should return the device for an existing session', () => {
       const deviceSessionId = 'session1';
       const lightningNodeOwnerPubkey = 'pubkey1';
       const displayName = 'Device 1';
@@ -86,9 +86,9 @@ describe('DeviceSessionManager', () => {
         supportedExecutionCommands
       );
 
-      const deviceData = deviceSessionManager.getDeviceData(deviceSessionId);
+      const device = deviceSessionManager.getDevice(deviceSessionId);
 
-      expect(deviceData).toEqual({
+      expect(device).toEqual({
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,
@@ -100,14 +100,14 @@ describe('DeviceSessionManager', () => {
     it('should return undefined for a non-existing device session', () => {
       const deviceSessionId = 'nonExistingSession';
 
-      const deviceData = deviceSessionManager.getDeviceData(deviceSessionId);
+      const device = deviceSessionManager.getDevice(deviceSessionId);
 
-      expect(deviceData).toBeUndefined();
+      expect(device).toBeUndefined();
     });
   });
 
-  describe('updateDeviceData', () => {
-    it('should update the device data for a device session', async () => {
+  describe('updateDevice', () => {
+    it('should update the device for a given session', async () => {
       const deviceSessionId = 'session1';
       const lightningNodeOwnerPubkey = 'pubkey1';
       const displayName = 'Device 1';
@@ -122,15 +122,15 @@ describe('DeviceSessionManager', () => {
 
       const newDisplayName = 'Updated Display Name';
 
-      const updatedDeviceData = await deviceSessionManager.updateDeviceData(
+      const updatedDevice = await deviceSessionManager.updateDevice(
         deviceSessionId,
-        (deviceData) => {
-          deviceData.displayName = newDisplayName;
-          return deviceData;
+        (device) => {
+          device.displayName = newDisplayName;
+          return device;
         }
       );
 
-      expect(updatedDeviceData).toEqual({
+      expect(updatedDevice).toEqual({
         deviceSessionId,
         displayName: newDisplayName,
         lightningNodeOwnerPubkey,
@@ -142,9 +142,9 @@ describe('DeviceSessionManager', () => {
     it('should reject if the device session ID is invalid', async () => {
       const deviceSessionId = 'invalidSession';
 
-      await expect(deviceSessionManager.updateDeviceData(deviceSessionId, (deviceData) => {
-        deviceData.displayName = 'Updated Display Name';
-        return deviceData;
+      await expect(deviceSessionManager.updateDevice(deviceSessionId, (device) => {
+        device.displayName = 'Updated Display Name';
+        return device;
       })).rejects.toBeUndefined();
     });
   });
@@ -153,14 +153,14 @@ describe('DeviceSessionManager', () => {
     it('should return the device sessions belonging to a specific node pubkey', () => {
       const nodePubkey = 'pubkey1';
 
-      const deviceData1: DeviceData = {
+      const device1: Device = {
         deviceSessionId: 'session1',
         displayName: 'Device 1',
         lightningNodeOwnerPubkey: nodePubkey,
         inventory: [],
         supportedExecutionCommands: ['command1']
       };
-      const deviceData2: DeviceData = {
+      const device2: Device = {
         deviceSessionId: 'session2',
         displayName: 'Device 2',
         lightningNodeOwnerPubkey: nodePubkey,
@@ -169,25 +169,25 @@ describe('DeviceSessionManager', () => {
       };
 
       deviceSessionManager.getOrCreateDeviceSession(
-        deviceData1.deviceSessionId,
-        deviceData1.lightningNodeOwnerPubkey,
-        deviceData1.displayName,
-        deviceData1.supportedExecutionCommands
+        device1.deviceSessionId,
+        device1.lightningNodeOwnerPubkey,
+        device1.displayName,
+        device1.supportedExecutionCommands
       );
 
       deviceSessionManager.getOrCreateDeviceSession(
-        deviceData2.deviceSessionId,
-        deviceData2.lightningNodeOwnerPubkey,
-        deviceData2.displayName,
-        deviceData2.supportedExecutionCommands
+        device2.deviceSessionId,
+        device2.lightningNodeOwnerPubkey,
+        device2.displayName,
+        device2.supportedExecutionCommands
       );
 
       const deviceSessions =
         deviceSessionManager.getDeviceSessionsBelongingToNodePubkey(nodePubkey);
 
       expect(deviceSessions).toHaveLength(2);
-      expect(deviceSessions).toContainEqual(deviceData1);
-      expect(deviceSessions).toContainEqual(deviceData2);
+      expect(deviceSessions).toContainEqual(device1);
+      expect(deviceSessions).toContainEqual(device2);
     });
 
     it('should return an empty array if there are no device sessions for the node pubkey', () => {

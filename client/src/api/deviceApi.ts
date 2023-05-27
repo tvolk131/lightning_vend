@@ -4,7 +4,7 @@ import {
   DeviceServerToClientEvents
 } from '../../../shared/deviceSocketTypes';
 import {useEffect, useState} from 'react';
-import {DeviceData} from '../../../proto/lightning_vend/model';
+import {Device} from '../../../proto/lightning_vend/model';
 import axios from 'axios';
 import {makeUuid} from '../../../shared/uuid';
 import {socketIoDevicePath} from '../../../shared/constants';
@@ -12,16 +12,16 @@ import {socketIoDevicePath} from '../../../shared/constants';
 class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToServerEvents> {
   private invoicePaidCallbacks: Map<string, ((invoice: string) => void)> = new Map();
   private deviceDataManager =
-    new SubscribableDataManager<AsyncLoadableData<DeviceData>>({state: 'loading'});
+    new SubscribableDataManager<AsyncLoadableData<Device>>({state: 'loading'});
 
   constructor() {
     super(socketIoDevicePath);
 
-    this.socket.on('updateDeviceData', (deviceData) => {
-      if (deviceData) {
+    this.socket.on('updateDevice', (device) => {
+      if (device) {
         this.deviceDataManager.setData({
           state: 'loaded',
-          data: deviceData
+          data: device
         });
       } else {
         this.deviceDataManager.setData({
@@ -71,9 +71,9 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
     this.disconnectAndReconnectSocket();
   }
 
-  useLoadableDeviceData(): AsyncLoadableData<DeviceData> {
+  useLoadableDevice(): AsyncLoadableData<Device> {
     const [data, setData] =
-      useState<AsyncLoadableData<DeviceData>>(this.deviceDataManager.getData());
+      useState<AsyncLoadableData<Device>>(this.deviceDataManager.getData());
 
     useEffect(() => {
       const callbackId = this.deviceDataManager.subscribe(setData);

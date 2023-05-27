@@ -36,13 +36,13 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
   const updateDisplayName = () => {
     if (props.adminDeviceView) {
       adminApi
-        .updateDeviceDisplayName(props.adminDeviceView.deviceData.deviceSessionId, newDisplayName)
+        .updateDeviceDisplayName(props.adminDeviceView.device.deviceSessionId, newDisplayName)
         .then(() => setIsEditingDisplayName(false));
     }
   };
 
   useEffect(() => {
-    setNewDisplayName(props.adminDeviceView.deviceData.displayName || '');
+    setNewDisplayName(props.adminDeviceView.device.displayName || '');
   }, [isEditingDisplayName]);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
                 textOverflow: 'ellipsis'
               }}
             >
-              {props.adminDeviceView.deviceData.displayName}
+              {props.adminDeviceView.device.displayName}
             </Typography>
             <IconButton
               size={'large'}
@@ -103,7 +103,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
       }
       <div>
         <Typography variant={'h4'}>Inventory</Typography>
-        {props.adminDeviceView.deviceData.inventory.map((inventoryItem) => (
+        {props.adminDeviceView.device.inventory.map((inventoryItem) => (
           <Paper
             elevation={6}
             style={{padding: '10px', margin: '10px 0'}}
@@ -115,8 +115,8 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
               adminApi.updateDeviceInventory(
-                props.adminDeviceView.deviceData.deviceSessionId,
-                props.adminDeviceView.deviceData.inventory.filter((i) => i !== inventoryItem)
+                props.adminDeviceView.device.deviceSessionId,
+                props.adminDeviceView.device.inventory.filter((i) => i !== inventoryItem)
               );
             }}>
               <DeleteIcon/>
@@ -166,7 +166,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
                   label={'Execution Command'}
                 />
               )}
-              options={props.adminDeviceView.deviceData.supportedExecutionCommands}
+              options={props.adminDeviceView.device.supportedExecutionCommands}
               onChange={
                 (e, selectedCommand) => setNewInventoryItem({
                   ...newInventoryItem,
@@ -184,8 +184,8 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               // TODO - Show a loading spinner until this promise resolves below.
               adminApi
                 .updateDeviceInventory(
-                  props.adminDeviceView.deviceData.deviceSessionId,
-                  [...props.adminDeviceView.deviceData.inventory, newInventoryItem]
+                  props.adminDeviceView.device.deviceSessionId,
+                  [...props.adminDeviceView.device.inventory, newInventoryItem]
                 )
                 .then(() => {
                   setNewInventoryItem(emptyInventoryItem);
