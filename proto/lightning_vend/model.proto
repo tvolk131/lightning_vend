@@ -14,21 +14,25 @@ message User {
 }
 
 message Device {
-  // TODO - Replace `device_session_id` with `name`.
+  // The resource name of the device.
+  // Format: users/{user}/devices/{device}
+  string name = 1;
+
+  // TODO - Remove this field in favor of `name`.
   // The unique identifier for the device.
-  string device_session_id = 1;
+  string device_session_id = 2;
 
   // The display name of the device.
-  string display_name = 2;
+  string display_name = 3;
 
-  // The public key of the lightning node that owns the device.
-  string lightning_node_owner_pubkey = 3;
+// The public key of the lightning node that owns the device.
+  string lightning_node_owner_pubkey = 4;
 
   // The inventory items available for purchase on the device.
-  repeated InventoryItem inventory = 4;
+  repeated InventoryItem inventory = 5;
 
   // The item purchase commands that the device supports.
-  repeated string supported_execution_commands = 5;
+  repeated string supported_execution_commands = 6;
 }
 
 message InventoryItem {

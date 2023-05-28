@@ -58,6 +58,7 @@ export class DeviceSessionManager {
 
     if (!device) {
       device = {
+        name: '',
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,

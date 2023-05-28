@@ -23,6 +23,7 @@ describe('DeviceSessionManager', () => {
       );
 
       expect(device).toEqual({
+        name: '',
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,
@@ -61,6 +62,7 @@ describe('DeviceSessionManager', () => {
       );
 
       expect(device2).toEqual({
+        name: '',
         deviceSessionId,
         displayName: 'Updated Display Name',
         lightningNodeOwnerPubkey,
@@ -89,6 +91,7 @@ describe('DeviceSessionManager', () => {
       const device = deviceSessionManager.getDevice(deviceSessionId);
 
       expect(device).toEqual({
+        name: '',
         deviceSessionId,
         displayName,
         lightningNodeOwnerPubkey,
@@ -131,6 +134,7 @@ describe('DeviceSessionManager', () => {
       );
 
       expect(updatedDevice).toEqual({
+        name: '',
         deviceSessionId,
         displayName: newDisplayName,
         lightningNodeOwnerPubkey,
@@ -154,6 +158,7 @@ describe('DeviceSessionManager', () => {
       const nodePubkey = 'pubkey1';
 
       const device1: Device = {
+        name: '',
         deviceSessionId: 'session1',
         displayName: 'Device 1',
         lightningNodeOwnerPubkey: nodePubkey,
@@ -161,6 +166,7 @@ describe('DeviceSessionManager', () => {
         supportedExecutionCommands: ['command1']
       };
       const device2: Device = {
+        name: '',
         deviceSessionId: 'session2',
         displayName: 'Device 2',
         lightningNodeOwnerPubkey: nodePubkey,
