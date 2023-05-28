@@ -41,7 +41,7 @@ const deviceSessionManager = new DeviceSessionManager();
 const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
   return {
     lightningNodePubkey,
-    devices: deviceSessionManager
+    deviceViews: deviceSessionManager
       .getDeviceSessionsBelongingToNodePubkey(lightningNodePubkey)
       .map((device) => {
         return {

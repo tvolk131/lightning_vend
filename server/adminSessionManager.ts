@@ -2,7 +2,7 @@ import {Device} from '../proto/lightning_vend/model';
 
 export interface AdminData {
   lightningNodePubkey: string,
-  devices: AdminDeviceView[]
+  deviceViews: AdminDeviceView[]
 }
 
 export interface AdminDeviceView {

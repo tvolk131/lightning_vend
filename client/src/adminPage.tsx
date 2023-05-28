@@ -32,16 +32,16 @@ export const AdminPage = () => {
           <Grid item xs={12} sm={4}>
             <Paper>
               <List>
-                {loadableAdminData.data.devices.map((device, index) => {
+                {loadableAdminData.data.deviceViews.map((deviceView, index) => {
                   return (
                     <ListItemButton
                       selected={selectedDeviceIndex === index}
                       onClick={() => setSelectedDeviceIndex(index)}
                     >
                       <ListItemIcon>
-                        <CircleIcon color={device.isOnline ? 'success' : 'error'}/>
+                        <CircleIcon color={deviceView.isOnline ? 'success' : 'error'}/>
                       </ListItemIcon>
-                      <ListItemText color={''} primary={device.device.displayName}/>
+                      <ListItemText color={''} primary={deviceView.device.displayName}/>
                     </ListItemButton>
                   );
                 })}
@@ -50,9 +50,9 @@ export const AdminPage = () => {
           </Grid>
           <Grid item xs={12} sm={8}>
             {
-              loadableAdminData.data.devices[selectedDeviceIndex] ?
+              loadableAdminData.data.deviceViews[selectedDeviceIndex] ?
                 <DeviceSettingsPanel
-                  adminDeviceView={loadableAdminData.data.devices[selectedDeviceIndex]}
+                  adminDeviceView={loadableAdminData.data.deviceViews[selectedDeviceIndex]}
                 />
                 :
                 <Paper><Typography variant={'h2'}>No Device Selected</Typography></Paper>
