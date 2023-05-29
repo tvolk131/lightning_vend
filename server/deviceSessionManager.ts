@@ -71,9 +71,7 @@ export class DeviceSessionManager {
 
     const device: Device = {
       name: deviceName.toString(),
-      deviceSessionId: '',
       displayName: deviceDisplayName,
-      lightningNodeOwnerPubkey: '',
       inventory: [],
       supportedExecutionCommands: []
     };
