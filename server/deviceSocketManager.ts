@@ -31,9 +31,10 @@ export class DeviceSocketManager {
     getDevice: (deviceSessionId: string) => Device | undefined
   ) {
     server.on('connection', (socket) => {
-      this.addSocket(socket);
-
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
+
+      this.addSocket(socket, {deviceSessionId});
+
       if (deviceSessionId) {
         socket.emit('updateDevice', getDevice(deviceSessionId));
       } else {
@@ -101,7 +102,8 @@ export class DeviceSocketManager {
     return false;
   }
 
-  private addSocket(socket: DeviceSocket) {
+  private addSocket(socket: DeviceSocket, socketData: DeviceSocketData) {
+    socket.data = socketData;
     const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
     if (deviceSessionId) {
       this.socketsByDeviceSessionId.set(deviceSessionId, socket);

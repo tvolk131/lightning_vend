@@ -9,6 +9,12 @@ import {
   AdminSocketData
 } from '../shared/adminSocketTypes';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
+import {
+  DeviceClientToServerEvents,
+  DeviceInterServerEvents,
+  DeviceServerToClientEvents,
+  DeviceSocketData
+} from '../shared/deviceSocketTypes';
 import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
 import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
 import {
@@ -65,10 +71,10 @@ const adminSocketManager = new AdminSocketManager(
   getAdminData
 );
 const deviceSocketManager = new DeviceSocketManager(
-  new Server<AdminClientToServerEvents,
-             AdminServerToClientEvents,
-             AdminInterServerEvents,
-             AdminSocketData>(server, {
+  new Server<DeviceClientToServerEvents,
+             DeviceServerToClientEvents,
+             DeviceInterServerEvents,
+             DeviceSocketData>(server, {
     path: socketIoDevicePath,
     pingInterval: 5000,
     pingTimeout: 4000

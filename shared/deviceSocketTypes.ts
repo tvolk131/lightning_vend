@@ -12,4 +12,5 @@ export interface DeviceInterServerEvents {
 }
 
 export interface DeviceSocketData {
+  deviceSessionId: string | undefined;
 }
