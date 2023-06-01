@@ -26,7 +26,7 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
    */
   private useSocketCount = 0;
 
-  constructor(path: string) {
+  public constructor(path: string) {
     this.socket = io({path, autoConnect: false});
 
     this.socket.on('connect', () => {
@@ -45,7 +45,7 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
    * A React hook that returns the current connection status to the backend server.
    * @returns The current connection status to the backend server.
    */
-  useConnectionStatus(): ConnectionStatus {
+  public useConnectionStatus(): ConnectionStatus {
     const [connectionStatus, setConnectionStatus] =
       useState<ConnectionStatus>(this.socket.connected ? 'connected' : 'disconnected');
 
@@ -68,7 +68,7 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
    * component/page relies on the socket should call this, which will
    * connect the socket and disconnect it on component dismount.
    */
-  useSocket(): void {
+  public useSocket(): void {
     useEffect(() => {
       if (this.useSocketCount === 0) {
         this.socket.connect();
@@ -120,17 +120,17 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
 export class SubscribableEventManager<T> {
   private callbacks: Map<string, ((event: T) => void)> = new Map();
 
-  subscribe(callback: (event: T) => void): string {
+  public subscribe(callback: (event: T) => void): string {
     const callbackId = makeUuid();
     this.callbacks.set(callbackId, callback);
     return callbackId;
   }
 
-  unsubscribe(callbackId: string): boolean {
+  public unsubscribe(callbackId: string): boolean {
     return this.callbacks.delete(callbackId);
   }
 
-  emitEvent(event: T) {
+  public emitEvent(event: T) {
     this.callbacks.forEach((callback) => {
       callback(event);
     });
@@ -141,26 +141,26 @@ export class SubscribableDataManager<T> {
   private data: T;
   private eventManager: SubscribableEventManager<T>;
 
-  constructor(initialDataValue: T) {
+  public constructor(initialDataValue: T) {
     this.data = initialDataValue;
     this.eventManager = new SubscribableEventManager();
   }
 
-  subscribe(callback: (data: T) => void): string {
+  public subscribe(callback: (data: T) => void): string {
     callback(this.data); // This is called just to make sure that the subscriber's data is in sync.
     return this.eventManager.subscribe(callback);
   }
 
-  unsubscribe(callbackId: string): boolean {
+  public unsubscribe(callbackId: string): boolean {
     return this.eventManager.unsubscribe(callbackId);
   }
 
-  setData(newData: T) {
+  public setData(newData: T) {
     this.data = newData;
     this.eventManager.emitEvent(this.data);
   }
 
-  getData(): Readonly<T> {
+  public getData(): Readonly<T> {
     return this.data;
   }
 }

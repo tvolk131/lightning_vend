@@ -23,7 +23,7 @@ export class AdminSocketManager {
     (adminSessionId: string) => string | undefined;
   private getAdminData: (lightningNodePubkey: string) => AdminData | undefined;
 
-  constructor (
+  public constructor (
     server: Server<AdminClientToServerEvents,
                    AdminServerToClientEvents,
                    AdminInterServerEvents,
@@ -61,7 +61,7 @@ export class AdminSocketManager {
    * @param adminData The new admin data to send.
    * @returns Whether there are any open sockets to the admin.
    */
-  updateAdminData(nodePubkey: string): boolean {
+  public updateAdminData(nodePubkey: string): boolean {
     const sockets = this.socketsByNodePubkey.get(nodePubkey);
 
     // Only get admin data if a relevant admin is currently connected.

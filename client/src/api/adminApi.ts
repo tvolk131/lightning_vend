@@ -13,7 +13,7 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
   private adminDataManager =
     new SubscribableDataManager<AsyncLoadableData<AdminData>>({state: 'loading'});
 
-  constructor() {
+  public constructor() {
     super(socketIoAdminPath);
 
     this.socket.on('updateAdminData', (adminData) => {
@@ -30,30 +30,34 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
     });
   }
 
-  async getLnAuthMessage(): Promise<string> {
+  public async getLnAuthMessage(): Promise<string> {
     return (await axios.get('/api/getLnAuthMessage')).data;
   }
 
-  async registerAdmin(message: string, signature: string): Promise<void> {
+  public async registerAdmin(message: string, signature: string): Promise<void> {
     await axios.get(`/api/registerAdmin/${message}/${signature}`);
     this.disconnectAndReconnectSocket();
   }
 
-  async updateDeviceDisplayName(deviceSessionId: string, displayName: string): Promise<void> {
+  public async updateDeviceDisplayName(
+    deviceSessionId: string, displayName: string
+  ): Promise<void> {
     return await axios.post('/api/updateDeviceDisplayName', {
       deviceSessionId,
       displayName
     });
   }
 
-  async updateDeviceInventory(deviceSessionId: string, inventory: InventoryItem[]): Promise<void> {
+  public async updateDeviceInventory(
+    deviceSessionId: string, inventory: InventoryItem[]
+  ): Promise<void> {
     return await axios.post('/api/updateDeviceInventory', {
       deviceSessionId,
       inventory
     });
   }
 
-  useLoadableAdminData(): AsyncLoadableData<AdminData> {
+  public useLoadableAdminData(): AsyncLoadableData<AdminData> {
     const [data, setData] = useState<AsyncLoadableData<AdminData>>(this.adminDataManager.getData());
 
     useEffect(() => {

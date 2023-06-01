@@ -18,7 +18,7 @@ export class DeviceSessionManager {
   private deviceSessionsBySessionId: Map<string, Device> = new Map();
   private deviceSessionIdsByNodePubkey: Map<string, string[]> = new Map();
 
-  getDeviceSessionsBelongingToNodePubkey(nodePubkey: string): Device[] {
+  public getDeviceSessionsBelongingToNodePubkey(nodePubkey: string): Device[] {
     const deviceSessionIds = this.deviceSessionIdsByNodePubkey.get(nodePubkey);
 
     if (deviceSessionIds === undefined) {
@@ -46,7 +46,7 @@ export class DeviceSessionManager {
    * or validated.
    * @returns The device, and flag indicating whether it already existed.
    */
-  getOrCreateDeviceSession(
+  public getOrCreateDeviceSession(
     deviceSessionId: string,
     lightningNodeOwnerPubkey: string,
     displayName: string,
@@ -88,7 +88,7 @@ export class DeviceSessionManager {
    * @param deviceSessionId The session ID of the device we're fetching.
    * @returns The device, or `undefined` if the device does not exist.
    */
-  getDevice(deviceSessionId: string): Device | undefined {
+  public getDevice(deviceSessionId: string): Device | undefined {
     return this.deviceSessionsBySessionId.get(deviceSessionId);
   }
 
@@ -101,7 +101,7 @@ export class DeviceSessionManager {
    * successfully written, or rejects if the `deviceSessionId` is invalid or
    * the write failed for any reason.
    */
-  updateDevice(
+  public updateDevice(
     deviceSessionId: string,
     mutateFn: (device: Device) => Device
   ): Promise<Device> {
@@ -117,7 +117,7 @@ export class DeviceSessionManager {
     });
   }
 
-  getDeviceOwnerPubkey(deviceSessionId: string): string | undefined {
+  public getDeviceOwnerPubkey(deviceSessionId: string): string | undefined {
     const device = this.deviceSessionsBySessionId.get(deviceSessionId);
     if (device) {
       return device.lightningNodeOwnerPubkey;

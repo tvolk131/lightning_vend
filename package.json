@@ -107,7 +107,8 @@
       "semi": "error",
       "semi-style": "error",
       "sort-imports": "error",
-      "strict": "error"
+      "strict": "error",
+      "@typescript-eslint/explicit-member-accessibility": "error"
     }
   }
 }
