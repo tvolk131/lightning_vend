@@ -23,7 +23,7 @@ export class DeviceSocketManager {
   private onDeviceConnectionStatusChangeEventManager =
     new SubscribableEventManager<DeviceConnectionStatusEvent>();
 
-  constructor (
+  public constructor (
     server: Server<DeviceClientToServerEvents,
                    DeviceServerToClientEvents,
                    DeviceInterServerEvents,
@@ -52,7 +52,7 @@ export class DeviceSocketManager {
    * @param invoice The invoice that was successfully paid.
    * @returns Whether there is an open socket to the device.
    */
-  emitInvoicePaid(deviceSessionId: string, invoice: string): boolean {
+  public emitInvoicePaid(deviceSessionId: string, invoice: string): boolean {
     return this.sendMessageToDevice(deviceSessionId, 'invoicePaid', invoice);
   }
 
@@ -62,21 +62,21 @@ export class DeviceSocketManager {
    * @param device The new device to send.
    * @returns Whether there is an open socket to the device.
    */
-  updateDevice(deviceSessionId: string, device: Device): boolean {
+  public updateDevice(deviceSessionId: string, device: Device): boolean {
     return this.sendMessageToDevice(deviceSessionId, 'updateDevice', device);
   }
 
-  isDeviceConnected(deviceSessionId: string): boolean {
+  public isDeviceConnected(deviceSessionId: string): boolean {
     return this.socketsByDeviceSessionId.has(deviceSessionId);
   }
 
-  subscribeToDeviceConnectionStatus(
+  public subscribeToDeviceConnectionStatus(
     callback: (event: DeviceConnectionStatusEvent) => void
   ): string {
     return this.onDeviceConnectionStatusChangeEventManager.subscribe(callback);
   }
 
-  unsubscribeFromDeviceConnectionStatus(callbackId: string) {
+  public unsubscribeFromDeviceConnectionStatus(callbackId: string) {
     return this.onDeviceConnectionStatusChangeEventManager.unsubscribe(callbackId);
   }
 

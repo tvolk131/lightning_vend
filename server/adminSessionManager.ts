@@ -29,7 +29,9 @@ export class AdminSessionManager {
    * and _not_ updated or validated.
    * @returns A flag indicating whether `adminSessionId` mapped to an existing session.
    */
-  getOrCreateAdminSession(adminSessionId: string, lightningNodePubkey: string): {isNew: boolean} {
+  public getOrCreateAdminSession(
+    adminSessionId: string, lightningNodePubkey: string
+  ): {isNew: boolean} {
     let isNew = false;
 
     if (!this.adminSessions.has(adminSessionId)) {
@@ -45,7 +47,7 @@ export class AdminSessionManager {
    * @param adminSessionId The session we're fetching.
    * @returns The Lightning Network node pubkey that an existing admin session is tied to
    */
-  getNodePubkeyFromSessionId(adminSessionId: string): string | undefined {
+  public getNodePubkeyFromSessionId(adminSessionId: string): string | undefined {
     return this.adminSessions.get(adminSessionId);
   }
 }

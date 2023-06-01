@@ -14,7 +14,7 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
   private deviceDataManager =
     new SubscribableDataManager<AsyncLoadableData<Device>>({state: 'loading'});
 
-  constructor() {
+  public constructor() {
     super(socketIoDevicePath);
 
     this.socket.on('updateDevice', (device) => {
@@ -43,7 +43,7 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
    * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the
    * callback.
    */
-  subscribeToInvoicePaid(callback: (invoice: string) => void): string {
+  public subscribeToInvoicePaid(callback: (invoice: string) => void): string {
     const callbackId = makeUuid();
     this.invoicePaidCallbacks.set(callbackId, callback);
     return callbackId;
@@ -54,11 +54,11 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
    * @param callbackId The id of the callback, returned from `subscribeToInvoicePaid`.
    * @returns Whether the callback was successfully removed. True means it was removed.
    */
-  unsubscribeFromInvoicePaid(callbackId: string): boolean {
+  public unsubscribeFromInvoicePaid(callbackId: string): boolean {
     return this.invoicePaidCallbacks.delete(callbackId);
   }
 
-  async registerDevice(
+  public async registerDevice(
     lightningNodeOwnerPubkey: string,
     displayName: string,
     supportedExecutionCommands: string[]
@@ -71,7 +71,7 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
     this.disconnectAndReconnectSocket();
   }
 
-  useLoadableDevice(): AsyncLoadableData<Device> {
+  public useLoadableDevice(): AsyncLoadableData<Device> {
     const [data, setData] =
       useState<AsyncLoadableData<Device>>(this.deviceDataManager.getData());
 
@@ -91,7 +91,7 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
    * @param valueSats The value in satoshis that the invoice is for.
    * @returns A Lightning Network invoice.
    */
-  async createInvoice(valueSats: number): Promise<string> {
+  public async createInvoice(valueSats: number): Promise<string> {
     return (await axios.post('/api/createInvoice', {valueSats})).data;
   }
 }
