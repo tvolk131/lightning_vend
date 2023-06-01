@@ -4,14 +4,21 @@ import {
   DeviceServerToClientEvents,
   DeviceSocketData
 } from '../shared/deviceSocketTypes';
+import {EventNames, EventParams} from 'socket.io/dist/typed-events';
 import {Server, Socket} from 'socket.io';
+import {parse, serialize} from 'cookie';
 import {Device} from '../proto/lightning_vend/model';
-import {EventNames} from 'socket.io/dist/typed-events';
+import {DeviceName} from '../shared/proto';
+import {DeviceSessionManager} from './deviceSessionManager';
+import {Request} from 'express';
 import {SubscribableEventManager} from '../client/src/api/sharedApi';
 import {deviceSessionCookieName} from '.';
-import {parse} from 'cookie';
+import {makeUuid} from '../shared/uuid';
 
-type DeviceSocket = Socket<DeviceClientToServerEvents, DeviceServerToClientEvents>;
+type DeviceSocket = Socket<DeviceClientToServerEvents,
+                           DeviceServerToClientEvents,
+                           DeviceInterServerEvents,
+                           DeviceSocketData>;
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -20,6 +27,7 @@ type DeviceSocket = Socket<DeviceClientToServerEvents, DeviceServerToClientEvent
  */
 export class DeviceSocketManager {
   private socketsByDeviceSessionId: Map<string, DeviceSocket> = new Map();
+  private socketsByDeviceName: Map<string, DeviceSocket> = new Map();
   private onDeviceConnectionStatusChangeEventManager =
     new SubscribableEventManager<DeviceConnectionStatusEvent>();
 
@@ -28,17 +36,51 @@ export class DeviceSocketManager {
                    DeviceServerToClientEvents,
                    DeviceInterServerEvents,
                    DeviceSocketData>,
-    getDevice: (deviceSessionId: string) => Device | undefined
+    deviceSessionManager: DeviceSessionManager
   ) {
-    server.on('connection', (socket) => {
-      this.addSocket(socket);
+    // Initialize all incoming device sockets with a device session cookie.
+    server.engine.on('initial_headers', (headers, req: Request, ...args) => {
+      // console.log(headers, req, ...args);
+      const cookie = req.headers.cookie ? parse(req.headers.cookie) : undefined;
+      const deviceSessionId = cookie ? cookie[deviceSessionCookieName] : undefined;
+      if (!deviceSessionId) {
+        const now = new Date();
+        const oneThousandYearsFromNow =
+          new Date(now.getFullYear() + 1000, now.getMonth(), now.getDate());
+        const newDeviceSessionId = makeUuid();
+        headers['set-cookie'] = serialize(
+          deviceSessionCookieName,
+          newDeviceSessionId,
+          {path: '/', expires: oneThousandYearsFromNow}
+        );
+      }
+    });
 
+    server.on('connection', (socket) => {
+      // TODO - Emit an event to the socket if a `deviceSessionId` cookie is not present
+      // so the device knows to restart the socket.
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
-      if (deviceSessionId) {
-        socket.emit('updateDevice', getDevice(deviceSessionId));
+      const deviceName =
+        deviceSessionId ?
+          deviceSessionManager.getDeviceNameFromSessionId(deviceSessionId)
+          :
+          undefined;
+      this.addSocket(socket, {deviceSessionId, deviceName});
+
+      if (deviceName) {
+        socket.emit('updateDevice', deviceSessionManager.getDevice(deviceName));
       } else {
         socket.emit('updateDevice', undefined);
       }
+
+      socket.on('getDeviceSetupCode', (callback) => {
+        const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
+        if (deviceSessionId) {
+          return callback(deviceSessionManager.createDeviceSetupCode(deviceSessionId));
+        } else {
+          return callback(undefined);
+        }
+      });
 
       socket.on('disconnect', () => {
         this.removeSocket(socket);
@@ -48,26 +90,34 @@ export class DeviceSocketManager {
 
   /**
    * Sends an `invoicePaid` event to the specified device.
-   * @param deviceSessionId The device to send the event to.
+   * @param deviceName The device to send the event to.
    * @param invoice The invoice that was successfully paid.
    * @returns Whether there is an open socket to the device.
    */
-  public emitInvoicePaid(deviceSessionId: string, invoice: string): boolean {
-    return this.sendMessageToDevice(deviceSessionId, 'invoicePaid', invoice);
+  public emitInvoicePaid(deviceName: DeviceName, invoice: string): boolean {
+    return this.sendMessageToDevice(deviceName, 'invoicePaid', invoice);
   }
 
   /**
    * Sends an `updateDevice` event to the specified device.
-   * @param deviceSessionId The device to send the event to.
+   * @param deviceName The device to send the event to.
    * @param device The new device to send.
    * @returns Whether there is an open socket to the device.
    */
-  public updateDevice(deviceSessionId: string, device: Device): boolean {
-    return this.sendMessageToDevice(deviceSessionId, 'updateDevice', device);
+  public updateDevice(deviceName: DeviceName, device: Device): boolean {
+    return this.sendMessageToDevice(deviceName, 'updateDevice', device);
   }
 
-  public isDeviceConnected(deviceSessionId: string): boolean {
-    return this.socketsByDeviceSessionId.has(deviceSessionId);
+  public isDeviceConnected(deviceName: DeviceName): boolean {
+    return this.socketsByDeviceName.has(deviceName.toString());
+  }
+
+  public linkDeviceSessionIdToDeviceName(deviceSessionId: string, deviceName: DeviceName) {
+    const socket = this.socketsByDeviceSessionId.get(deviceSessionId);
+    if (socket) {
+      this.socketsByDeviceName.set(deviceName.toString(), socket);
+      socket.data.deviceName = deviceName;
+    }
   }
 
   public subscribeToDeviceConnectionStatus(
@@ -82,42 +132,53 @@ export class DeviceSocketManager {
 
   /**
    * Sends a Socket.IO event to the socket belonging to a particular device.
-   * @param deviceSessionId The device to send the event to.
+   * @param deviceName The device to send the event to.
    * @param eventName The event name.
-   * @param eventData The event data.
+   * @param args The event data arguments.
    * @returns Whether there is an open socket to the device.
    */
-  private sendMessageToDevice(
-    deviceSessionId: string,
-    eventName: EventNames<DeviceServerToClientEvents>,
-    eventData: any
+  private sendMessageToDevice<Ev extends EventNames<DeviceServerToClientEvents>>(
+    deviceName: DeviceName,
+    eventName: Ev,
+    ...args: EventParams<DeviceServerToClientEvents, Ev>
   ): boolean {
-    const socket = this.socketsByDeviceSessionId.get(deviceSessionId);
+    const socket = this.socketsByDeviceName.get(deviceName.toString());
 
     if (socket) {
-      return socket.emit(eventName, eventData);
+      return socket.emit(eventName, ...args);
     }
 
     return false;
   }
 
-  private addSocket(socket: DeviceSocket) {
-    const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
+  private addSocket(socket: DeviceSocket, socketData: DeviceSocketData) {
+    socket.data = socketData;
+    const {deviceSessionId, deviceName} = socket.data;
+
     if (deviceSessionId) {
       this.socketsByDeviceSessionId.set(deviceSessionId, socket);
+    }
+
+    if (deviceName) {
+      this.socketsByDeviceName.set(deviceName.toString(), socket);
       this.onDeviceConnectionStatusChangeEventManager.emitEvent({
-        deviceSessionId,
+        deviceName,
         isOnline: true
       });
     }
   }
 
   private removeSocket(socket: DeviceSocket) {
-    const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
+    const {deviceSessionId, deviceName} = socket.data;
+
     if (deviceSessionId) {
       this.socketsByDeviceSessionId.delete(deviceSessionId);
+    }
+
+    if (deviceName) {
+      this.socketsByDeviceName.delete(deviceName.toString());
       this.onDeviceConnectionStatusChangeEventManager.emitEvent({
-        deviceSessionId,
+        deviceName,
         isOnline: false
       });
     }
@@ -129,6 +190,6 @@ export class DeviceSocketManager {
 }
 
 interface DeviceConnectionStatusEvent {
-  deviceSessionId: string,
+  deviceName: DeviceName,
   isOnline: boolean
 }

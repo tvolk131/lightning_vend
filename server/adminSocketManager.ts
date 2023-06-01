@@ -6,10 +6,14 @@ import {
 } from '../shared/adminSocketTypes';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from './adminSessionManager';
+import {UserName} from '../shared/proto';
 import {adminSessionCookieName} from '.';
 import {parse} from 'cookie';
 
-type AdminSocket = Socket<AdminClientToServerEvents, AdminServerToClientEvents>;
+type AdminSocket = Socket<AdminClientToServerEvents,
+                          AdminServerToClientEvents,
+                          AdminInterServerEvents,
+                          AdminSocketData>;
 
 /**
  * Manages and abstracts Socket.IO sockets, allowing messages
@@ -17,27 +21,49 @@ type AdminSocket = Socket<AdminClientToServerEvents, AdminServerToClientEvents>;
  * Handles connections/disconnections automatically.
  */
 export class AdminSocketManager {
-  private nodePubkeysBySocketId: Map<string, string> = new Map();
-  private socketsByNodePubkey: Map<string, AdminSocket[]> = new Map();
-  private getNodePubkeyFromAdminSessionId:
-    (adminSessionId: string) => string | undefined;
-  private getAdminData: (lightningNodePubkey: string) => AdminData | undefined;
+  private socketsBySocketId: Map<
+    string, {socket: AdminSocket, userName: UserName | undefined}
+  > = new Map();
+  private socketsByUserName: Map<string, AdminSocket[]> = new Map();
+  private getUserNameFromAdminSessionId: (adminSessionId: string) => UserName | undefined;
+  private getAdminData: (userName: UserName) => AdminData | undefined;
 
   public constructor (
     server: Server<AdminClientToServerEvents,
                    AdminServerToClientEvents,
                    AdminInterServerEvents,
                    AdminSocketData>,
-    getNodePubkeyFromAdminSessionId: (adminSessionId: string) => string | undefined,
-    getAdminData: (lightningNodePubkey: string) => AdminData | undefined
+    getUserNameFromAdminSessionId: (adminSessionId: string) => UserName | undefined,
+    getAdminData: (userName: UserName) => AdminData | undefined,
+    claimDevice: (
+      deviceSetupCode: string,
+      userName: UserName,
+      deviceDisplayName: string
+    ) => void
   ) {
-    this.getNodePubkeyFromAdminSessionId = getNodePubkeyFromAdminSessionId;
+    this.getUserNameFromAdminSessionId = getUserNameFromAdminSessionId;
     this.getAdminData = getAdminData;
 
     server.on('connection', (socket) => {
-      this.addSocket(socket);
+      const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
+      const userName = adminSessionId ?
+        this.getUserNameFromAdminSessionId(adminSessionId)
+        :
+        undefined;
+      this.addSocket(socket, {userName});
 
       socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
+
+      socket.on('claimDevice', (deviceSetupCode, displayName, callback) => {
+        const adminData = this.getAdminDataForSocket(socket);
+        if (adminData && userName) {
+          claimDevice(deviceSetupCode, userName, displayName);
+          callback('ok');
+          socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
+        } else {
+          callback('unauthenticatedError');
+        }
+      });
 
       socket.on('disconnect', () => {
         this.removeSocket(socket);
@@ -48,25 +74,25 @@ export class AdminSocketManager {
   private getAdminDataForSocket(socket: AdminSocket): AdminData | undefined {
     const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
     if (adminSessionId) {
-      const lightningNodePubkey = this.getNodePubkeyFromAdminSessionId(adminSessionId);
-      if (lightningNodePubkey) {
-        return this.getAdminData(lightningNodePubkey);
+      const userName = this.getUserNameFromAdminSessionId(adminSessionId);
+      if (userName) {
+        return this.getAdminData(userName);
       }
     }
   }
 
   /**
    * Sends an `updateAdminData` event to the specified admin.
-   * @param nodePubkey The node pubkey user to send the event to.
+   * @param userName The admin to send the event to.
    * @param adminData The new admin data to send.
    * @returns Whether there are any open sockets to the admin.
    */
-  public updateAdminData(nodePubkey: string): boolean {
-    const sockets = this.socketsByNodePubkey.get(nodePubkey);
+  public updateAdminData(userName: UserName): boolean {
+    const sockets = this.socketsByUserName.get(userName.toString());
 
     // Only get admin data if a relevant admin is currently connected.
     if (sockets && sockets.length) {
-      const adminData = this.getAdminData(nodePubkey);
+      const adminData = this.getAdminData(userName);
       sockets.forEach((socket) => socket.emit('updateAdminData', adminData));
       return true;
     }
@@ -74,39 +100,38 @@ export class AdminSocketManager {
     return false;
   }
 
-  private addSocket(socket: AdminSocket) {
+  private addSocket(socket: AdminSocket, socketData: AdminSocketData) {
+    socket.data = socketData;
     const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
-    let nodePubkey;
+    let userName;
     if (adminSessionId) {
-      nodePubkey = this.getNodePubkeyFromAdminSessionId(adminSessionId);
+      userName = this.getUserNameFromAdminSessionId(adminSessionId);
     }
 
-    if (nodePubkey) {
-      this.nodePubkeysBySocketId.set(socket.id, nodePubkey);
-    }
+    this.socketsBySocketId.set(socket.id, {socket, userName});
 
-    if (nodePubkey) {
-      let sockets = this.socketsByNodePubkey.get(nodePubkey);
+    if (userName) {
+      let sockets = this.socketsByUserName.get(userName.toString());
       if (!sockets) {
         sockets = [];
-        this.socketsByNodePubkey.set(nodePubkey, sockets);
+        this.socketsByUserName.set(userName.toString(), sockets);
       }
       sockets.push(socket);
     }
   }
 
   private removeSocket(socket: AdminSocket) {
-    const nodePubkey = this.nodePubkeysBySocketId.get(socket.id);
-    this.nodePubkeysBySocketId.delete(socket.id);
+    const {userName} = this.socketsBySocketId.get(socket.id) || {};
+    this.socketsBySocketId.delete(socket.id);
 
-    if (nodePubkey) {
-      let sockets = this.socketsByNodePubkey.get(nodePubkey);
+    if (userName) {
+      let sockets = this.socketsByUserName.get(userName.toString());
       if (sockets) {
         sockets = sockets.filter((s) => s !== socket);
         if (sockets.length) {
-          this.socketsByNodePubkey.set(nodePubkey, sockets);
+          this.socketsByUserName.set(userName.toString(), sockets);
         } else {
-          this.socketsByNodePubkey.delete(nodePubkey);
+          this.socketsByUserName.delete(userName.toString());
         }
       }
     }

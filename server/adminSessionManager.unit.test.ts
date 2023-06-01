@@ -18,40 +18,43 @@ describe('AdminSessionManager', () => {
       );
 
       expect(isNew).toBe(true);
-      expect(adminSessionManager.getNodePubkeyFromSessionId(
-        adminSessionId)).toBe(lightningNodePubkey);
     });
 
     it('should not update an existing admin session', () => {
       const adminSessionId = 'session1';
       const lightningNodePubkey = 'pubkey1';
 
-      adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
+      const {isNew: isNew1, userName: userName1} =
+        adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
 
-      const {isNew} = adminSessionManager.getOrCreateAdminSession(adminSessionId, 'newPubkey');
+      const {isNew: isNew2, userName: userName2} =
+        adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
 
-      expect(isNew).toBe(false);
-      expect(adminSessionManager.getNodePubkeyFromSessionId(adminSessionId))
-        .toBe(lightningNodePubkey);
+      expect(isNew1).toBe(true);
+      expect(isNew2).toBe(false);
+      expect(userName1.toString()).toEqual(userName2.toString());
     });
   });
 
-  describe('getNodePubkeyFromSessionId', () => {
+  describe('getUserNameFromSessionId', () => {
     it('should return the node pubkey for an existing admin session', () => {
       const adminSessionId = 'session1';
       const lightningNodePubkey = 'pubkey1';
 
-      adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
+      const {userName} = adminSessionManager.getOrCreateAdminSession(
+        adminSessionId,
+        lightningNodePubkey
+      );
 
-      const nodePubkey = adminSessionManager.getNodePubkeyFromSessionId(adminSessionId);
-
-      expect(nodePubkey).toBe(lightningNodePubkey);
+      expect(userName).toBeDefined();
+      expect(adminSessionManager.getUserNameFromSessionId(adminSessionId)?.toString())
+        .toEqual(userName.toString());
     });
 
     it('should return undefined for a non-existing admin session', () => {
       const adminSessionId = 'nonExistingSession';
 
-      const nodePubkey = adminSessionManager.getNodePubkeyFromSessionId(adminSessionId);
+      const nodePubkey = adminSessionManager.getUserNameFromSessionId(adminSessionId);
 
       expect(nodePubkey).toBeUndefined();
     });

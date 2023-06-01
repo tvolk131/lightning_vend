@@ -5,11 +5,10 @@ import {AsyncLoadableData} from './api/sharedApi';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircleIcon from '@mui/icons-material/Circle';
+import CircularProgress from '@mui/material/CircularProgress';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
-import LoadingButton from '@mui/lab/LoadingButton';
 import Paper from '@mui/material/Paper';
 import {SelectionMenu} from './selectionMenu';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import {deviceApi} from './api/deviceApi';
@@ -27,8 +26,32 @@ export const DevicePage = () => {
   const connectionStatus = deviceApi.useConnectionStatus();
   const loadableDevice = deviceApi.useLoadableDevice();
 
-  const [nodeRegistrationPubkey, setNodeRegistrationPubkey] = useState('');
-  const [nodeRegistrationDisplayName, setNodeRegistrationDisplayName] = useState('');
+  const [deviceSetupCode, setDeviceSetupCode] =
+    useState<AsyncLoadableData<string>>({state: 'loading'});
+
+  useEffect(() => {
+    deviceApi.getDeviceSetupCode().then((code) => {
+      setDeviceSetupCode({state: 'loaded', data: code});
+    });
+  }, []);
+
+  const renderDeviceSetupCode = () => {
+    if (deviceSetupCode.state === 'loaded') {
+      return (
+        <Typography variant={'h3'}>
+          {deviceSetupCode.data}
+        </Typography>
+      );
+    } else if (deviceSetupCode.state === 'error') {
+      return (
+        <Typography variant={'h3'}>
+          Error loading setup code!
+        </Typography>
+      );
+    } else {
+      return <CircularProgress/>;
+    }
+  };
 
   // Whether the screensaver should be displaying.
   const [screensaverActive, setScreensaverActive] = useState(true);
@@ -108,44 +131,26 @@ export const DevicePage = () => {
                node is real and has active channels.
         */}
         {loadableDevice.state === 'error' && (
-            <Paper style={{height: `${centerSquareSize}px`, width: `${centerSquareSize}px`}}>
-              <div style={{padding: '20px', textAlign: 'center'}}>
-                <Typography>
-                  Device is not setup! Please enter the Lightning Network
-                  node pubkey that you would like to pair this device to.
-                </Typography>
-                <TextField
-                  value={nodeRegistrationPubkey}
-                  onChange={(e) => setNodeRegistrationPubkey(e.target.value)}
-                  label={'LN Node Pubkey'}
-                  style={{margin: '20px'}}
-                />
-                <TextField
-                  value={nodeRegistrationDisplayName}
-                  onChange={(e) => setNodeRegistrationDisplayName(e.target.value)}
-                  label={'Device Name'}
-                  style={{marginBottom: '20px'}}
-                />
-                <LoadingButton
-                  variant={'contained'}
-                  disabled={!nodeRegistrationPubkey.length || !nodeRegistrationDisplayName.length}
-                  loading={supportedExecutionCommands.state === 'loading'}
-                  onClick={() => {
-                    deviceApi.registerDevice(
-                      nodeRegistrationPubkey,
-                      nodeRegistrationDisplayName,
-                      supportedExecutionCommands.state === 'loaded' ?
-                        supportedExecutionCommands.data
-                        :
-                        []
-                    );
+            <div style={{position: 'relative'}}>
+              <Paper style={{height: `${centerSquareSize}px`, width: `${centerSquareSize}px`}}>
+                <div
+                  style={{
+                    padding: '20px',
+                    textAlign: 'center',
+                    position: 'absolute',
+                    top: '50%',
+                    transform: 'translate(0, -50%)'
                   }}
                 >
-                  Register
-                </LoadingButton>
-              </div>
+                  <Typography style={{paddingBottom: '20px'}}>
+                    Device is not setup! Please login to an admin account on another device and
+                    enter the following setup code:
+                  </Typography>
+                  {renderDeviceSetupCode()}
+                </div>
+              </Paper>
               {supportedExecutionCommands.state === 'error' && (
-                  <div style={{marginTop: '20px'}}>
+                  <div style={{position: 'absolute', marginTop: '20px'}}>
                     <Alert
                       severity={'error'}
                       action={<Button onClick={loadSupportedExecutionCommands}>Retry</Button>}
@@ -154,7 +159,7 @@ export const DevicePage = () => {
                     </Alert>
                   </div>
               )}
-            </Paper>
+            </div>
         )}
       </div>
       <div style={{position: 'absolute', top: 0, right: 0, padding: '10px'}}>

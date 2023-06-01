@@ -9,6 +9,13 @@ import {
   AdminSocketData
 } from '../shared/adminSocketTypes';
 import {AdminData, AdminSessionManager} from './adminSessionManager';
+import {
+  DeviceClientToServerEvents,
+  DeviceInterServerEvents,
+  DeviceServerToClientEvents,
+  DeviceSocketData
+} from '../shared/deviceSocketTypes';
+import {DeviceName, UserName} from '../shared/proto';
 import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
 import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
 import {
@@ -35,17 +42,38 @@ const server = http.createServer(app);
 export const adminSessionCookieName = 'admin-session';
 export const deviceSessionCookieName = 'device-session';
 
+const getCookieFromRequest = (req: express.Request, cookieName: string): string | undefined => {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) {
+    return undefined;
+  }
+  const cookies = parse(cookieHeader);
+  return cookies[cookieName];
+};
+
+const getAdminSessionIdFromRequest = (req: express.Request): string | undefined => {
+  return getCookieFromRequest(req, adminSessionCookieName);
+};
+
+const getDeviceSessionIdFromRequest = (req: express.Request): string | undefined => {
+  return getCookieFromRequest(req, deviceSessionCookieName);
+};
+
 const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
 
-const getAdminData = (lightningNodePubkey: string): AdminData | undefined => {
+const getAdminData = (userName: UserName): AdminData | undefined => {
   return {
-    lightningNodePubkey,
-    devices: deviceSessionManager
-      .getDeviceSessionsBelongingToNodePubkey(lightningNodePubkey)
+    userName,
+    deviceViews: deviceSessionManager
+      .getDevices(userName)
       .map((device) => {
+        const deviceName = DeviceName.parse(device.name);
         return {
-          isOnline: deviceSocketManager.isDeviceConnected(device.deviceSessionId),
+          isOnline: deviceName ?
+            deviceSocketManager.isDeviceConnected(deviceName)
+            :
+            false,
           device
         };
       })
@@ -61,26 +89,35 @@ const adminSocketManager = new AdminSocketManager(
     pingInterval: 5000,
     pingTimeout: 4000
   }),
-  (adminSessionId) => adminSessionManager.getNodePubkeyFromSessionId(adminSessionId),
-  getAdminData
+  adminSessionManager.getUserNameFromSessionId.bind(adminSessionManager),
+  getAdminData,
+  (deviceSetupCode: string, userName: UserName, deviceDisplayName: string) => {
+    const claimDeviceRes =
+      deviceSessionManager.claimDevice(deviceSetupCode, userName, deviceDisplayName);
+    if (claimDeviceRes) {
+      const {device, deviceSessionId} = claimDeviceRes;
+      const deviceName = DeviceName.parse(device.name);
+      if (deviceName) {
+        deviceSocketManager.linkDeviceSessionIdToDeviceName(deviceSessionId, deviceName);
+        deviceSocketManager.updateDevice(deviceName, device);
+      }
+    }
+  }
 );
 const deviceSocketManager = new DeviceSocketManager(
-  new Server<AdminClientToServerEvents,
-             AdminServerToClientEvents,
-             AdminInterServerEvents,
-             AdminSocketData>(server, {
+  new Server<DeviceClientToServerEvents,
+             DeviceServerToClientEvents,
+             DeviceInterServerEvents,
+             DeviceSocketData>(server, {
     path: socketIoDevicePath,
     pingInterval: 5000,
     pingTimeout: 4000
   }),
-  deviceSessionManager.getDevice.bind(deviceSessionManager)
+  deviceSessionManager
 );
 
 deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
-  const ownerPubkey = deviceSessionManager.getDeviceOwnerPubkey(event.deviceSessionId);
-  if (ownerPubkey) {
-    adminSocketManager.updateAdminData(ownerPubkey);
-  }
+  adminSocketManager.updateAdminData(event.deviceName.getUserName());
 });
 
 const isInvoiceExpired = (invoice: Invoice): boolean => {
@@ -95,19 +132,19 @@ const isInvoiceExpired = (invoice: Invoice): boolean => {
 
 // TODO - Persist this in a MongoDB collection and use
 // a TTL to automatically clean up expired invoices.
-const invoicesToDeviceSessionIds: Map<string, string> = new Map();
+const invoicesToDeviceNames: Map<string, DeviceName> = new Map();
 
 // Once per minute, flush all expired invoices.
 setInterval(() => {
   const invoicesToDelete: string[] = [];
-  Array.from(invoicesToDeviceSessionIds.entries()).forEach(([invoice, sessionId]) => {
+  Array.from(invoicesToDeviceNames.entries()).forEach(([invoice, deviceName]) => {
     if (isInvoiceExpired(decodeInvoice(invoice))) {
       invoicesToDelete.push(invoice);
     }
   });
 
   invoicesToDelete.forEach(invoice => {
-    invoicesToDeviceSessionIds.delete(invoice);
+    invoicesToDeviceNames.delete(invoice);
   });
 }, 60000);
 
@@ -120,7 +157,7 @@ const authenticateAdmin = (req: express.Request, res: express.Response) => {
     };
   }
 
-  const adminSessionId = parse(req.headers.cookie)[adminSessionCookieName];
+  const adminSessionId = getAdminSessionIdFromRequest(req);
   if (!adminSessionId) {
     return {
       response: res
@@ -129,8 +166,8 @@ const authenticateAdmin = (req: express.Request, res: express.Response) => {
     };
   }
 
-  const lightningNodePubkey = adminSessionManager.getNodePubkeyFromSessionId(adminSessionId);
-  if (!lightningNodePubkey) {
+  const userName = adminSessionManager.getUserNameFromSessionId(adminSessionId);
+  if (!userName) {
     return {
       response: res
         .status(401)
@@ -138,7 +175,7 @@ const authenticateAdmin = (req: express.Request, res: express.Response) => {
     };
   }
 
-  return {lightningNodePubkey};
+  return {userName};
 };
 
 const authenticateDevice = (req: express.Request, res: express.Response) => {
@@ -150,8 +187,13 @@ const authenticateDevice = (req: express.Request, res: express.Response) => {
     };
   }
 
-  const deviceSessionId = parse(req.headers.cookie)[deviceSessionCookieName];
-  if (!deviceSessionId) {
+  // TODO - Encrypt the device name in a cookie using a JWT.
+  const deviceSessionId = getDeviceSessionIdFromRequest(req);
+  const deviceName = deviceSessionId ?
+    deviceSessionManager.getDeviceNameFromSessionId(deviceSessionId)
+    :
+    undefined;
+  if (!deviceName) {
     return {
       response: res
         .status(401)
@@ -159,7 +201,7 @@ const authenticateDevice = (req: express.Request, res: express.Response) => {
     };
   }
 
-  const device = deviceSessionManager.getDevice(deviceSessionId);
+  const device = deviceSessionManager.getDevice(deviceName);
   if (!device) {
     return {
       response: res
@@ -203,94 +245,13 @@ app.post('/api/createInvoice', async (req, res) => {
     expiry: '300' // 300 seconds -> 5 minutes.
   });
 
-  const addInvoiceResponse = await lightning.AddInvoice(preCreatedInvoice);
-  invoicesToDeviceSessionIds.set(addInvoiceResponse.paymentRequest, device.deviceSessionId);
-  res.send(addInvoiceResponse.paymentRequest);
-});
-
-app.post('/api/registerDevice', (req, res) => {
-  if (typeof req.body !== 'object') {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must be an object.')
-    };
-  }
-  if (typeof req.body.lightningNodeOwnerPubkey !== 'string' ||
-      req.body.lightningNodeOwnerPubkey.length === 0) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have string property `lightningNodeOwnerPubkey`.')
-    };
-  }
-  if (typeof req.body.displayName !== 'string' ||
-      req.body.displayName.length === 0) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have string property `displayName`.')
-    };
-  }
-  if (!Array.isArray(req.body.supportedExecutionCommands)) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have string array property `supportedExecutionCommands`.')
-    };
-  }
-  for (let i = 0; i < req.body.supportedExecutionCommands.length; i++) {
-    if (typeof req.body.supportedExecutionCommands[i] !== 'string') {
-      return {
-        response: res
-          .status(400)
-          .send('Request body must have string array property `supportedExecutionCommands`.')
-      };
-    }
-  }
-
-  const {
-    lightningNodeOwnerPubkey,
-    displayName,
-    supportedExecutionCommands
-  }: {
-    lightningNodeOwnerPubkey: string,
-    displayName: string,
-    supportedExecutionCommands: string[]
-  } = req.body;
-
-  let deviceSessionId;
-
-  if (req.headers.cookie) {
-    // Remember, this line could still leave deviceSessionId unset.
-    deviceSessionId = parse(req.headers.cookie)[deviceSessionCookieName];
-  }
-
-  if (!deviceSessionId) {
-    deviceSessionId = makeUuid();
-  }
-
-  const {isNew} = deviceSessionManager.getOrCreateDeviceSession(
-    deviceSessionId,
-    lightningNodeOwnerPubkey,
-    displayName,
-    supportedExecutionCommands
-  );
-
-  // Note: No manual event trigger is needed here, since the client will automatically
-  // disconnect and reconnect its socket, which triggers its own events.
-
-  if (isNew) {
-    const now = new Date();
-    const oneThousandYearsFromNow =
-      new Date(now.getFullYear() + 1000, now.getMonth(), now.getDate());
-    res.cookie(
-      deviceSessionCookieName,
-      deviceSessionId,
-      {path: '/', expires: oneThousandYearsFromNow}
-    ).send();
+  const deviceName = DeviceName.parse(device.name);
+  if (deviceName) {
+    const addInvoiceResponse = await lightning.AddInvoice(preCreatedInvoice);
+    invoicesToDeviceNames.set(addInvoiceResponse.paymentRequest, deviceName);
+    return res.send(addInvoiceResponse.paymentRequest);
   } else {
-    res.status(400).send('Device is already registered!');
+    return res.status(500).send('Could not parse device name.');
   }
 });
 
@@ -300,12 +261,7 @@ app.get('/api/getLnAuthMessage', async (req, res) => {
 });
 
 app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
-  let adminSessionId;
-
-  if (req.headers.cookie) {
-    // Remember, this line could still leave adminSessionId unset.
-    adminSessionId = parse(req.headers.cookie)[adminSessionCookieName];
-  }
+  let adminSessionId = getAdminSessionIdFromRequest(req);
 
   if (!adminSessionId) {
     adminSessionId = makeUuid();
@@ -331,7 +287,7 @@ app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
 });
 
 app.post('/api/updateDeviceDisplayName', async (req, res) => {
-  const {response, lightningNodePubkey} = authenticateAdmin(req, res);
+  const {response, userName} = authenticateAdmin(req, res);
   if (response) {
     return response;
   }
@@ -350,16 +306,19 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
         .send('Request body must have string property `displayName`.')
     };
   }
-  if (typeof req.body.deviceSessionId !== 'string' || req.body.deviceSessionId.length === 0) {
+  if (typeof req.body.deviceName !== 'string' || req.body.deviceName.length === 0) {
     return {
       response: res
         .status(400)
-        .send('Request body must have string property `deviceSessionId`.')
+        .send('Request body must have string property `deviceName`.')
     };
   }
-  const {displayName, deviceSessionId}: {displayName: string, deviceSessionId: string} = req.body;
 
-  if (deviceSessionManager.getDeviceOwnerPubkey(deviceSessionId) !== lightningNodePubkey) {
+  const displayName: string = req.body.displayName;
+  const rawDeviceName: string = req.body.deviceName;
+  const deviceName = DeviceName.parse(rawDeviceName);
+
+  if (!deviceName || deviceName.getUserName().toString() !== userName.toString()) {
     return {
       response: res
         .status(401)
@@ -367,18 +326,18 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
     };
   }
 
-  await deviceSessionManager.updateDevice(deviceSessionId, (device) => {
+  await deviceSessionManager.updateDevice(deviceName, (device) => {
     device.displayName = displayName;
     return device;
   }).then((device) => {
-    deviceSocketManager.updateDevice(deviceSessionId, device);
-    adminSocketManager.updateAdminData(lightningNodePubkey);
+    deviceSocketManager.updateDevice(deviceName, device);
+    adminSocketManager.updateAdminData(userName);
     res.status(200).send();
   });
 });
 
 app.post('/api/updateDeviceInventory', async (req, res) => {
-  const {response, lightningNodePubkey} = authenticateAdmin(req, res);
+  const {response, userName} = authenticateAdmin(req, res);
   if (response) {
     return response;
   }
@@ -390,14 +349,16 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
         .send('Request body must be an object.')
     };
   }
-  if (typeof req.body.deviceSessionId !== 'string' || req.body.deviceSessionId.length === 0) {
+  if (typeof req.body.deviceName !== 'string' || req.body.deviceName.length === 0) {
     return {
       response: res
         .status(400)
-        .send('Request body must have string property `deviceSessionId`.')
+        .send('Request body must have string property `deviceName`.')
     };
   }
-  const deviceSessionId: string = req.body.deviceSessionId;
+
+  const rawDeviceName: string = req.body.deviceName;
+  const deviceName = DeviceName.parse(rawDeviceName);
   const newInventory = tryCastToInventoryArray(req.body.inventory); // TODO - Add some validation.
   if (!newInventory) {
     return {
@@ -407,7 +368,7 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
     };
   }
 
-  if (deviceSessionManager.getDeviceOwnerPubkey(deviceSessionId) !== lightningNodePubkey) {
+  if (!deviceName || deviceName.getUserName().toString() !== userName.toString()) {
     return {
       response: res
         .status(401)
@@ -415,12 +376,12 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
     };
   }
 
-  await deviceSessionManager.updateDevice(deviceSessionId, (device) => {
+  await deviceSessionManager.updateDevice(deviceName, (device) => {
     device.inventory = newInventory;
     return device;
   }).then((device) => {
-    deviceSocketManager.updateDevice(deviceSessionId, device);
-    adminSocketManager.updateAdminData(lightningNodePubkey);
+    deviceSocketManager.updateDevice(deviceName, device);
+    adminSocketManager.updateAdminData(userName);
     res.status(200).send();
   });
 });
@@ -449,11 +410,11 @@ server.listen(port, () => {
 lightning.SubscribeInvoices(InvoiceSubscription.create())
   .subscribe((invoice) => {
     if (invoice.state === LNDInvoice_InvoiceState.SETTLED && invoice.paymentRequest) {
-      const deviceSessionId = invoicesToDeviceSessionIds.get(invoice.paymentRequest);
-      if (deviceSessionId) {
+      const deviceName = invoicesToDeviceNames.get(invoice.paymentRequest);
+      if (deviceName) {
         // TODO - Check if this message was sent (i.e. if the device is online) and
         // save the event to retry later if the device is currently offline.
-        deviceSocketManager.emitInvoicePaid(deviceSessionId, invoice.paymentRequest);
+        deviceSocketManager.emitInvoicePaid(deviceName, invoice.paymentRequest);
       }
     }
   });
