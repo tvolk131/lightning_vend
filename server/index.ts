@@ -17,16 +17,15 @@ import {
 } from '../shared/deviceSocketTypes';
 import {DeviceName, UserName} from '../shared/proto';
 import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
-import {Invoice, decode as decodeInvoice} from '@node-lightning/invoice';
 import {
-  InvoiceSubscription,
-  Invoice as LNDInvoice,
-  Invoice_InvoiceState as LNDInvoice_InvoiceState
+  Invoice_InvoiceState as InvoiceState,
+  InvoiceSubscription
 } from '../proto/lnd/lnrpc/lightning';
 import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './adminSocketManager';
 import {DeviceSocketManager} from './deviceSocketManager';
+import {InvoiceManager} from './invoiceManager';
 import {Server} from 'socket.io';
 import {lightning} from './lnd_api';
 import {makeUuid} from '../shared/uuid';
@@ -55,12 +54,10 @@ const getAdminSessionIdFromRequest = (req: express.Request): string | undefined 
   return getCookieFromRequest(req, adminSessionCookieName);
 };
 
-const getDeviceSessionIdFromRequest = (req: express.Request): string | undefined => {
-  return getCookieFromRequest(req, deviceSessionCookieName);
-};
-
 const adminSessionManager = new AdminSessionManager();
 const deviceSessionManager = new DeviceSessionManager();
+
+const invoiceManager = new InvoiceManager(lightning);
 
 const getAdminData = (userName: UserName): AdminData | undefined => {
   return {
@@ -105,6 +102,7 @@ const adminSocketManager = new AdminSocketManager(
   }
 );
 const deviceSocketManager = new DeviceSocketManager(
+  invoiceManager,
   new Server<DeviceClientToServerEvents,
              DeviceServerToClientEvents,
              DeviceInterServerEvents,
@@ -119,34 +117,6 @@ const deviceSocketManager = new DeviceSocketManager(
 deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
   adminSocketManager.updateAdminData(event.deviceName.getUserName());
 });
-
-const isInvoiceExpired = (invoice: Invoice): boolean => {
-  const now = new Date();
-  const createTime = new Date(invoice.timestamp);
-
-  const elapsedSeconds = now.getUTCSeconds() - createTime.getUTCSeconds();
-  const secondsRemainingToExpiry = invoice.expiry - elapsedSeconds;
-
-  return secondsRemainingToExpiry < 0;
-};
-
-// TODO - Persist this in a MongoDB collection and use
-// a TTL to automatically clean up expired invoices.
-const invoicesToDeviceNames: Map<string, DeviceName> = new Map();
-
-// Once per minute, flush all expired invoices.
-setInterval(() => {
-  const invoicesToDelete: string[] = [];
-  Array.from(invoicesToDeviceNames.entries()).forEach(([invoice, deviceName]) => {
-    if (isInvoiceExpired(decodeInvoice(invoice))) {
-      invoicesToDelete.push(invoice);
-    }
-  });
-
-  invoicesToDelete.forEach(invoice => {
-    invoicesToDeviceNames.delete(invoice);
-  });
-}, 60000);
 
 const authenticateAdmin = (req: express.Request, res: express.Response) => {
   if (!req.headers.cookie) {
@@ -178,81 +148,8 @@ const authenticateAdmin = (req: express.Request, res: express.Response) => {
   return {userName};
 };
 
-const authenticateDevice = (req: express.Request, res: express.Response) => {
-  if (!req.headers.cookie) {
-    return {
-      response: res
-        .status(401)
-        .send('Device must be registered! No cookie header found.')
-    };
-  }
-
-  // TODO - Encrypt the device name in a cookie using a JWT.
-  const deviceSessionId = getDeviceSessionIdFromRequest(req);
-  const deviceName = deviceSessionId ?
-    deviceSessionManager.getDeviceNameFromSessionId(deviceSessionId)
-    :
-    undefined;
-  if (!deviceName) {
-    return {
-      response: res
-        .status(401)
-        .send('Device must be registered! No device session found.')
-    };
-  }
-
-  const device = deviceSessionManager.getDevice(deviceName);
-  if (!device) {
-    return {
-      response: res
-        .status(401)
-        .send('Device must be registered! Unrecognized device session.')
-    };
-  }
-
-  return {device};
-};
-
 app.get('*/bundle.js', (req, res) => {
   res.type('.js').send(bundle);
-});
-
-app.post('/api/createInvoice', async (req, res) => {
-  if (typeof req.body !== 'object') {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must be an object.')
-    };
-  }
-  if (typeof req.body.valueSats !== 'number' ||
-      req.body.valueSats < 1 ||
-      !Number.isInteger(req.body.valueSats)) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have positive integer property `valueSats`.')
-    };
-  }
-
-  const {response, device} = authenticateDevice(req, res);
-  if (response) {
-    return response;
-  }
-
-  const preCreatedInvoice = LNDInvoice.create({
-    value: req.body.valueSats,
-    expiry: '300' // 300 seconds -> 5 minutes.
-  });
-
-  const deviceName = DeviceName.parse(device.name);
-  if (deviceName) {
-    const addInvoiceResponse = await lightning.AddInvoice(preCreatedInvoice);
-    invoicesToDeviceNames.set(addInvoiceResponse.paymentRequest, deviceName);
-    return res.send(addInvoiceResponse.paymentRequest);
-  } else {
-    return res.status(500).send('Could not parse device name.');
-  }
 });
 
 app.get('/api/getLnAuthMessage', async (req, res) => {
@@ -409,8 +306,8 @@ server.listen(port, () => {
 
 lightning.SubscribeInvoices(InvoiceSubscription.create())
   .subscribe((invoice) => {
-    if (invoice.state === LNDInvoice_InvoiceState.SETTLED && invoice.paymentRequest) {
-      const deviceName = invoicesToDeviceNames.get(invoice.paymentRequest);
+    if (invoice.state === InvoiceState.SETTLED && invoice.paymentRequest) {
+      const deviceName = invoiceManager.getInvoiceCreator(invoice.paymentRequest);
       if (deviceName) {
         // TODO - Check if this message was sent (i.e. if the device is online) and
         // save the event to retry later if the device is currently offline.

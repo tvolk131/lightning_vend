@@ -5,7 +5,6 @@ import {
 } from '../../../shared/deviceSocketTypes';
 import {useEffect, useState} from 'react';
 import {Device} from '../../../proto/lightning_vend/model';
-import axios from 'axios';
 import {makeUuid} from '../../../shared/uuid';
 import {socketIoDevicePath} from '../../../shared/constants';
 
@@ -91,7 +90,15 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
    * @returns A Lightning Network invoice.
    */
   public async createInvoice(valueSats: number): Promise<string> {
-    return (await axios.post('/api/createInvoice', {valueSats})).data;
+    return new Promise((resolve, reject) => {
+      this.socket.emit('createInvoice', valueSats, (invoice) => {
+        if (invoice) {
+          return resolve(invoice);
+        } else {
+          return reject();
+        }
+      });
+    });
   }
 }
 
