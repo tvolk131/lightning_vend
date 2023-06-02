@@ -3,11 +3,11 @@ import {
   AdminInterServerEvents,
   AdminServerToClientEvents,
   AdminSocketData
-} from '../shared/adminSocketTypes';
+} from '../../shared/adminSocketTypes';
 import {Server, Socket} from 'socket.io';
-import {AdminData} from './adminSessionManager';
-import {UserName} from '../shared/proto';
-import {adminSessionCookieName} from '.';
+import {AdminData} from '../persistence/adminSessionManager';
+import {UserName} from '../../shared/proto';
+import {adminSessionCookieName} from '..';
 import {parse} from 'cookie';
 
 type AdminSocket = Socket<AdminClientToServerEvents,

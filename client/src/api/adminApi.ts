@@ -4,7 +4,7 @@ import {
 } from '../../../shared/adminSocketTypes';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
 import {useEffect, useState} from 'react';
-import {AdminData} from '../../../server/adminSessionManager';
+import {AdminData} from '../../../server/persistence/adminSessionManager';
 import {DeviceName} from '../../../shared/proto';
 import {InventoryItem} from '../../../proto/lightning_vend/model';
 import axios from 'axios';

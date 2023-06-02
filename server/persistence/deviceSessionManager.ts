@@ -1,5 +1,5 @@
-import {Device, InventoryItem} from '../proto/lightning_vend/model';
-import {DeviceName, UserName} from '../shared/proto';
+import {Device, InventoryItem} from '../../proto/lightning_vend/model';
+import {DeviceName, UserName} from '../../shared/proto';
 import {DeviceSetupCodeManager} from './deviceSetupCodeManager';
 
 // TODO - Move this somewhere that makes more sense.

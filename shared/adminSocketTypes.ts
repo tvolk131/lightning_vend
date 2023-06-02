@@ -1,4 +1,4 @@
-import {AdminData} from '../server/adminSessionManager';
+import {AdminData} from '../server/persistence/adminSessionManager';
 import {UserName} from './proto';
 
 export interface AdminServerToClientEvents {

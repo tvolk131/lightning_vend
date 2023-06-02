@@ -8,7 +8,7 @@ import {
   AdminServerToClientEvents,
   AdminSocketData
 } from '../shared/adminSocketTypes';
-import {AdminData, AdminSessionManager} from './adminSessionManager';
+import {AdminData, AdminSessionManager} from './persistence/adminSessionManager';
 import {
   DeviceClientToServerEvents,
   DeviceInterServerEvents,
@@ -16,18 +16,18 @@ import {
   DeviceSocketData
 } from '../shared/deviceSocketTypes';
 import {DeviceName, UserName} from '../shared/proto';
-import {DeviceSessionManager, tryCastToInventoryArray} from './deviceSessionManager';
+import {DeviceSessionManager, tryCastToInventoryArray} from './persistence/deviceSessionManager';
 import {
   Invoice_InvoiceState as InvoiceState,
   InvoiceSubscription
 } from '../proto/lnd/lnrpc/lightning';
 import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
-import {AdminSocketManager} from './adminSocketManager';
-import {DeviceSocketManager} from './deviceSocketManager';
-import {InvoiceManager} from './invoiceManager';
+import {AdminSocketManager} from './clientApi/adminSocketManager';
+import {DeviceSocketManager} from './clientApi/deviceSocketManager';
+import {InvoiceManager} from './persistence/invoiceManager';
 import {Server} from 'socket.io';
-import {lightning} from './lnd_api';
+import {lightning} from './lndApi';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
 

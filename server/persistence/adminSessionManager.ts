@@ -1,5 +1,5 @@
-import {Device, User} from '../proto/lightning_vend/model';
-import {UserName} from '../shared/proto';
+import {Device, User} from '../../proto/lightning_vend/model';
+import {UserName} from '../../shared/proto';
 
 export interface AdminData {
   userName: UserName,

@@ -3,18 +3,18 @@ import {
   DeviceInterServerEvents,
   DeviceServerToClientEvents,
   DeviceSocketData
-} from '../shared/deviceSocketTypes';
+} from '../../shared/deviceSocketTypes';
 import {EventNames, EventParams} from 'socket.io/dist/typed-events';
 import {Server, Socket} from 'socket.io';
 import {parse, serialize} from 'cookie';
-import {Device} from '../proto/lightning_vend/model';
-import {DeviceName} from '../shared/proto';
-import {DeviceSessionManager} from './deviceSessionManager';
-import {InvoiceManager} from './invoiceManager';
+import {Device} from '../../proto/lightning_vend/model';
+import {DeviceName} from '../../shared/proto';
+import {DeviceSessionManager} from '../persistence/deviceSessionManager';
+import {InvoiceManager} from '../persistence/invoiceManager';
 import {Request} from 'express';
-import {SubscribableEventManager} from '../client/src/api/sharedApi';
-import {deviceSessionCookieName} from '.';
-import {makeUuid} from '../shared/uuid';
+import {SubscribableEventManager} from '../../client/src/api/sharedApi';
+import {deviceSessionCookieName} from '..';
+import {makeUuid} from '../../shared/uuid';
 
 type DeviceSocket = Socket<DeviceClientToServerEvents,
                            DeviceServerToClientEvents,
