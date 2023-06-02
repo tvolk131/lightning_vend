@@ -99,54 +99,6 @@ app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
   }
 });
 
-app.post('/api/updateDeviceDisplayName', async (req, res) => {
-  const {response, userName} = authenticateAdmin(req, res);
-  if (response) {
-    return response;
-  }
-
-  if (typeof req.body !== 'object') {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must be an object.')
-    };
-  }
-  if (typeof req.body.displayName !== 'string' || req.body.displayName.length === 0) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have string property `displayName`.')
-    };
-  }
-  if (typeof req.body.deviceName !== 'string' || req.body.deviceName.length === 0) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have string property `deviceName`.')
-    };
-  }
-
-  const displayName: string = req.body.displayName;
-  const rawDeviceName: string = req.body.deviceName;
-  const deviceName = DeviceName.parse(rawDeviceName);
-
-  if (!deviceName || deviceName.getUserName().toString() !== userName.toString()) {
-    return {
-      response: res
-        .status(401)
-        .send('Cannot update a device you do not own!')
-    };
-  }
-
-  await coordinator.updateDevice(deviceName, (device) => {
-    device.displayName = displayName;
-    return device;
-  })
-    .then(() => res.status(200).send())
-    .catch((err) => res.status(500).send(err));
-});
-
 app.post('/api/updateDeviceInventory', async (req, res) => {
   const {response, userName} = authenticateAdmin(req, res);
   if (response) {

@@ -49,7 +49,8 @@ export class Coordinator {
       }),
       this.adminSessionManager.getUserNameFromAdminSessionId.bind(this.adminSessionManager),
       this.getAdminData.bind(this),
-      this.claimDevice.bind(this)
+      this.claimDevice.bind(this),
+      this.updateDevice.bind(this)
     );
     this.deviceSocketManager = new DeviceSocketManager(
       this.invoiceManager,

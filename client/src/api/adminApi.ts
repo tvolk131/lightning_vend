@@ -56,9 +56,20 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
   }
 
   public async updateDeviceDisplayName(deviceName: DeviceName, displayName: string): Promise<void> {
-    return await axios.post('/api/updateDeviceDisplayName', {
-      deviceName: deviceName.toString(),
-      displayName
+    return new Promise((resolve, reject) => {
+      this.socket.emit('updateDeviceDisplayName', deviceName.toString(), displayName, (result) => {
+        switch (result) {
+          case 'ok':
+            resolve();
+            break;
+          case 'unauthenticatedError':
+            reject(new Error('unauthenticatedError'));
+            break;
+          case 'unknownError':
+            reject(new Error('unknownError'));
+            break;
+        }
+      });
     });
   }
 

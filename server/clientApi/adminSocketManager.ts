@@ -4,9 +4,10 @@ import {
   AdminServerToClientEvents,
   AdminSocketData
 } from '../../shared/adminSocketTypes';
+import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from '../persistence/adminSessionManager';
-import {UserName} from '../../shared/proto';
+import {Device} from '../../proto/lightning_vend/model';
 import {adminSessionCookieName} from '..';
 import {parse} from 'cookie';
 
@@ -39,7 +40,11 @@ export class AdminSocketManager {
       deviceSetupCode: string,
       userName: UserName,
       deviceDisplayName: string
-    ) => void
+    ) => void,
+    updateDevice: (
+      deviceName: DeviceName,
+      mutateFn: (device: Device) => Device
+    ) => Promise<Device>
   ) {
     this.getUserNameFromAdminSessionId = getUserNameFromAdminSessionId;
     this.getAdminData = getAdminData;
@@ -63,6 +68,22 @@ export class AdminSocketManager {
         } else {
           callback('unauthenticatedError');
         }
+      });
+
+      socket.on('updateDeviceDisplayName', (deviceNameString, displayName, callback) => {
+        const userName = socket.data.userName;
+        const deviceName = DeviceName.parse(deviceNameString);
+        if (!userName || !deviceName ||
+            userName.toString() !== deviceName.getUserName().toString()) {
+          return callback('unauthenticatedError');
+        }
+
+        return updateDevice(deviceName, (device) => {
+          device.displayName = displayName;
+          return device;
+        })
+          .then(() => callback('ok'))
+          .catch((err) => callback('unknownError'));
       });
 
       socket.on('disconnect', () => {

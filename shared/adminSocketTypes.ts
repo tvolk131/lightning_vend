@@ -11,6 +11,11 @@ export interface AdminClientToServerEvents {
     displayName: string,
     callback: (result: 'ok' | 'unauthenticatedError') => void
   ) => void;
+  updateDeviceDisplayName: (
+    deviceNameString: string,
+    displayName: string,
+    callback: (result: 'ok' | 'unauthenticatedError' | 'unknownError') => void
+  ) => void;
 }
 
 export interface AdminInterServerEvents {
