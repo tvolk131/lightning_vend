@@ -2,34 +2,13 @@ import * as compression from 'compression';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
-import {
-  AdminClientToServerEvents,
-  AdminInterServerEvents,
-  AdminServerToClientEvents,
-  AdminSocketData
-} from '../shared/adminSocketTypes';
-import {AdminData, AdminSessionManager} from './persistence/adminSessionManager';
-import {
-  DeviceClientToServerEvents,
-  DeviceInterServerEvents,
-  DeviceServerToClientEvents,
-  DeviceSocketData
-} from '../shared/deviceSocketTypes';
-import {DeviceName, UserName} from '../shared/proto';
-import {DeviceSessionManager, tryCastToInventoryArray} from './persistence/deviceSessionManager';
-import {
-  Invoice_InvoiceState as InvoiceState,
-  InvoiceSubscription
-} from '../proto/lnd/lnrpc/lightning';
 import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
-import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
-import {AdminSocketManager} from './clientApi/adminSocketManager';
-import {DeviceSocketManager} from './clientApi/deviceSocketManager';
-import {InvoiceManager} from './persistence/invoiceManager';
-import {Server} from 'socket.io';
+import {Coordinator} from './coordinator';
+import {DeviceName} from '../shared/proto';
 import {lightning} from './lndApi';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
+import {tryCastToInventoryArray} from './persistence/deviceSessionManager';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 
@@ -37,6 +16,7 @@ const app = express();
 app.use(compression({threshold: 0}));
 app.use(express.json());
 const server = http.createServer(app);
+const coordinator = new Coordinator(server, lightning);
 
 export const adminSessionCookieName = 'admin-session';
 export const deviceSessionCookieName = 'device-session';
@@ -53,70 +33,6 @@ const getCookieFromRequest = (req: express.Request, cookieName: string): string 
 const getAdminSessionIdFromRequest = (req: express.Request): string | undefined => {
   return getCookieFromRequest(req, adminSessionCookieName);
 };
-
-const adminSessionManager = new AdminSessionManager();
-const deviceSessionManager = new DeviceSessionManager();
-
-const invoiceManager = new InvoiceManager(lightning);
-
-const getAdminData = (userName: UserName): AdminData | undefined => {
-  return {
-    userName,
-    deviceViews: deviceSessionManager
-      .getDevices(userName)
-      .map((device) => {
-        const deviceName = DeviceName.parse(device.name);
-        return {
-          isOnline: deviceName ?
-            deviceSocketManager.isDeviceConnected(deviceName)
-            :
-            false,
-          device
-        };
-      })
-  };
-};
-
-const adminSocketManager = new AdminSocketManager(
-  new Server<AdminClientToServerEvents,
-             AdminServerToClientEvents,
-             AdminInterServerEvents,
-             AdminSocketData>(server, {
-    path: socketIoAdminPath,
-    pingInterval: 5000,
-    pingTimeout: 4000
-  }),
-  adminSessionManager.getUserNameFromSessionId.bind(adminSessionManager),
-  getAdminData,
-  (deviceSetupCode: string, userName: UserName, deviceDisplayName: string) => {
-    const claimDeviceRes =
-      deviceSessionManager.claimDevice(deviceSetupCode, userName, deviceDisplayName);
-    if (claimDeviceRes) {
-      const {device, deviceSessionId} = claimDeviceRes;
-      const deviceName = DeviceName.parse(device.name);
-      if (deviceName) {
-        deviceSocketManager.linkDeviceSessionIdToDeviceName(deviceSessionId, deviceName);
-        deviceSocketManager.updateDevice(deviceName, device);
-      }
-    }
-  }
-);
-const deviceSocketManager = new DeviceSocketManager(
-  invoiceManager,
-  new Server<DeviceClientToServerEvents,
-             DeviceServerToClientEvents,
-             DeviceInterServerEvents,
-             DeviceSocketData>(server, {
-    path: socketIoDevicePath,
-    pingInterval: 5000,
-    pingTimeout: 4000
-  }),
-  deviceSessionManager
-);
-
-deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
-  adminSocketManager.updateAdminData(event.deviceName.getUserName());
-});
 
 const authenticateAdmin = (req: express.Request, res: express.Response) => {
   if (!req.headers.cookie) {
@@ -136,7 +52,7 @@ const authenticateAdmin = (req: express.Request, res: express.Response) => {
     };
   }
 
-  const userName = adminSessionManager.getUserNameFromSessionId(adminSessionId);
+  const userName = coordinator.getUserNameFromAdminSessionId(adminSessionId);
   if (!userName) {
     return {
       response: res
@@ -171,7 +87,7 @@ app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
     return res.status(400).send(err);
   }
 
-  const {isNew} = adminSessionManager.getOrCreateAdminSession(
+  const {isNew} = coordinator.getOrCreateAdminSession(
     adminSessionId,
     lnNodePubkey
   );
@@ -223,14 +139,12 @@ app.post('/api/updateDeviceDisplayName', async (req, res) => {
     };
   }
 
-  await deviceSessionManager.updateDevice(deviceName, (device) => {
+  await coordinator.updateDevice(deviceName, (device) => {
     device.displayName = displayName;
     return device;
-  }).then((device) => {
-    deviceSocketManager.updateDevice(deviceName, device);
-    adminSocketManager.updateAdminData(userName);
-    res.status(200).send();
-  });
+  })
+    .then(() => res.status(200).send())
+    .catch((err) => res.status(500).send(err));
 });
 
 app.post('/api/updateDeviceInventory', async (req, res) => {
@@ -273,14 +187,12 @@ app.post('/api/updateDeviceInventory', async (req, res) => {
     };
   }
 
-  await deviceSessionManager.updateDevice(deviceName, (device) => {
+  await coordinator.updateDevice(deviceName, (device) => {
     device.inventory = newInventory;
     return device;
-  }).then((device) => {
-    deviceSocketManager.updateDevice(deviceName, device);
-    adminSocketManager.updateAdminData(userName);
-    res.status(200).send();
-  });
+  })
+    .then(() => res.status(200).send())
+    .catch((err) => res.status(500).send(err));
 });
 
 app.get('*/', (req, res) => {
@@ -303,15 +215,3 @@ const port = Number(process.env.PORT) || 3000;
 server.listen(port, () => {
   console.log(`Listening on *:${port}`); // eslint-disable-line no-console
 });
-
-lightning.SubscribeInvoices(InvoiceSubscription.create())
-  .subscribe((invoice) => {
-    if (invoice.state === InvoiceState.SETTLED && invoice.paymentRequest) {
-      const deviceName = invoiceManager.getInvoiceCreator(invoice.paymentRequest);
-      if (deviceName) {
-        // TODO - Check if this message was sent (i.e. if the device is online) and
-        // save the event to retry later if the device is currently offline.
-        deviceSocketManager.emitInvoicePaid(deviceName, invoice.paymentRequest);
-      }
-    }
-  });

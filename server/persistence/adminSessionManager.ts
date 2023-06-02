@@ -73,7 +73,7 @@ export class AdminSessionManager {
    * @param adminSessionId The session we're fetching.
    * @returns The Lightning Network node pubkey that an existing admin session is tied to
    */
-  public getUserNameFromSessionId(adminSessionId: string): UserName | undefined {
+  public getUserNameFromAdminSessionId(adminSessionId: string): UserName | undefined {
     return this.userSessions.get(adminSessionId);
   }
 }
