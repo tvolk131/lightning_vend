@@ -21,7 +21,6 @@ import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './clientApi/adminSocketManager';
 import {Device} from '../proto/lightning_vend/model';
 import {DeviceSessionManager} from './persistence/deviceSessionManager';
-import {DeviceSetupCodeManager} from './persistence/deviceSetupCodeManager';
 import {DeviceSocketManager} from './clientApi/deviceSocketManager';
 import {Server as HttpServer} from 'http';
 import {InvoiceManager} from './persistence/invoiceManager';
@@ -32,13 +31,11 @@ export class Coordinator {
   private deviceSocketManager: DeviceSocketManager;
   private adminSessionManager: AdminSessionManager;
   private deviceSessionManager: DeviceSessionManager;
-  private deviceSetupCodeManager: DeviceSetupCodeManager;
   private invoiceManager: InvoiceManager;
 
   public constructor(httpServer: HttpServer, lightning: LightningClientImpl) {
     this.adminSessionManager = new AdminSessionManager();
     this.deviceSessionManager = new DeviceSessionManager();
-    this.deviceSetupCodeManager = new DeviceSetupCodeManager();
     this.invoiceManager = new InvoiceManager(lightning);
 
     this.adminSocketManager = new AdminSocketManager(
@@ -52,18 +49,7 @@ export class Coordinator {
       }),
       this.adminSessionManager.getUserNameFromAdminSessionId.bind(this.adminSessionManager),
       this.getAdminData.bind(this),
-      (deviceSetupCode: string, userName: UserName, deviceDisplayName: string) => {
-        const claimDeviceRes =
-          this.deviceSessionManager.claimDevice(deviceSetupCode, userName, deviceDisplayName);
-        if (claimDeviceRes) {
-          const {device, deviceSessionId} = claimDeviceRes;
-          const deviceName = DeviceName.parse(device.name);
-          if (deviceName) {
-            this.deviceSocketManager.linkDeviceSessionIdToDeviceName(deviceSessionId, deviceName);
-            this.deviceSocketManager.updateDevice(deviceName, device);
-          }
-        }
-      }
+      this.claimDevice.bind(this)
     );
     this.deviceSocketManager = new DeviceSocketManager(
       this.invoiceManager,
@@ -112,6 +98,19 @@ export class Coordinator {
 
   public getOrCreateAdminSession(adminSessionId: string, lightningNodePubkey: string) {
     return this.adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
+  }
+
+  private claimDevice(deviceSetupCode: string, userName: UserName, deviceDisplayName: string) {
+    const claimDeviceRes =
+      this.deviceSessionManager.claimDevice(deviceSetupCode, userName, deviceDisplayName);
+    if (claimDeviceRes) {
+      const {device, deviceSessionId} = claimDeviceRes;
+      const deviceName = DeviceName.parse(device.name);
+      if (deviceName) {
+        this.deviceSocketManager.linkDeviceSessionIdToDeviceName(deviceSessionId, deviceName);
+        this.deviceSocketManager.updateDevice(deviceName, device);
+      }
+    }
   }
 
   private getAdminData(userName: UserName): AdminData | undefined {
