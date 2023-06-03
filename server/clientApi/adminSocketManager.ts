@@ -9,6 +9,7 @@ import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from '../persistence/adminSessionManager';
 import {adminSessionCookieName} from '..';
+import {createSignableMessageWithTTL} from '../lnAuth';
 import {parse} from 'cookie';
 
 type AdminSocket = Socket<AdminClientToServerEvents,
@@ -58,6 +59,11 @@ export class AdminSocketManager {
       this.addSocket(socket, {userName});
 
       socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
+
+      socket.on('getLnAuthMessage', (callback) => {
+        // Generate an unsigned message that's valid for 5 minutes.
+        callback(createSignableMessageWithTTL(60 * 5));
+      });
 
       socket.on('claimDevice', (deviceSetupCode, displayName, callback) => {
         const adminData = this.getAdminDataForSocket(socket);

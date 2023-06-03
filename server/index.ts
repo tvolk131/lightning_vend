@@ -2,11 +2,11 @@ import * as compression from 'compression';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
-import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
 import {Coordinator} from './coordinator';
 import {lightning} from './lndApi';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
+import {verifyMessage} from './lnAuth';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 
@@ -34,11 +34,6 @@ const getAdminSessionIdFromRequest = (req: express.Request): string | undefined 
 
 app.get('*/bundle.js', (req, res) => {
   res.type('.js').send(bundle);
-});
-
-app.get('/api/getLnAuthMessage', async (req, res) => {
-  // Generate an unsigned message that's valid for 5 minutes.
-  res.send(createSignableMessageWithTTL(60 * 5));
 });
 
 app.get('/api/registerAdmin/:message/:signature', async (req, res) => {

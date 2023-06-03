@@ -6,6 +6,7 @@ export interface AdminServerToClientEvents {
 }
 
 export interface AdminClientToServerEvents {
+  getLnAuthMessage: (callback: (message: string) => void) => void;
   claimDevice: (
     deviceSetupCode: string,
     displayName: string,

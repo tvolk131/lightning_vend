@@ -32,7 +32,11 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
   }
 
   public async getLnAuthMessage(): Promise<string> {
-    return (await axios.get('/api/getLnAuthMessage')).data;
+    return new Promise((resolve) => {
+      this.socket.emit('getLnAuthMessage', (message) => {
+        resolve(message);
+      });
+    });
   }
 
   public async registerAdmin(message: string, signature: string): Promise<void> {
