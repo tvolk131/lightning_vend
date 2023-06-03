@@ -3,11 +3,13 @@ import {
   AdminInterServerEvents,
   AdminServerToClientEvents,
   AdminSocketData
-} from '../shared/adminSocketTypes';
+} from '../../shared/adminSocketTypes';
+import {Device, InventoryItem} from '../../proto/lightning_vend/model';
+import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
-import {AdminData} from './adminSessionManager';
-import {UserName} from '../shared/proto';
-import {adminSessionCookieName} from '.';
+import {AdminData} from '../persistence/adminSessionManager';
+import {adminSessionCookieName} from '..';
+import {createSignableMessageWithTTL} from '../lnAuth';
 import {parse} from 'cookie';
 
 type AdminSocket = Socket<AdminClientToServerEvents,
@@ -39,7 +41,11 @@ export class AdminSocketManager {
       deviceSetupCode: string,
       userName: UserName,
       deviceDisplayName: string
-    ) => void
+    ) => void,
+    updateDevice: (
+      deviceName: DeviceName,
+      mutateFn: (device: Device) => Device
+    ) => Promise<Device>
   ) {
     this.getUserNameFromAdminSessionId = getUserNameFromAdminSessionId;
     this.getAdminData = getAdminData;
@@ -54,6 +60,11 @@ export class AdminSocketManager {
 
       socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
 
+      socket.on('getLnAuthMessage', (callback) => {
+        // Generate an unsigned message that's valid for 5 minutes.
+        callback(createSignableMessageWithTTL(60 * 5));
+      });
+
       socket.on('claimDevice', (deviceSetupCode, displayName, callback) => {
         const adminData = this.getAdminDataForSocket(socket);
         if (adminData && userName) {
@@ -63,6 +74,38 @@ export class AdminSocketManager {
         } else {
           callback('unauthenticatedError');
         }
+      });
+
+      socket.on('updateDeviceDisplayName', (deviceNameString, displayName, callback) => {
+        const userName = socket.data.userName;
+        const deviceName = DeviceName.parse(deviceNameString);
+        if (!userName || !deviceName ||
+            userName.toString() !== deviceName.getUserName().toString()) {
+          return callback('unauthenticatedError');
+        }
+
+        return updateDevice(deviceName, (device) => {
+          device.displayName = displayName;
+          return device;
+        })
+          .then(() => callback('ok'))
+          .catch((err) => callback('unknownError'));
+      });
+
+      socket.on('updateDeviceInventory', (deviceNameString, inventoryItemJsonArray, callback) => {
+        const userName = socket.data.userName;
+        const deviceName = DeviceName.parse(deviceNameString);
+        if (!userName || !deviceName ||
+            userName.toString() !== deviceName.getUserName().toString()) {
+          return callback('unauthenticatedError');
+        }
+
+        return updateDevice(deviceName, (device) => {
+          device.inventory = inventoryItemJsonArray.map(InventoryItem.fromJSON);
+          return device;
+        })
+          .then(() => callback('ok'))
+          .catch((err) => callback('unknownError'));
       });
 
       socket.on('disconnect', () => {

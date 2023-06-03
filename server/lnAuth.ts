@@ -2,7 +2,7 @@ import {
   createMessageTokenWithExpiration,
   messageIsAuthentic
 } from '../shared/lnAuthNodeOnly';
-import {lightning, lnAuthJwtSecret} from './lnd_api';
+import {lightning, lnAuthJwtSecret} from './lndApi';
 import {messageIsExpired, messageIsMalformed} from '../shared/lnAuthBrowserSafe';
 import {VerifyMessageRequest} from '../proto/lnd/lnrpc/lightning';
 

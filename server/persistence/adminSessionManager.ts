@@ -1,5 +1,5 @@
-import {Device, User} from '../proto/lightning_vend/model';
-import {UserName} from '../shared/proto';
+import {Device, User} from '../../proto/lightning_vend/model';
+import {UserName} from '../../shared/proto';
 
 export interface AdminData {
   userName: UserName,
@@ -73,7 +73,7 @@ export class AdminSessionManager {
    * @param adminSessionId The session we're fetching.
    * @returns The Lightning Network node pubkey that an existing admin session is tied to
    */
-  public getUserNameFromSessionId(adminSessionId: string): UserName | undefined {
+  public getUserNameFromAdminSessionId(adminSessionId: string): UserName | undefined {
     return this.userSessions.get(adminSessionId);
   }
 }

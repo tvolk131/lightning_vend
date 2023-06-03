@@ -1,5 +1,10 @@
-import {deviceSetupCodeAllowedCharacters, deviceSetupCodeLength} from '../shared/constants';
+import {deviceSetupCodeAllowedCharacters, deviceSetupCodeLength} from '../../shared/constants';
 
+/**
+ * Manages device setup codes.
+ * Currently stores everything in memory, but will eventually use MongoDB to persist this data.
+ * TODO - Read/write using non-volatile storage.
+ */
 export class DeviceSetupCodeManager {
   private codeToIdMap: Map<string, string>;
   private idToCodeMap: Map<string, string>;

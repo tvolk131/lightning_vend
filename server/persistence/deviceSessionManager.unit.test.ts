@@ -1,4 +1,4 @@
-import {DeviceName, UserName} from '../shared/proto';
+import {DeviceName, UserName} from '../../shared/proto';
 import {DeviceSessionManager} from './deviceSessionManager';
 
 describe('DeviceSessionManager', () => {

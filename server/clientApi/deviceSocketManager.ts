@@ -3,17 +3,18 @@ import {
   DeviceInterServerEvents,
   DeviceServerToClientEvents,
   DeviceSocketData
-} from '../shared/deviceSocketTypes';
+} from '../../shared/deviceSocketTypes';
 import {EventNames, EventParams} from 'socket.io/dist/typed-events';
 import {Server, Socket} from 'socket.io';
 import {parse, serialize} from 'cookie';
-import {Device} from '../proto/lightning_vend/model';
-import {DeviceName} from '../shared/proto';
-import {DeviceSessionManager} from './deviceSessionManager';
+import {Device} from '../../proto/lightning_vend/model';
+import {DeviceName} from '../../shared/proto';
+import {DeviceSessionManager} from '../persistence/deviceSessionManager';
+import {InvoiceManager} from '../persistence/invoiceManager';
 import {Request} from 'express';
-import {SubscribableEventManager} from '../client/src/api/sharedApi';
-import {deviceSessionCookieName} from '.';
-import {makeUuid} from '../shared/uuid';
+import {SubscribableEventManager} from '../../client/src/api/sharedApi';
+import {deviceSessionCookieName} from '..';
+import {makeUuid} from '../../shared/uuid';
 
 type DeviceSocket = Socket<DeviceClientToServerEvents,
                            DeviceServerToClientEvents,
@@ -30,14 +31,18 @@ export class DeviceSocketManager {
   private socketsByDeviceName: Map<string, DeviceSocket> = new Map();
   private onDeviceConnectionStatusChangeEventManager =
     new SubscribableEventManager<DeviceConnectionStatusEvent>();
+  private invoiceManager: InvoiceManager;
 
   public constructor (
+    invoiceManager: InvoiceManager,
     server: Server<DeviceClientToServerEvents,
                    DeviceServerToClientEvents,
                    DeviceInterServerEvents,
                    DeviceSocketData>,
     deviceSessionManager: DeviceSessionManager
   ) {
+    this.invoiceManager = invoiceManager;
+
     // Initialize all incoming device sockets with a device session cookie.
     server.engine.on('initial_headers', (headers, req: Request, ...args) => {
       // console.log(headers, req, ...args);
@@ -77,6 +82,17 @@ export class DeviceSocketManager {
         const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
         if (deviceSessionId) {
           return callback(deviceSessionManager.createDeviceSetupCode(deviceSessionId));
+        } else {
+          return callback(undefined);
+        }
+      });
+
+      socket.on('createInvoice', (valueSats, callback) => {
+        const deviceName = socket.data.deviceName;
+        if (deviceName) {
+          return invoiceManager.createInvoice(deviceName, valueSats)
+            .then((invoice) => callback(invoice))
+            .catch(() => callback(undefined));
         } else {
           return callback(undefined);
         }
@@ -184,6 +200,7 @@ export class DeviceSocketManager {
     }
   }
 
+  // TODO - Remove this function. It's redundant, we can simply use `socket.data.deviceSessionId`.
   private static getDeviceSessionId(socket: DeviceSocket): string | undefined {
     return parse(socket.handshake.headers.cookie || '', {})[deviceSessionCookieName];
   }

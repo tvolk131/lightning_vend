@@ -1,15 +1,6 @@
-import {Device, InventoryItem} from '../proto/lightning_vend/model';
-import {DeviceName, UserName} from '../shared/proto';
+import {DeviceName, UserName} from '../../shared/proto';
+import {Device} from '../../proto/lightning_vend/model';
 import {DeviceSetupCodeManager} from './deviceSetupCodeManager';
-
-// TODO - Move this somewhere that makes more sense.
-export const tryCastToInventoryArray = (inventory: any): InventoryItem[] | undefined => {
-  if (!Array.isArray(inventory)) {
-    return undefined;
-  }
-
-  return inventory.map(InventoryItem.fromJSON);
-};
 
 /**
  * Manages the persistence of device sessions and all related device data.
