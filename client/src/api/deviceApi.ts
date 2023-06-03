@@ -3,10 +3,10 @@ import {
   DeviceClientToServerEvents,
   DeviceServerToClientEvents
 } from '../../../shared/deviceSocketTypes';
+import {socketIoClientRpcTimeoutMs, socketIoDevicePath} from '../../../shared/constants';
 import {useEffect, useState} from 'react';
 import {Device} from '../../../proto/lightning_vend/model';
 import {makeUuid} from '../../../shared/uuid';
-import {socketIoDevicePath} from '../../../shared/constants';
 
 class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToServerEvents> {
   private invoicePaidCallbacks: Map<string, ((invoice: string) => void)> = new Map();
@@ -57,18 +57,6 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
     return this.invoicePaidCallbacks.delete(callbackId);
   }
 
-  public async getDeviceSetupCode(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.socket.emit('getDeviceSetupCode', (deviceSetupCode) => {
-        if (deviceSetupCode) {
-          return resolve(deviceSetupCode);
-        } else {
-          return reject();
-        }
-      });
-    });
-  }
-
   public useLoadableDevice(): AsyncLoadableData<Device> {
     const [data, setData] =
       useState<AsyncLoadableData<Device>>(this.deviceDataManager.getData());
@@ -83,6 +71,25 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
     return data;
   }
 
+  public async getDeviceSetupCode(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
+        'getDeviceSetupCode',
+        (err, deviceSetupCode) => {
+          if (err) {
+            return reject(err);
+          }
+
+          if (deviceSetupCode) {
+            return resolve(deviceSetupCode);
+          } else {
+            return reject();
+          }
+        }
+      );
+    });
+  }
+
   /**
    * Fetches a Lightning Network invoice that can be subscribed to for further payment updates
    * using `subscribeToInvoicePaid`.
@@ -91,13 +98,21 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
    */
   public async createInvoice(valueSats: number): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.socket.emit('createInvoice', valueSats, (invoice) => {
-        if (invoice) {
-          return resolve(invoice);
-        } else {
-          return reject();
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
+        'createInvoice',
+        valueSats,
+        (err, invoice) => {
+          if (err) {
+            return reject(err);
+          }
+
+          if (invoice) {
+            return resolve(invoice);
+          } else {
+            return reject();
+          }
         }
-      });
+      );
     });
   }
 }

@@ -3,12 +3,12 @@ import {
   AdminServerToClientEvents
 } from '../../../shared/adminSocketTypes';
 import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
+import {socketIoAdminPath, socketIoClientRpcTimeoutMs} from '../../../shared/constants';
 import {useEffect, useState} from 'react';
 import {AdminData} from '../../../server/persistence/adminSessionManager';
 import {DeviceName} from '../../../shared/proto';
 import {InventoryItem} from '../../../proto/lightning_vend/model';
 import axios from 'axios';
-import {socketIoAdminPath} from '../../../shared/constants';
 
 class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServerEvents> {
   private adminDataManager =
@@ -31,31 +31,44 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
     });
   }
 
-  public async getLnAuthMessage(): Promise<string> {
-    return new Promise((resolve) => {
-      this.socket.emit('getLnAuthMessage', (message) => {
-        resolve(message);
-      });
-    });
-  }
-
   public async registerAdmin(message: string, signature: string): Promise<void> {
     await axios.get(`/api/registerAdmin/${message}/${signature}`);
     this.disconnectAndReconnectSocket();
   }
 
-  public async claimDevice(deviceSetupCode: string, displayName: string): Promise<void> {
+  public async getLnAuthMessage(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.socket.emit('claimDevice', deviceSetupCode, displayName, (result) => {
-        switch (result) {
-          case 'ok':
-            resolve();
-            break;
-          case 'unauthenticatedError':
-            reject(new Error('unauthenticatedError'));
-            break;
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit('getLnAuthMessage', (err, message) => {
+        if (err) {
+          return reject(err);
+        } else {
+          resolve(message);
         }
       });
+    });
+  }
+
+  public async claimDevice(deviceSetupCode: string, displayName: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
+        'claimDevice',
+        deviceSetupCode,
+        displayName,
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+
+          switch (result) {
+            case 'ok':
+              resolve();
+              return;
+            case 'unauthenticatedError':
+              reject(new Error('unauthenticatedError'));
+              return;
+          }
+        }
+      );
     });
   }
 
@@ -64,21 +77,25 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
     displayName: string
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket.emit(
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
         'updateDeviceDisplayName',
         deviceName.toString(),
         displayName,
-        (result) => {
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+
           switch (result) {
             case 'ok':
               resolve();
-              break;
+              return;
             case 'unauthenticatedError':
               reject(new Error('unauthenticatedError'));
-              break;
+              return;
             case 'unknownError':
               reject(new Error('unknownError'));
-              break;
+              return;
           }
         }
       );
@@ -90,21 +107,25 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
     inventory: InventoryItem[]
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket.emit(
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
         'updateDeviceInventory',
         deviceName.toString(),
         inventory.map(InventoryItem.toJSON),
-        (result) => {
+        (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+
           switch (result) {
             case 'ok':
               resolve();
-              break;
+              return;
             case 'unauthenticatedError':
               reject(new Error('unauthenticatedError'));
-              break;
+              return;
             case 'unknownError':
               reject(new Error('unknownError'));
-              break;
+              return;
           }
         }
       );
