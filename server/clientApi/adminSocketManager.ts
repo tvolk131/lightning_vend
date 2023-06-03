@@ -4,10 +4,10 @@ import {
   AdminServerToClientEvents,
   AdminSocketData
 } from '../../shared/adminSocketTypes';
+import {Device, InventoryItem} from '../../proto/lightning_vend/model';
 import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from '../persistence/adminSessionManager';
-import {Device} from '../../proto/lightning_vend/model';
 import {adminSessionCookieName} from '..';
 import {parse} from 'cookie';
 
@@ -80,6 +80,22 @@ export class AdminSocketManager {
 
         return updateDevice(deviceName, (device) => {
           device.displayName = displayName;
+          return device;
+        })
+          .then(() => callback('ok'))
+          .catch((err) => callback('unknownError'));
+      });
+
+      socket.on('updateDeviceInventory', (deviceNameString, inventoryItemJsonArray, callback) => {
+        const userName = socket.data.userName;
+        const deviceName = DeviceName.parse(deviceNameString);
+        if (!userName || !deviceName ||
+            userName.toString() !== deviceName.getUserName().toString()) {
+          return callback('unauthenticatedError');
+        }
+
+        return updateDevice(deviceName, (device) => {
+          device.inventory = inventoryItemJsonArray.map(InventoryItem.fromJSON);
           return device;
         })
           .then(() => callback('ok'))

@@ -55,30 +55,55 @@ class AdminApi extends ReactSocket<AdminServerToClientEvents, AdminClientToServe
     });
   }
 
-  public async updateDeviceDisplayName(deviceName: DeviceName, displayName: string): Promise<void> {
+  public async updateDeviceDisplayName(
+    deviceName: DeviceName,
+    displayName: string
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket.emit('updateDeviceDisplayName', deviceName.toString(), displayName, (result) => {
-        switch (result) {
-          case 'ok':
-            resolve();
-            break;
-          case 'unauthenticatedError':
-            reject(new Error('unauthenticatedError'));
-            break;
-          case 'unknownError':
-            reject(new Error('unknownError'));
-            break;
+      this.socket.emit(
+        'updateDeviceDisplayName',
+        deviceName.toString(),
+        displayName,
+        (result) => {
+          switch (result) {
+            case 'ok':
+              resolve();
+              break;
+            case 'unauthenticatedError':
+              reject(new Error('unauthenticatedError'));
+              break;
+            case 'unknownError':
+              reject(new Error('unknownError'));
+              break;
+          }
         }
-      });
+      );
     });
   }
 
   public async updateDeviceInventory(
-    deviceName: DeviceName, inventory: InventoryItem[]
+    deviceName: DeviceName,
+    inventory: InventoryItem[]
   ): Promise<void> {
-    return await axios.post('/api/updateDeviceInventory', {
-      deviceName: deviceName.toString(),
-      inventory
+    return new Promise((resolve, reject) => {
+      this.socket.emit(
+        'updateDeviceInventory',
+        deviceName.toString(),
+        inventory.map(InventoryItem.toJSON),
+        (result) => {
+          switch (result) {
+            case 'ok':
+              resolve();
+              break;
+            case 'unauthenticatedError':
+              reject(new Error('unauthenticatedError'));
+              break;
+            case 'unknownError':
+              reject(new Error('unknownError'));
+              break;
+          }
+        }
+      );
     });
   }
 

@@ -4,11 +4,9 @@ import * as fs from 'fs';
 import * as http from 'http';
 import {createSignableMessageWithTTL, verifyMessage} from './lnAuth';
 import {Coordinator} from './coordinator';
-import {DeviceName} from '../shared/proto';
 import {lightning} from './lndApi';
 import {makeUuid} from '../shared/uuid';
 import {parse} from 'cookie';
-import {tryCastToInventoryArray} from './persistence/deviceSessionManager';
 
 const bundle = fs.readFileSync(`${__dirname}/../client/out/bundle.js`);
 
@@ -32,36 +30,6 @@ const getCookieFromRequest = (req: express.Request, cookieName: string): string 
 
 const getAdminSessionIdFromRequest = (req: express.Request): string | undefined => {
   return getCookieFromRequest(req, adminSessionCookieName);
-};
-
-const authenticateAdmin = (req: express.Request, res: express.Response) => {
-  if (!req.headers.cookie) {
-    return {
-      response: res
-        .status(401)
-        .send('Admin must be registered! No cookie header found.')
-    };
-  }
-
-  const adminSessionId = getAdminSessionIdFromRequest(req);
-  if (!adminSessionId) {
-    return {
-      response: res
-        .status(401)
-        .send('Admin must be registered! No admin session found.')
-    };
-  }
-
-  const userName = coordinator.getUserNameFromAdminSessionId(adminSessionId);
-  if (!userName) {
-    return {
-      response: res
-        .status(401)
-        .send('Admin must be registered! Unrecognized admin session.')
-    };
-  }
-
-  return {userName};
 };
 
 app.get('*/bundle.js', (req, res) => {
@@ -97,54 +65,6 @@ app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
   } else {
     return res.status(400).send('Device is already registered!');
   }
-});
-
-app.post('/api/updateDeviceInventory', async (req, res) => {
-  const {response, userName} = authenticateAdmin(req, res);
-  if (response) {
-    return response;
-  }
-
-  if (typeof req.body !== 'object') {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must be an object.')
-    };
-  }
-  if (typeof req.body.deviceName !== 'string' || req.body.deviceName.length === 0) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have string property `deviceName`.')
-    };
-  }
-
-  const rawDeviceName: string = req.body.deviceName;
-  const deviceName = DeviceName.parse(rawDeviceName);
-  const newInventory = tryCastToInventoryArray(req.body.inventory); // TODO - Add some validation.
-  if (!newInventory) {
-    return {
-      response: res
-        .status(400)
-        .send('Request body must have valid array of InventoryItems on property `inventory`.')
-    };
-  }
-
-  if (!deviceName || deviceName.getUserName().toString() !== userName.toString()) {
-    return {
-      response: res
-        .status(401)
-        .send('Cannot update a device you do not own!')
-    };
-  }
-
-  await coordinator.updateDevice(deviceName, (device) => {
-    device.inventory = newInventory;
-    return device;
-  })
-    .then(() => res.status(200).send())
-    .catch((err) => res.status(500).send(err));
 });
 
 app.get('*/', (req, res) => {

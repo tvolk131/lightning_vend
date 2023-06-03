@@ -16,6 +16,11 @@ export interface AdminClientToServerEvents {
     displayName: string,
     callback: (result: 'ok' | 'unauthenticatedError' | 'unknownError') => void
   ) => void;
+  updateDeviceInventory: (
+    deviceNameString: string,
+    inventoryItemJsonArray: any[], // TODO - Find a better type for this.
+    callback: (result: 'ok' | 'unauthenticatedError' | 'unknownError') => void
+  ) => void;
 }
 
 export interface AdminInterServerEvents {
