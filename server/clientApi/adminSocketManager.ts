@@ -27,7 +27,9 @@ export class AdminSocketManager {
     string, {socket: AdminSocket, userName: UserName | undefined}
   > = new Map();
   private socketsByUserName: Map<string, AdminSocket[]> = new Map();
-  private getUserNameFromAdminSessionId: (adminSessionId: string) => UserName | undefined;
+  private getUserNameFromAdminSessionId: (
+    adminSessionId: string
+  ) => UserName | undefined;
   private getAdminData: (userName: UserName) => AdminData | undefined;
 
   public constructor (
@@ -35,7 +37,9 @@ export class AdminSocketManager {
                    AdminServerToClientEvents,
                    AdminInterServerEvents,
                    AdminSocketData>,
-    getUserNameFromAdminSessionId: (adminSessionId: string) => UserName | undefined,
+    getUserNameFromAdminSessionId: (
+      adminSessionId: string
+    ) => UserName | undefined,
     getAdminData: (userName: UserName) => AdminData | undefined,
     claimDevice: (
       deviceSetupCode: string,
@@ -76,37 +80,44 @@ export class AdminSocketManager {
         }
       });
 
-      socket.on('updateDeviceDisplayName', (deviceNameString, displayName, callback) => {
-        const userName = socket.data.userName;
-        const deviceName = DeviceName.parse(deviceNameString);
-        if (!userName || !deviceName ||
-            userName.toString() !== deviceName.getUserName().toString()) {
-          return callback('unauthenticatedError');
+      socket.on(
+        'updateDeviceDisplayName',
+        (deviceNameString, displayName, callback) => {
+          const userName = socket.data.userName;
+          const deviceName = DeviceName.parse(deviceNameString);
+          if (!userName || !deviceName ||
+              userName.toString() !== deviceName.getUserName().toString()) {
+            return callback('unauthenticatedError');
+          }
+
+          return updateDevice(deviceName, (device) => {
+            device.displayName = displayName;
+            return device;
+          })
+            .then(() => callback('ok'))
+            .catch((err) => callback('unknownError'));
         }
+      );
 
-        return updateDevice(deviceName, (device) => {
-          device.displayName = displayName;
-          return device;
-        })
-          .then(() => callback('ok'))
-          .catch((err) => callback('unknownError'));
-      });
+      socket.on(
+        'updateDeviceInventory',
+        (deviceNameString, inventoryItemJsonArray, callback) => {
+          const userName = socket.data.userName;
+          const deviceName = DeviceName.parse(deviceNameString);
+          if (!userName || !deviceName ||
+              userName.toString() !== deviceName.getUserName().toString()) {
+            return callback('unauthenticatedError');
+          }
 
-      socket.on('updateDeviceInventory', (deviceNameString, inventoryItemJsonArray, callback) => {
-        const userName = socket.data.userName;
-        const deviceName = DeviceName.parse(deviceNameString);
-        if (!userName || !deviceName ||
-            userName.toString() !== deviceName.getUserName().toString()) {
-          return callback('unauthenticatedError');
+          return updateDevice(deviceName, (device) => {
+            device.inventory =
+              inventoryItemJsonArray.map(InventoryItem.fromJSON);
+            return device;
+          })
+            .then(() => callback('ok'))
+            .catch((err) => callback('unknownError'));
         }
-
-        return updateDevice(deviceName, (device) => {
-          device.inventory = inventoryItemJsonArray.map(InventoryItem.fromJSON);
-          return device;
-        })
-          .then(() => callback('ok'))
-          .catch((err) => callback('unknownError'));
-      });
+      );
 
       socket.on('disconnect', () => {
         this.removeSocket(socket);
@@ -181,6 +192,9 @@ export class AdminSocketManager {
   }
 
   private static getAdminSessionId(socket: AdminSocket): string | undefined {
-    return parse(socket.handshake.headers.cookie || '', {})[adminSessionCookieName];
+    const cookie = socket.handshake.headers.cookie;
+    if (cookie) {
+      return parse(cookie, {})[adminSessionCookieName];
+    }
   }
 }

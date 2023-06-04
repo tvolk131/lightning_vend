@@ -1,6 +1,13 @@
 import * as jwt from 'jsonwebtoken';
-import {createMessageTokenWithExpiration, messageIsAuthentic} from './lnAuthNodeOnly';
-import {getMessageExpiration, messageIsExpired, messageIsMalformed} from './lnAuthBrowserSafe';
+import {
+  createMessageTokenWithExpiration,
+  messageIsAuthentic
+} from './lnAuthNodeOnly';
+import {
+  getMessageExpiration,
+  messageIsExpired,
+  messageIsMalformed
+} from './lnAuthBrowserSafe';
 
 const testSecret = 'super_secret_123';
 

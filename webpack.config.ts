@@ -3,9 +3,13 @@ import * as webpack from 'webpack';
 const SRC_DIR = path.join(__dirname, '/client/src');
 const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin =
+//   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-export default (_: any, {watch, mode}: {watch?: boolean, mode?: string}): webpack.Configuration => {
+export default (
+  _: any,
+  {watch, mode}: {watch?: boolean, mode?: string}
+): webpack.Configuration => {
   const maxBundleSize = mode === 'production' ? 750000 : 4100000;
 
   return {

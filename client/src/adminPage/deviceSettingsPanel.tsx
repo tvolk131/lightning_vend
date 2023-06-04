@@ -31,8 +31,14 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
   const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState('');
 
-  const [showAddInventoryItemDialog, setShowAddInventoryItemDialog] = useState(false);
-  const [newInventoryItem, setNewInventoryItem] = useState<InventoryItem>(emptyInventoryItem);
+  const [
+    showAddInventoryItemDialog,
+    setShowAddInventoryItemDialog
+  ] = useState(false);
+  const [
+    newInventoryItem,
+    setNewInventoryItem
+  ] = useState<InventoryItem>(emptyInventoryItem);
 
   const updateDisplayName = () => {
     if (props.adminDeviceView) {
@@ -76,7 +82,11 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             }}
             endAdornment={
               <InputAdornment position={'end'}>
-                <IconButton size={'large'} color={'primary'} onClick={() => updateDisplayName()}>
+                <IconButton
+                  size={'large'}
+                  color={'primary'}
+                  onClick={() => updateDisplayName()}
+                >
                   <CheckCircleIcon/>
                 </IconButton>
               </InputAdornment>
@@ -116,15 +126,20 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             <div style={{display: 'inline-block'}}>
               <Typography>Item Name: {inventoryItem.displayName}</Typography>
               <Typography>Price: {inventoryItem.priceSats} sats</Typography>
-              <Typography>Execution Command: {inventoryItem.executionCommand}</Typography>
+              <Typography>
+                Execution Command: {inventoryItem.executionCommand}
+              </Typography>
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
-              const deviceName = DeviceName.parse(props.adminDeviceView.device.name);
+              const deviceName =
+                DeviceName.parse(props.adminDeviceView.device.name);
               // TODO - Indicate to the user if `deviceName` is undefined.
               if (deviceName) {
                 adminApi.updateDeviceInventory(
                   deviceName,
-                  props.adminDeviceView.device.inventory.filter((i) => i !== inventoryItem)
+                  props.adminDeviceView.device.inventory.filter(
+                    (i) => i !== inventoryItem
+                  )
                 );
               }
             }}>
@@ -132,7 +147,9 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             </IconButton>
           </Paper>
         ))}
-        <Button onClick={() => setShowAddInventoryItemDialog(true)}>Add Item</Button>
+        <Button onClick={() => setShowAddInventoryItemDialog(true)}>
+          Add Item
+        </Button>
         <Dialog
           open={showAddInventoryItemDialog}
           onClose={() => setShowAddInventoryItemDialog(false)}
@@ -190,15 +207,20 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               Cancel
             </Button>
             <Button onClick={() => {
-              // TODO - Show a loading spinner until this promise resolves below.
+              // TODO - Show a loading spinner until this promise resolves
+              // below.
 
-              const deviceName = DeviceName.parse(props.adminDeviceView.device.name);
+              const deviceName =
+                DeviceName.parse(props.adminDeviceView.device.name);
               // TODO - Indicate to the user if `deviceName` is undefined.
               if (deviceName) {
                 adminApi
                   .updateDeviceInventory(
                     deviceName,
-                    [...props.adminDeviceView.device.inventory, newInventoryItem]
+                    [
+                      ...props.adminDeviceView.device.inventory,
+                      newInventoryItem
+                    ]
                   )
                   .then(() => {
                     setNewInventoryItem(emptyInventoryItem);

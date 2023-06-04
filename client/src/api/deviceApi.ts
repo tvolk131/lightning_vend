@@ -1,15 +1,28 @@
-import {AsyncLoadableData, ReactSocket, SubscribableDataManager} from './sharedApi';
+import {
+  AsyncLoadableData,
+  ReactSocket,
+  SubscribableDataManager
+} from './sharedApi';
 import {
   DeviceClientToServerEvents,
   DeviceServerToClientEvents
 } from '../../../shared/deviceSocketTypes';
-import {socketIoClientRpcTimeoutMs, socketIoDevicePath} from '../../../shared/constants';
+import {
+  socketIoClientRpcTimeoutMs,
+  socketIoDevicePath
+} from '../../../shared/constants';
 import {useEffect, useState} from 'react';
 import {Device} from '../../../proto/lightning_vend/model';
 import {makeUuid} from '../../../shared/uuid';
 
-class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToServerEvents> {
-  private invoicePaidCallbacks: Map<string, ((invoice: string) => void)> = new Map();
+class DeviceApi extends ReactSocket<
+  DeviceServerToClientEvents,
+  DeviceClientToServerEvents
+> {
+  private invoicePaidCallbacks: Map<
+    string,
+    ((invoice: string) => void)
+  > = new Map();
   private deviceDataManager =
     new SubscribableDataManager<AsyncLoadableData<Device>>({state: 'loading'});
 
@@ -37,10 +50,12 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
   }
 
   /**
-   * Sets up an event listener that is called any time an invoice related to this client is paid.
-   * @param callback A function that should be called any time an invoice is paid.
-   * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid` to remove the
-   * callback.
+   * Sets up an event listener that is called any time an invoice related to
+   * this client is paid.
+   * @param callback A function that should be called any time an invoice is
+   * paid.
+   * @returns A callback id, which can be passed to `unsubscribeFromInvoicePaid`
+   * to remove the callback.
    */
   public subscribeToInvoicePaid(callback: (invoice: string) => void): string {
     const callbackId = makeUuid();
@@ -50,8 +65,10 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
 
   /**
    * Removes an event listener created from `subscribeToInvoicePaid`.
-   * @param callbackId The id of the callback, returned from `subscribeToInvoicePaid`.
-   * @returns Whether the callback was successfully removed. True means it was removed.
+   * @param callbackId The id of the callback, returned from
+   * `subscribeToInvoicePaid`.
+   * @returns Whether the callback was successfully removed. True means it was
+   * removed.
    */
   public unsubscribeFromInvoicePaid(callbackId: string): boolean {
     return this.invoicePaidCallbacks.delete(callbackId);
@@ -91,8 +108,8 @@ class DeviceApi extends ReactSocket<DeviceServerToClientEvents, DeviceClientToSe
   }
 
   /**
-   * Fetches a Lightning Network invoice that can be subscribed to for further payment updates
-   * using `subscribeToInvoicePaid`.
+   * Fetches a Lightning Network invoice that can be subscribed to for further
+   * payment updates using `subscribeToInvoicePaid`.
    * @param valueSats The value in satoshis that the invoice is for.
    * @returns A Lightning Network invoice.
    */

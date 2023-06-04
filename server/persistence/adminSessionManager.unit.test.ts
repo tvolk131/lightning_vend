@@ -25,10 +25,16 @@ describe('AdminSessionManager', () => {
       const lightningNodePubkey = 'pubkey1';
 
       const {isNew: isNew1, userName: userName1} =
-        adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
+        adminSessionManager.getOrCreateAdminSession(
+          adminSessionId,
+          lightningNodePubkey
+        );
 
       const {isNew: isNew2, userName: userName2} =
-        adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
+        adminSessionManager.getOrCreateAdminSession(
+          adminSessionId,
+          lightningNodePubkey
+        );
 
       expect(isNew1).toBe(true);
       expect(isNew2).toBe(false);
@@ -47,14 +53,19 @@ describe('AdminSessionManager', () => {
       );
 
       expect(userName).toBeDefined();
-      expect(adminSessionManager.getUserNameFromAdminSessionId(adminSessionId)?.toString())
+      expect(
+        adminSessionManager
+          .getUserNameFromAdminSessionId(adminSessionId)
+          ?.toString()
+      )
         .toEqual(userName.toString());
     });
 
     it('should return undefined for a non-existing admin session', () => {
       const adminSessionId = 'nonExistingSession';
 
-      const nodePubkey = adminSessionManager.getUserNameFromAdminSessionId(adminSessionId);
+      const nodePubkey =
+        adminSessionManager.getUserNameFromAdminSessionId(adminSessionId);
 
       expect(nodePubkey).toBeUndefined();
     });

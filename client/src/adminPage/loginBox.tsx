@@ -25,7 +25,9 @@ export const LoginBox = () => {
 
   const getUnsignedLnAuthMessage = () => {
     adminApi.getLnAuthMessage()
-      .then((message) => setUnsignedLnAuthMessage({state: 'loaded', data: message}))
+      .then((message) => {
+        setUnsignedLnAuthMessage({state: 'loaded', data: message});
+      })
       .catch(() => setUnsignedLnAuthMessage({state: 'error'}));
   };
 
@@ -42,7 +44,14 @@ export const LoginBox = () => {
   const messageExpiration = tryGetExpirationForMessage();
 
   return (
-    <Paper style={{padding: '10px', textAlign: 'center', width: 'fit-content', margin: 'auto'}}>
+    <Paper
+      style={{
+        padding: '10px',
+        textAlign: 'center',
+        width: 'fit-content',
+        margin: 'auto'
+      }}
+    >
       <Typography variant={'h4'} style={{padding: '10px'}}>
         LightningVend Login
       </Typography>
@@ -96,18 +105,29 @@ export const LoginBox = () => {
         label={'Signature'}
         style={{margin: '10px'}}
       />
-      {messageExpiration && <div><CountdownTimer targetDate={messageExpiration}/></div>}
+      {
+        messageExpiration && (
+          <div>
+            <CountdownTimer targetDate={messageExpiration}/>
+          </div>
+        )
+      }
       <div>
         <LoadingButton
           variant={'contained'}
           style={{margin: '10px'}}
           loading={authenticatingSignature}
-          disabled={!lnAuthMessageSignature.length || unsignedLnAuthMessage.state !== 'loaded'}
+          disabled={
+            !lnAuthMessageSignature.length ||
+            unsignedLnAuthMessage.state !== 'loaded'
+          }
           onClick={() => {
             if (unsignedLnAuthMessage.state === 'loaded') {
               setAuthenticatingSignature(true);
-              adminApi.registerAdmin(unsignedLnAuthMessage.data, lnAuthMessageSignature)
-                .finally(() => setAuthenticatingSignature(false));
+              adminApi.registerAdmin(
+                unsignedLnAuthMessage.data,
+                lnAuthMessageSignature
+              ).finally(() => setAuthenticatingSignature(false));
             }
           }}
         >

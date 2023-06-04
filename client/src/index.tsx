@@ -1,7 +1,11 @@
 import * as React from 'react';
 import {RouterProvider, createBrowserRouter} from 'react-router-dom';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
-import {adminPagePath, devicePagePath, learnMorePagePath} from '../../shared/constants';
+import {
+  adminPagePath,
+  devicePagePath,
+  learnMorePagePath
+} from '../../shared/constants';
 import {AdminPage} from './adminPage';
 import Box from '@mui/material/Box';
 import {DevicePage} from './devicePage';

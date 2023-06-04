@@ -15,21 +15,35 @@ describe('DeviceSessionManager', () => {
       expect(code).toBeDefined();
     });
 
-    it('should overwrite previous setup code if the device session ID is already in use', () => {
-      const deviceSessionId = 'session-id';
-      const initialSetupCode = deviceSessionManager.createDeviceSetupCode(deviceSessionId);
-      const newSetupCode = deviceSessionManager.createDeviceSetupCode(deviceSessionId);
-      expect(initialSetupCode).toBeDefined();
-      expect(newSetupCode).toBeDefined();
-      expect(initialSetupCode).not.toEqual(newSetupCode);
-      const userName = UserName.create();
-      // Initial setup code should not work because it has been replaced.
-      let result = deviceSessionManager.claimDevice(initialSetupCode!, userName, 'Device 1');
-      expect(result).toBeUndefined();
-      // New setup code should work.
-      result = deviceSessionManager.claimDevice(newSetupCode!, userName, 'Device 1');
-      expect(result).toBeDefined();
-    });
+    it(
+      'should overwrite previous setup code if the device session ID is ' +
+      'already in use',
+      () => {
+        const deviceSessionId = 'session-id';
+        const initialSetupCode =
+          deviceSessionManager.createDeviceSetupCode(deviceSessionId);
+        const newSetupCode =
+          deviceSessionManager.createDeviceSetupCode(deviceSessionId);
+        expect(initialSetupCode).toBeDefined();
+        expect(newSetupCode).toBeDefined();
+        expect(initialSetupCode).not.toEqual(newSetupCode);
+        const userName = UserName.create();
+        // Initial setup code should not work because it has been replaced.
+        let result = deviceSessionManager.claimDevice(
+          initialSetupCode!,
+          userName,
+          'Device 1'
+        );
+        expect(result).toBeUndefined();
+        // New setup code should work.
+        result = deviceSessionManager.claimDevice(
+          newSetupCode!,
+          userName,
+          'Device 1'
+        );
+        expect(result).toBeDefined();
+      }
+    );
   });
 
   describe('claimDevice', () => {
@@ -39,7 +53,11 @@ describe('DeviceSessionManager', () => {
 
     it('should claim a device for a particular user', () => {
       const code = deviceSessionManager.createDeviceSetupCode(deviceSessionId);
-      const result = deviceSessionManager.claimDevice(code!, userName, deviceDisplayName);
+      const result = deviceSessionManager.claimDevice(
+        code!,
+        userName,
+        deviceDisplayName
+      );
       expect(result).toBeDefined();
       expect(result!.device).toBeDefined();
       expect(result!.deviceSessionId).toEqual(deviceSessionId);
@@ -61,16 +79,22 @@ describe('DeviceSessionManager', () => {
       const userName = UserName.create();
       const deviceDisplayName = 'Device 1';
       const code = deviceSessionManager.createDeviceSetupCode(deviceSessionId);
-      const result = deviceSessionManager.claimDevice(code!, userName, deviceDisplayName);
+      const result = deviceSessionManager.claimDevice(
+        code!,
+        userName,
+        deviceDisplayName
+      );
       expect(result).toBeDefined();
       const {device} = result!;
-      const deviceName = deviceSessionManager.getDeviceNameFromSessionId(deviceSessionId);
+      const deviceName =
+        deviceSessionManager.getDeviceNameFromSessionId(deviceSessionId);
       expect(deviceName).toBeDefined();
       expect(deviceName!.toString()).toEqual(device.name);
     });
 
     it('should return undefined if the session ID is not found', () => {
-      const deviceName = deviceSessionManager.getDeviceNameFromSessionId('unknown-id');
+      const deviceName =
+        deviceSessionManager.getDeviceNameFromSessionId('unknown-id');
       expect(deviceName).toBeUndefined();
     });
   });
@@ -86,7 +110,8 @@ describe('DeviceSessionManager', () => {
         deviceDisplayName
       );
       const deviceName = result!.device.name;
-      const device = deviceSessionManager.getDevice(DeviceName.parse(deviceName)!);
+      const device =
+        deviceSessionManager.getDevice(DeviceName.parse(deviceName)!);
       expect(device).toBeDefined();
       expect(device!.name).toEqual(deviceName);
       expect(device!.displayName).toEqual(deviceDisplayName);

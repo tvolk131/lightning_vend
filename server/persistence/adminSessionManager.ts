@@ -13,7 +13,8 @@ export interface AdminDeviceView {
 
 /**
  * Manages the persistence of admin sessions.
- * Currently stores everything in memory, but will eventually use MongoDB to persist this data.
+ * Currently stores everything in memory, but will
+ * eventually use MongoDB to persist this data.
  * TODO - Read/write using non-volatile storage.
  */
 export class AdminSessionManager {
@@ -28,8 +29,10 @@ export class AdminSessionManager {
   private usersByName: Map<string, User> = new Map();
 
   /**
-   * Maps user names to the Lightning Network node pubkey that identifies the user.
-   * TODO - This is only used to check if a user exists already. We can use a Set<string> instead.
+   * Maps user names to the Lightning Network
+   * node pubkey that identifies the user.
+   * TODO - This is only used to check if a user
+   * exists already. We can use a Set<string> instead.
    */
   private userNamesByLightningNodePubkey: Map<string, UserName> = new Map();
 
@@ -71,9 +74,12 @@ export class AdminSessionManager {
   /**
    * Retrieves an admin session.
    * @param adminSessionId The session we're fetching.
-   * @returns The Lightning Network node pubkey that an existing admin session is tied to
+   * @returns The Lightning Network node pubkey
+   * that an existing admin session is tied to
    */
-  public getUserNameFromAdminSessionId(adminSessionId: string): UserName | undefined {
+  public getUserNameFromAdminSessionId(
+    adminSessionId: string
+  ): UserName | undefined {
     return this.userSessions.get(adminSessionId);
   }
 }

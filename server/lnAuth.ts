@@ -3,7 +3,10 @@ import {
   messageIsAuthentic
 } from '../shared/lnAuthNodeOnly';
 import {lightning, lnAuthJwtSecret} from './lndApi';
-import {messageIsExpired, messageIsMalformed} from '../shared/lnAuthBrowserSafe';
+import {
+  messageIsExpired,
+  messageIsMalformed
+} from '../shared/lnAuthBrowserSafe';
 import {VerifyMessageRequest} from '../proto/lnd/lnrpc/lightning';
 
 export const createSignableMessageWithTTL = (expireTimeSeconds: number) => {

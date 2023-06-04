@@ -12,13 +12,17 @@ const loaderOptions: protoLoader.Options = {
   oneofs: true
 };
 
-const packageDefinition =
-  protoLoader.loadSync(__dirname + '/../proto/lnd/lnrpc/lightning.proto', loaderOptions);
+const packageDefinition = protoLoader.loadSync(
+  __dirname + '/../proto/lnd/lnrpc/lightning.proto',
+  loaderOptions
+);
 
 const lndCert = fs.readFileSync(__dirname + '/../config/tls.cert');
 const sslCreds = grpc.credentials.createSsl(lndCert);
 
-const macaroon = fs.readFileSync(__dirname + '/../config/admin.macaroon').toString('hex');
+const macaroon = fs.readFileSync(
+  __dirname + '/../config/admin.macaroon'
+).toString('hex');
 // This value is used for generating and verifying short-lived
 // unsigned LN messages used for login authentication, so using
 // any value that's unlikely to change often is fine. If this
@@ -30,11 +34,12 @@ const macaroon = fs.readFileSync(__dirname + '/../config/admin.macaroon').toStri
 export const lnAuthJwtSecret = macaroon;
 const metadata = new grpc.Metadata();
 metadata.add('macaroon', macaroon);
-const macaroonCreds = grpc.credentials.createFromMetadataGenerator((_args, callback) => {
-  callback(null, metadata);
-});
+const macaroonCreds = grpc.credentials.createFromMetadataGenerator(
+  (_args, callback) => callback(null, metadata)
+);
 
-const credentials = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
+const credentials =
+  grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
 const lnrpcDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const lnrpc = lnrpcDescriptor.lnrpc as grpc.GrpcObject;
 const Lightning = lnrpc.Lightning as typeof grpc.Client;

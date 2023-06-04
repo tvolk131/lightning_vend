@@ -22,10 +22,19 @@ export const CountdownTimer = (props: CountdownTimerProps) => {
     timerString += hours.toString().padStart(2, '0') + ':';
   }
 
-  timerString += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+  timerString += minutes.toString().padStart(2, '0');
+  timerString += ':';
+  timerString += seconds.toString().padStart(2, '0');
 
   return (
-    <Paper elevation={6} style={{margin: 'auto', width: 'fit-content', padding: '8px 12px'}}>
+    <Paper
+      elevation={6}
+      style={{
+        margin: 'auto',
+        width: 'fit-content',
+        padding: '8px 12px'
+      }}
+    >
       <Typography>
         {timerString}
       </Typography>
@@ -60,7 +69,9 @@ const getReturnValues = (countDown: number) => {
   const hours = Math.floor(
     (countDown % millisecondsPerDay) / millisecondsPerHour
   );
-  const minutes = Math.floor((countDown % millisecondsPerHour) / millisecondsPerMinute);
+  const minutes = Math.floor(
+    (countDown % millisecondsPerHour) / millisecondsPerMinute
+  );
   const seconds = Math.floor((countDown % millisecondsPerMinute) / 1000);
 
   return [days, hours, minutes, seconds];

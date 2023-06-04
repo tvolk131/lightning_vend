@@ -3,8 +3,8 @@ import decodeJwt from 'jwt-decode';
 /**
  * Extracts the encoded expiration time from a given message.
  * @param message The message to decode.
- * @returns The expiration time of the message token, or undefined if the message is malformed or
- * contains a non-date value.
+ * @returns The expiration time of the message token, or undefined if the
+ * message is malformed or contains a non-date value.
  */
 export const getMessageExpiration = (message: string): Date | undefined => {
   const decodedMessage = decodeJwt(message);

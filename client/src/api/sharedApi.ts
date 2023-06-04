@@ -6,15 +6,22 @@ import {makeUuid} from '../../../shared/uuid';
 type ConnectionStatus = 'connected' | 'disconnected';
 
 /**
- * A wrapper around a Socket.IO socket that provides useful React hooks/functions.
- * All created instances should be treated as static for the lifetime of the React app.
- * The underlying socket is disconnected by default - see `useSocket` for details.
+ * A wrapper around a Socket.IO socket that provides useful React
+ * hooks/functions. All created instances should be treated as static for the
+ * lifetime of the React app. The underlying socket is disconnected by default.
+ * See `useSocket` for details.
  */
-export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends EventsMap> {
+export class ReactSocket<
+  ListenEvents extends EventsMap,
+  EmitEvents extends EventsMap
+> {
   /** The underlying socket. */
   protected socket: Socket<ListenEvents, EmitEvents>;
 
-  /** List of callbacks used to update consumers of changes to the socket's connection status. */
+  /**
+   * List of callbacks used to update consumers of changes to the socket's
+   * connection status.
+   */
   private connectionStatusCallbacks:
     Map<string, ((connectionStatus: ConnectionStatus) => void)> = new Map();
 
@@ -42,17 +49,19 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
   }
 
   /**
-   * A React hook that returns the current connection status to the backend server.
+   * A React hook that returns the current connection status to the backend
+   * server.
    * @returns The current connection status to the backend server.
    */
   public useConnectionStatus(): ConnectionStatus {
-    const [connectionStatus, setConnectionStatus] =
-      useState<ConnectionStatus>(this.socket.connected ? 'connected' : 'disconnected');
+    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
+      this.socket.connected ? 'connected' : 'disconnected'
+    );
 
     useEffect(() => {
-      const callbackId = this.subscribeToConnectionStatus((connectionStatus) => {
-        setConnectionStatus(connectionStatus);
-      });
+      const callbackId = this.subscribeToConnectionStatus(
+        (connectionStatus) => setConnectionStatus(connectionStatus)
+      );
 
       return () => {
         this.unsubscribeFromConnectionStatus(callbackId);
@@ -95,9 +104,10 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
   /**
    * Sets up an event listener that is called any time
    * the connection status to the backend server changes.
-   * @param callback A function that should be called any time the connection status changes.
-   * @returns A callback id, which can be passed to `unsubscribeFromConnectionStatus` to remove the
-   * callback.
+   * @param callback A function that should be called any time the connection
+   * status changes.
+   * @returns A callback id, which can be passed to
+   * `unsubscribeFromConnectionStatus` to remove the callback.
    */
   private subscribeToConnectionStatus(
     callback: (connectionStatus: ConnectionStatus) => void
@@ -109,8 +119,10 @@ export class ReactSocket<ListenEvents extends EventsMap, EmitEvents extends Even
 
   /**
    * Removes an event listener created from `subscribeToConnectionStatus`.
-   * @param callbackId The id of the callback, returned from `subscribeToConnectionStatus`.
-   * @returns Whether the callback was successfully removed. True means it was removed.
+   * @param callbackId The id of the callback, returned from
+   * `subscribeToConnectionStatus`.
+   * @returns Whether the callback was successfully removed. True means it was
+   * removed.
    */
   private unsubscribeFromConnectionStatus(callbackId: string): boolean {
     return this.connectionStatusCallbacks.delete(callbackId);
@@ -147,7 +159,9 @@ export class SubscribableDataManager<T> {
   }
 
   public subscribe(callback: (data: T) => void): string {
-    callback(this.data); // This is called just to make sure that the subscriber's data is in sync.
+    // This is called to make sure that the subscriber's data is in sync.
+    callback(this.data);
+
     return this.eventManager.subscribe(callback);
   }
 

@@ -15,7 +15,8 @@ import Zoom from '@mui/material/Zoom';
 import axios from 'axios';
 import {deviceApi} from './api/deviceApi';
 
-// TODO - Store this in LocalStorage so that reloading the page doesn't break existing invoices.
+// TODO - Store this in LocalStorage so that reloading the page doesn't break
+// existing invoices.
 const invoiceToExecutionCommand: Map<string, string> = new Map();
 
 interface SelectionItemProps {
@@ -191,12 +192,19 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
 
   const spaceBetweenItems = 10;
   const loadingSpinnerSize = 100;
-  const showCancelButton = state.showInvoice && !state.showInvoicePaidConfirmation;
+  const showCancelButton =
+    state.showInvoice && !state.showInvoicePaidConfirmation;
   const transitionTimeSecs = 0.65;
 
   if (props.inventory.length === 0) {
     return (
-      <Paper style={{height: `${props.size}px`, width: `${props.size}px`, position: 'relative'}}>
+      <Paper
+        style={{
+          height: `${props.size}px`,
+          width: `${props.size}px`,
+          position: 'relative'
+        }}
+      >
         <div
           style={{
             padding: '20px',
@@ -208,7 +216,8 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
         >
           <Typography variant={'h5'}>Inventory is empty!</Typography>
           <Typography>
-            If you are the owner of this machine, head over to the admin page to add some items.
+            If you are the owner of this machine, head over to the admin page to
+            add some items.
           </Typography>
         </div>
       </Paper>
@@ -220,7 +229,10 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       if (!state.disableItemSelection) {
         dispatch({type: 'showLoadingInvoice'});
         deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
-          invoiceToExecutionCommand.set(invoice, inventoryItem.executionCommand);
+          invoiceToExecutionCommand.set(
+            invoice,
+            inventoryItem.executionCommand
+          );
           dispatch({type: 'showInvoice', invoice});
         }).catch(() => {
           dispatch({type: 'hideInvoiceAndShowLoadError'});
@@ -259,7 +271,9 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
               :
               Paper
           }
-          TransitionComponent={state.loadingInvoice ? undefined : SlideDownTransition}
+          TransitionComponent={
+            state.loadingInvoice ? undefined : SlideDownTransition
+          }
           transitionDuration={state.loadingInvoice ? undefined : 500}
           onClose={() => {
             dispatch({type: 'hideInvoice'});
@@ -362,7 +376,12 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
               transform: 'rotateY(180deg)'
             }}
           >
-            <Paper style={{height: `${props.size}px`, width: `${props.size}px`}}>
+            <Paper
+              style={{
+                height: `${props.size}px`,
+                width: `${props.size}px`
+              }}
+            >
               <Invoice
                 size={props.size}
                 invoice={state.invoice}
@@ -383,7 +402,9 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
               transform: 'translateX(-50%)'
             }}
           >
-            <Alert severity={'error'}>Failed to fetch an invoice! Try again.</Alert>
+            <Alert severity={'error'}>
+              Failed to fetch an invoice! Try again.
+            </Alert>
           </div>
         </div>
       )}
@@ -398,7 +419,10 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
             transition: `padding ${transitionTimeSecs}s`
         }}
         >
-          <Zoom timeout={transitionTimeSecs * 1000} in={showCancelButton} unmountOnExit>
+          <Zoom
+            timeout={transitionTimeSecs * 1000}
+            in={showCancelButton} unmountOnExit
+          >
             <Fab
               variant={'extended'}
               color={'primary'}

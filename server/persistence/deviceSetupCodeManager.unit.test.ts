@@ -24,14 +24,17 @@ describe('CodeGenerator', () => {
       expect(code).toMatch(/^[a-zA-Z0-9]{4}$/);
     });
 
-    it('should generate a different code each time for the same identifier', () => {
-      const id = 'user123';
-      const code1 = generator.generateCode(id);
-      const code2 = generator.generateCode(id);
+    it(
+      'should generate a different code each time for the same identifier',
+      () => {
+        const id = 'user123';
+        const code1 = generator.generateCode(id);
+        const code2 = generator.generateCode(id);
 
-      expect(code1).not.toBe(code2);
-      expect(generator.getIdFromCode(code1)).toBeUndefined();
-    });
+        expect(code1).not.toBe(code2);
+        expect(generator.getIdFromCode(code1)).toBeUndefined();
+      }
+    );
   });
 
   describe('collision avoidance', () => {
