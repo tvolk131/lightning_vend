@@ -4,7 +4,10 @@ import {
   AdminServerToClientEvents,
   AdminSocketData
 } from '../shared/adminSocketTypes';
-import {AdminData, AdminSessionManager} from './persistence/adminSessionManager';
+import {
+  AdminData,
+  AdminSessionManager
+} from './persistence/adminSessionManager';
 import {
   DeviceClientToServerEvents,
   DeviceInterServerEvents,
@@ -47,7 +50,9 @@ export class Coordinator {
         pingInterval: 5000,
         pingTimeout: 4000
       }),
-      this.adminSessionManager.getUserNameFromAdminSessionId.bind(this.adminSessionManager),
+      this.adminSessionManager.getUserNameFromAdminSessionId.bind(
+        this.adminSessionManager
+      ),
       this.getAdminData.bind(this),
       this.claimDevice.bind(this),
       this.updateDevice.bind(this)
@@ -72,43 +77,69 @@ export class Coordinator {
     lightning.SubscribeInvoices(InvoiceSubscription.create())
       .subscribe((invoice) => {
         if (invoice.state === InvoiceState.SETTLED && invoice.paymentRequest) {
-          const deviceName = this.invoiceManager.getInvoiceCreator(invoice.paymentRequest);
+          const deviceName =
+            this.invoiceManager.getInvoiceCreator(invoice.paymentRequest);
           if (deviceName) {
-            // TODO - Check if this message was sent (i.e. if the device is online) and
-            // save the event to retry later if the device is currently offline.
-            this.deviceSocketManager.emitInvoicePaid(deviceName, invoice.paymentRequest);
+            // TODO - Check if this message was sent (i.e. if the device is
+            // online) and save the event to retry later if the device is
+            // currently offline.
+            this.deviceSocketManager.emitInvoicePaid(
+              deviceName,
+              invoice.paymentRequest
+            );
           }
         }
       });
   }
 
-  public getUserNameFromAdminSessionId(adminSessionId: string): UserName | undefined {
-    return this.adminSessionManager.getUserNameFromAdminSessionId(adminSessionId);
+  public getUserNameFromAdminSessionId(
+    adminSessionId: string
+  ): UserName | undefined {
+    return this.adminSessionManager.getUserNameFromAdminSessionId(
+      adminSessionId
+    );
   }
 
   public async updateDevice(
     deviceName: DeviceName,
     mutateFn: (device: Device) => Device
   ): Promise<Device> {
-    return await this.deviceSessionManager.updateDevice(deviceName, mutateFn).then((device) => {
-      this.deviceSocketManager.updateDevice(deviceName, device);
-      this.adminSocketManager.updateAdminData(deviceName.getUserName());
-      return device;
-    });
+    return await this.deviceSessionManager.updateDevice(deviceName, mutateFn)
+      .then((device) => {
+        this.deviceSocketManager.updateDevice(deviceName, device);
+        this.adminSocketManager.updateAdminData(deviceName.getUserName());
+        return device;
+      });
   }
 
-  public getOrCreateAdminSession(adminSessionId: string, lightningNodePubkey: string) {
-    return this.adminSessionManager.getOrCreateAdminSession(adminSessionId, lightningNodePubkey);
+  public getOrCreateAdminSession(
+    adminSessionId: string,
+    lightningNodePubkey: string
+  ) {
+    return this.adminSessionManager.getOrCreateAdminSession(
+      adminSessionId,
+      lightningNodePubkey
+    );
   }
 
-  private claimDevice(deviceSetupCode: string, userName: UserName, deviceDisplayName: string) {
-    const claimDeviceRes =
-      this.deviceSessionManager.claimDevice(deviceSetupCode, userName, deviceDisplayName);
+  private claimDevice(
+    deviceSetupCode: string,
+    userName: UserName,
+    deviceDisplayName: string
+  ) {
+    const claimDeviceRes = this.deviceSessionManager.claimDevice(
+      deviceSetupCode,
+      userName,
+      deviceDisplayName
+    );
     if (claimDeviceRes) {
       const {device, deviceSessionId} = claimDeviceRes;
       const deviceName = DeviceName.parse(device.name);
       if (deviceName) {
-        this.deviceSocketManager.linkDeviceSessionIdToDeviceName(deviceSessionId, deviceName);
+        this.deviceSocketManager.linkDeviceSessionIdToDeviceName(
+          deviceSessionId,
+          deviceName
+        );
         this.deviceSocketManager.updateDevice(deviceName, device);
       }
     }

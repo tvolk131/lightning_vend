@@ -1,5 +1,8 @@
 import * as React from 'react';
-import {deviceSetupCodeAllowedCharacters, deviceSetupCodeLength} from '../../shared/constants';
+import {
+  deviceSetupCodeAllowedCharacters,
+  deviceSetupCodeLength
+} from '../../shared/constants';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -44,7 +47,13 @@ export const AdminPage = () => {
   };
 
   return (
-    <div style={{padding: theme.spacing(2), margin: 'auto', maxWidth: '1000px'}}>
+    <div
+      style={{
+        padding: theme.spacing(2),
+        margin: 'auto',
+        maxWidth: '1000px'
+      }}
+    >
       {loadableAdminData.state === 'loading' && <CircularProgress/>}
       {loadableAdminData.state === 'error' && <LoginBox/>}
       {loadableAdminData.state === 'loaded' && (
@@ -59,9 +68,14 @@ export const AdminPage = () => {
                       onClick={() => setSelectedDeviceIndex(index)}
                     >
                       <ListItemIcon>
-                        <CircleIcon color={deviceView.isOnline ? 'success' : 'error'}/>
+                        <CircleIcon
+                          color={deviceView.isOnline ? 'success' : 'error'}
+                        />
                       </ListItemIcon>
-                      <ListItemText color={''} primary={deviceView.device.displayName}/>
+                      <ListItemText
+                        color={''}
+                        primary={deviceView.device.displayName}
+                      />
                     </ListItemButton>
                   );
                 })}
@@ -72,10 +86,16 @@ export const AdminPage = () => {
             {
               loadableAdminData.data.deviceViews[selectedDeviceIndex] ?
                 <DeviceSettingsPanel
-                  adminDeviceView={loadableAdminData.data.deviceViews[selectedDeviceIndex]}
+                  adminDeviceView={
+                    loadableAdminData.data.deviceViews[selectedDeviceIndex]
+                  }
                 />
                 :
-                <Paper><Typography variant={'h2'}>No Device Selected</Typography></Paper>
+                <Paper>
+                  <Typography variant={'h2'}>
+                    No Device Selected
+                  </Typography>
+                </Paper>
             }
           </Grid>
         </Grid>
@@ -96,15 +116,16 @@ export const AdminPage = () => {
             <DialogTitle>Claim a New Device</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                To claim a new device, enter the setup code on the device and pick a name for the
-                device.
+                To claim a new device, enter the setup code on the device and
+                pick a name for the device.
               </DialogContentText>
               <div style={{marginRight: '-10px'}}>
                 <TextField
                   label={'Setup Code'}
                   onChange={(e) => setClaimedDeviceSetupCode(
                     e.target.value.toUpperCase().trim().replace(
-                      new RegExp(`[^${deviceSetupCodeAllowedCharacters}]`, 'g'), ''
+                      new RegExp(`[^${deviceSetupCodeAllowedCharacters}]`, 'g'),
+                      ''
                     ).substring(0, deviceSetupCodeLength))
                   }
                   value={claimedDeviceSetupCode}
@@ -121,11 +142,15 @@ export const AdminPage = () => {
             <DialogActions>
               <Button onClick={hideClaimDeviceDialog}>Cancel</Button>
               <Button
-                disabled={claimedDeviceSetupCode.length !== deviceSetupCodeLength ||
-                          claimedDeviceDisplayName.trim().length === 0}
+                disabled={
+                  claimedDeviceSetupCode.length !== deviceSetupCodeLength ||
+                  claimedDeviceDisplayName.trim().length === 0
+                }
                 onClick={() => {
-                  adminApi.claimDevice(claimedDeviceSetupCode, claimedDeviceDisplayName.trim())
-                    .then(hideClaimDeviceDialog);
+                  adminApi.claimDevice(
+                    claimedDeviceSetupCode,
+                    claimedDeviceDisplayName.trim()
+                  ).then(hideClaimDeviceDialog);
                 }}
               >
                 Claim Device

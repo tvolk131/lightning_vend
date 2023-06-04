@@ -46,7 +46,11 @@ export const LandingPage = () => {
             The Bitcoin solution for vending machines
           </Typography>
         </div>
-        <Button variant='contained' color='primary' onClick={() => navigate(adminPagePath)}>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={() => navigate(adminPagePath)}
+        >
           Get Started
         </Button>
         <IconButton
@@ -85,7 +89,10 @@ export const LandingPage = () => {
       </LandingPageSection>
       <LandingPageSection headerText={'Demo'}>
         <div style={{textAlign: ('-webkit-center' as any)}}>
-          <Tweet tweetId={'1608300837083684865'} options={{style: {margin: 'auto'}}}/>
+          <Tweet
+            tweetId={'1608300837083684865'}
+            options={{style: {margin: 'auto'}}}
+          />
         </div>
       </LandingPageSection>
       <LandingPageSection headerText={'Links'}>
@@ -94,7 +101,10 @@ export const LandingPage = () => {
         </LandingPageText>
         <IconButton
           onClick={
-            () => window.open('https://github.com/tvolk131/lightning_vend', '_blank')?.focus()
+            () => window.open(
+              'https://github.com/tvolk131/lightning_vend',
+              '_blank'
+            )?.focus()
           }
         >
           <GitHubIcon/>
@@ -114,8 +124,14 @@ interface LandingPageSectionProps {
 const LandingPageSection = (props: LandingPageSectionProps) => {
   const [shouldShow, setShouldShow] = useState(false);
 
-  const [fullyVisibleRef, {isVisible: isAtAllVisible}] = useTrackVisibility({threshold: 0});
-  const [halfVisibleRef, {isVisible: isAtLeastHalfVisible}] = useTrackVisibility({threshold: 0.5});
+  const [
+    fullyVisibleRef,
+    {isVisible: isAtAllVisible}
+  ] = useTrackVisibility({threshold: 0});
+  const [
+    halfVisibleRef,
+    {isVisible: isAtLeastHalfVisible}
+  ] = useTrackVisibility({threshold: 0.5});
 
   useEffect(() => {
     if (shouldShow && !isAtAllVisible) {
@@ -156,7 +172,11 @@ const LandingPageSection = (props: LandingPageSectionProps) => {
               const styles = useSpring({
                 opacity: shouldShow ? 1 : 0,
                 x: shouldShow ? 0 : -100,
-                delay: i * (totalSlideAnimationTimeMs / [props.children].flat().length)
+                delay: (
+                  i * (
+                    totalSlideAnimationTimeMs / [props.children].flat().length
+                  )
+                )
               });
 
               return (
@@ -183,7 +203,12 @@ const LandingPageText = (props: LandingPageTextProps) => {
 
   const rootStyles: CSSProperties = {
     alignItems: 'center',
-    marginTop: theme.spacing(props.verticalSpacing === undefined ? 4 : props.verticalSpacing),
+    marginTop: theme.spacing(
+      props.verticalSpacing === undefined ?
+        4
+        :
+        props.verticalSpacing
+    ),
     display: 'inline-flex'
   };
 

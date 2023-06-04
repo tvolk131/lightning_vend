@@ -1,8 +1,12 @@
-import {deviceSetupCodeAllowedCharacters, deviceSetupCodeLength} from '../../shared/constants';
+import {
+  deviceSetupCodeAllowedCharacters,
+  deviceSetupCodeLength
+} from '../../shared/constants';
 
 /**
  * Manages device setup codes.
- * Currently stores everything in memory, but will eventually use MongoDB to persist this data.
+ * Currently stores everything in memory, but will eventually use MongoDB to
+ * persist this data.
  * TODO - Read/write using non-volatile storage.
  */
 export class DeviceSetupCodeManager {
@@ -14,7 +18,8 @@ export class DeviceSetupCodeManager {
     this.idToCodeMap = new Map();
   }
 
-  // TODO - Set a TLL for new codes to be eventually discarded if they're unused.
+  // TODO - Set a TLL for new codes to be eventually discarded if they're
+  // unused.
   public generateCode(id: string): string {
     const existingCode = this.getCodeFromId(id);
     if (existingCode) {
@@ -27,7 +32,8 @@ export class DeviceSetupCodeManager {
         Math.floor(Math.random() * deviceSetupCodeAllowedCharacters.length));
     }
 
-    // TODO - If all possible codes are taken, this will infinitely recurse. We should address this.
+    // TODO - If all possible codes are taken, this will infinitely recurse.
+    // We should address this.
     if (this.codeToIdMap.has(code)) {
       return this.generateCode(id);
     }

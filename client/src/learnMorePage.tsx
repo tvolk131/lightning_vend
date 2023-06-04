@@ -15,7 +15,14 @@ export const LearnMorePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{textAlign: 'center', maxWidth: '500px', margin: 'auto', padding: '20px'}}>
+    <div
+      style={{
+        textAlign: 'center',
+        maxWidth: '500px',
+        margin: 'auto',
+        padding: '20px'
+      }}
+    >
       <Typography variant='h4' style={{paddingBottom: '20px'}}>
         About LightningVend
       </Typography>
@@ -25,12 +32,14 @@ export const LearnMorePage = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            LightningVend is a versatile software system designed to seamlessly integrate Lightning
-            Network payments into vending machines. Our software is highly adaptable, supporting
-            various form-factors and device types, including hand-crank gumball machines, soda/candy
-            vending machines, sticker machines, and more. To operate, devices simply require a power
-            source and an internet connection. Our hosted software platform provides a user-friendly
-            touchscreen interface to customers. Payments are securely sent to our managed LN node,
+            LightningVend is a versatile software system designed to seamlessly
+            integrate Lightning Network payments into vending machines. Our
+            software is highly adaptable, supporting various form-factors and
+            device types, including hand-crank gumball machines, soda/candy
+            vending machines, sticker machines, and more. To operate, devices
+            simply require a power source and an internet connection. Our hosted
+            software platform provides a user-friendly touchscreen interface to
+            customers. Payments are securely sent to our managed LN node,
             ensuring reliable transaction processing.
           </Typography>
         </AccordionDetails>
@@ -41,11 +50,12 @@ export const LearnMorePage = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            Although we receive all payments to our managed Lightning Node (more about that in the
-            section below) we strongly encourage self-custody and provide tools to assist you in
-            this process. You have the freedom to perform manual withdrawals on-chain or through the
-            Lightning Network at any time. This gives you full control over your funds and allows
-            you to manage your own wallet independently.
+            Although we receive all payments to our managed Lightning Node (more
+            about that in the section below) we strongly encourage self-custody
+            and provide tools to assist you in this process. You have the
+            freedom to perform manual withdrawals on-chain or through the
+            Lightning Network at any time. This gives you full control over your
+            funds and allows you to manage your own wallet independently.
           </Typography>
         </AccordionDetails>
       </Accordion>
@@ -55,34 +65,38 @@ export const LearnMorePage = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            Connecting and managing your own Lightning node can be challenging, requiring technical
-            expertise and continuous maintenance. By utilizing our managed node, you can enjoy the
-            following benefits:
+            Connecting and managing your own Lightning node can be challenging,
+            requiring technical expertise and continuous maintenance. By
+            utilizing our managed node, you can enjoy the following benefits:
           </Typography>
           <List>
             <ListItem>
               <ListItemText>
-                Ease of Use: Our software simplifies the setup process and provides a
-                user-friendly experience, making it accessible to a wide range of users.
+                Ease of Use: Our software simplifies the setup process and
+                provides a user-friendly experience, making it accessible to a
+                wide range of users.
               </ListItemText>
             </ListItem>
             <ListItem>
               <ListItemText>
-                High Uptime: Our managed node ensures reliable operation and minimizes potential
-                downtime, guaranteeing smooth payment processing.
+                High Uptime: Our managed node ensures reliable operation and
+                minimizes potential downtime, guaranteeing smooth payment
+                processing.
               </ListItemText>
             </ListItem>
             <ListItem>
               <ListItemText>
-                Hosting Fee Structure: By utilizing our managed node, we offer a hosting fee
-                structure that covers the cost of maintaining the infrastructure, allowing you to
-                focus on your vending machine business.
+                Hosting Fee Structure: By utilizing our managed node, we offer a
+                hosting fee structure that covers the cost of maintaining the
+                infrastructure, allowing you to focus on your vending machine
+                business.
               </ListItemText>
             </ListItem>
             <ListItem>
               <ListItemText>
-                Advanced Features: Our managed node enables us to provide advanced features like
-                payment splitting, which enhances your payment management capabilities.
+                Advanced Features: Our managed node enables us to provide
+                advanced features like payment splitting, which enhances your
+                payment management capabilities.
               </ListItemText>
             </ListItem>
           </List>
@@ -94,9 +108,10 @@ export const LearnMorePage = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            With our payment splitting feature, you can easily distribute incoming payments among
-            multiple accounts, facilitating the allocation of funds to multiple parties. This
-            enables efficient and seamless distribution of funds, allowing you to manage payments to
+            With our payment splitting feature, you can easily distribute
+            incoming payments among multiple accounts, facilitating the
+            allocation of funds to multiple parties. This enables efficient and
+            seamless distribution of funds, allowing you to manage payments to
             different entities or stakeholders according to your needs.
           </Typography>
         </AccordionDetails>
@@ -107,11 +122,13 @@ export const LearnMorePage = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            In addition to manual withdrawals, our system supports automatic withdrawals to any
-            Lightning node that supports Atomic Multipart Payments. This feature streamlines the
-            withdrawal process, enabling you to set up automated transfers of funds to your
-            preferred Lightning node. By leveraging this capability, you can ensure convenient and
-            timely access to your funds without the need for manual intervention.
+            In addition to manual withdrawals, our system supports automatic
+            withdrawals to any Lightning node that supports Atomic Multipart
+            Payments. This feature streamlines the withdrawal process, enabling
+            you to set up automated transfers of funds to your preferred
+            Lightning node. By leveraging this capability, you can ensure
+            convenient and timely access to your funds without the need for
+            manual intervention.
           </Typography>
         </AccordionDetails>
       </Accordion>

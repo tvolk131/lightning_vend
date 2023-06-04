@@ -47,7 +47,10 @@ export class DeviceSocketManager {
     server.engine.on('initial_headers', (headers, req: Request, ...args) => {
       // console.log(headers, req, ...args);
       const cookie = req.headers.cookie ? parse(req.headers.cookie) : undefined;
-      const deviceSessionId = cookie ? cookie[deviceSessionCookieName] : undefined;
+      const deviceSessionId = cookie ?
+        cookie[deviceSessionCookieName]
+        :
+        undefined;
       if (!deviceSessionId) {
         const now = new Date();
         const oneThousandYearsFromNow =
@@ -62,8 +65,8 @@ export class DeviceSocketManager {
     });
 
     server.on('connection', (socket) => {
-      // TODO - Emit an event to the socket if a `deviceSessionId` cookie is not present
-      // so the device knows to restart the socket.
+      // TODO - Emit an event to the socket if a `deviceSessionId` cookie is not
+      // present so the device knows to restart the socket.
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
       const deviceName =
         deviceSessionId ?
@@ -81,7 +84,9 @@ export class DeviceSocketManager {
       socket.on('getDeviceSetupCode', (callback) => {
         const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
         if (deviceSessionId) {
-          return callback(deviceSessionManager.createDeviceSetupCode(deviceSessionId));
+          return callback(
+            deviceSessionManager.createDeviceSetupCode(deviceSessionId)
+          );
         } else {
           return callback(undefined);
         }
@@ -128,7 +133,10 @@ export class DeviceSocketManager {
     return this.socketsByDeviceName.has(deviceName.toString());
   }
 
-  public linkDeviceSessionIdToDeviceName(deviceSessionId: string, deviceName: DeviceName) {
+  public linkDeviceSessionIdToDeviceName(
+    deviceSessionId: string,
+    deviceName: DeviceName
+  ) {
     const socket = this.socketsByDeviceSessionId.get(deviceSessionId);
     if (socket) {
       this.socketsByDeviceName.set(deviceName.toString(), socket);
@@ -143,7 +151,9 @@ export class DeviceSocketManager {
   }
 
   public unsubscribeFromDeviceConnectionStatus(callbackId: string) {
-    return this.onDeviceConnectionStatusChangeEventManager.unsubscribe(callbackId);
+    return this.onDeviceConnectionStatusChangeEventManager.unsubscribe(
+      callbackId
+    );
   }
 
   /**
@@ -153,7 +163,9 @@ export class DeviceSocketManager {
    * @param args The event data arguments.
    * @returns Whether there is an open socket to the device.
    */
-  private sendMessageToDevice<Ev extends EventNames<DeviceServerToClientEvents>>(
+  private sendMessageToDevice<
+    Ev extends EventNames<DeviceServerToClientEvents>
+  >(
     deviceName: DeviceName,
     eventName: Ev,
     ...args: EventParams<DeviceServerToClientEvents, Ev>
@@ -200,9 +212,13 @@ export class DeviceSocketManager {
     }
   }
 
-  // TODO - Remove this function. It's redundant, we can simply use `socket.data.deviceSessionId`.
+  // TODO - Remove this function. It's redundant, we can simply use
+  // `socket.data.deviceSessionId`.
   private static getDeviceSessionId(socket: DeviceSocket): string | undefined {
-    return parse(socket.handshake.headers.cookie || '', {})[deviceSessionCookieName];
+    const cookie = socket.handshake.headers.cookie;
+    if (cookie) {
+      return parse(cookie, {})[deviceSessionCookieName];
+    }
   }
 }
 

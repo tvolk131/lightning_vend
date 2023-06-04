@@ -85,7 +85,7 @@
       ],
       "max-len": [
         "error",
-        100
+        80
       ],
       "new-parens": "error",
       "no-console": "error",

@@ -19,7 +19,8 @@ const coordinator = new Coordinator(server, lightning);
 export const adminSessionCookieName = 'admin-session';
 export const deviceSessionCookieName = 'device-session';
 
-const getCookieFromRequest = (req: express.Request, cookieName: string): string | undefined => {
+const getCookieFromRequest =
+(req: express.Request, cookieName: string): string | undefined => {
   const cookieHeader = req.headers.cookie;
   if (!cookieHeader) {
     return undefined;
@@ -28,7 +29,8 @@ const getCookieFromRequest = (req: express.Request, cookieName: string): string 
   return cookies[cookieName];
 };
 
-const getAdminSessionIdFromRequest = (req: express.Request): string | undefined => {
+const getAdminSessionIdFromRequest =
+(req: express.Request): string | undefined => {
   return getCookieFromRequest(req, adminSessionCookieName);
 };
 
@@ -45,7 +47,10 @@ app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
 
   let lnNodePubkey;
   try {
-    lnNodePubkey = await verifyMessage(req.params.message, req.params.signature);
+    lnNodePubkey = await verifyMessage(
+      req.params.message,
+      req.params.signature
+    );
   } catch (err) {
     return res.status(400).send(err);
   }
@@ -56,7 +61,11 @@ app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
   );
 
   if (isNew) {
-    return res.cookie(adminSessionCookieName, adminSessionId, {path: '/'}).send();
+    return res.cookie(
+      adminSessionCookieName,
+      adminSessionId,
+      {path: '/'}
+    ).send();
   } else {
     return res.status(400).send('Device is already registered!');
   }
