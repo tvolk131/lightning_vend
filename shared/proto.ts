@@ -4,8 +4,7 @@ import {makeUuid} from './uuid';
 // This is a top-level resource, so it has no parent.
 // Formatted as: `users/{user}`.
 export class UserName {
-  // TODO - Make this field private.
-  public readonly user: string;
+  private readonly user: string;
 
   private constructor(name: string) {
     const match = name.match(/^users\/(.+)$/);
@@ -36,10 +35,8 @@ export class UserName {
 // This resource is a child of a User.
 // Formatted as: `users/{user}/devices/{device}`.
 export class DeviceName {
-  // TODO - Make this field private.
-  public readonly user: string;
-  // TODO - Make this field private.
-  public readonly device: string;
+  private readonly user: string;
+  private readonly device: string;
 
   private constructor(name: string) {
     const match = name.match(/^users\/(.+)\/devices\/(.+)$/);
