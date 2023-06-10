@@ -29,10 +29,8 @@ export class AdminSessionManager {
   private usersByName: Map<string, User> = new Map();
 
   /**
-   * Maps user names to the Lightning Network
-   * node pubkey that identifies the user.
-   * TODO - This is only used to check if a user
-   * exists already. We can use a Set<string> instead.
+   * Maps user names to the Lightning Network node pubkey that identifies the
+   * user.
    */
   private userNamesByLightningNodePubkey: Map<string, UserName> = new Map();
 
