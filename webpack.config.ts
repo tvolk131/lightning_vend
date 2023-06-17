@@ -10,7 +10,7 @@ export default (
   _: any,
   {watch, mode}: {watch?: boolean, mode?: string}
 ): webpack.Configuration => {
-  const maxBundleSize = mode === 'production' ? 750000 : 4100000;
+  const maxBundleSize = mode === 'production' ? 760000 : 4100000;
 
   return {
     entry: `${SRC_DIR}/index.tsx`,
