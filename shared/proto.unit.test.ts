@@ -12,7 +12,7 @@ describe('UserName', () => {
         const name = 'users/user123';
         const userName = UserName.parse(name);
         expect(userName).toBeInstanceOf(UserName);
-        expect(userName!.user).toBe('user123');
+        expect(userName!.toString()).toBe(name);
       }
     );
 
@@ -27,7 +27,7 @@ describe('UserName', () => {
     it('should return a UserName instance with a valid name', () => {
       const userName = UserName.create();
       expect(userName).toBeInstanceOf(UserName);
-      expect(userName.user).toBe('mockedUuid');
+      expect(userName.toString()).toBe('users/mockedUuid');
     });
   });
 
@@ -47,8 +47,7 @@ describe('DeviceName', () => {
         const name = 'users/user123/devices/device456';
         const deviceName = DeviceName.parse(name);
         expect(deviceName).toBeInstanceOf(DeviceName);
-        expect(deviceName!.user).toBe('user123');
-        expect(deviceName!.device).toBe('device456');
+        expect(deviceName!.toString()).toBe(name);
       }
     );
 
@@ -66,8 +65,7 @@ describe('DeviceName', () => {
         const user = UserName.parse('users/user123')!;
         const deviceName = DeviceName.createFromParent(user);
         expect(deviceName).toBeInstanceOf(DeviceName);
-        expect(deviceName.user).toBe('user123');
-        expect(deviceName.device).toBe('mockedUuid');
+        expect(deviceName.toString()).toBe('users/user123/devices/mockedUuid');
       }
     );
   });
@@ -84,7 +82,7 @@ describe('DeviceName', () => {
       const deviceName = DeviceName.parse('users/user123/devices/device456')!;
       const userName = deviceName.getUserName();
       expect(userName).toBeInstanceOf(UserName);
-      expect(userName!.user).toBe('user123');
+      expect(userName!.toString()).toBe('users/user123');
     });
   });
 });

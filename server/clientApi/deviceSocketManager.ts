@@ -82,7 +82,7 @@ export class DeviceSocketManager {
       }
 
       socket.on('getDeviceSetupCode', (callback) => {
-        const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
+        const deviceSessionId = socket.data.deviceSessionId;
         if (deviceSessionId) {
           return callback(
             deviceSessionManager.createDeviceSetupCode(deviceSessionId)
@@ -212,8 +212,6 @@ export class DeviceSocketManager {
     }
   }
 
-  // TODO - Remove this function. It's redundant, we can simply use
-  // `socket.data.deviceSessionId`.
   private static getDeviceSessionId(socket: DeviceSocket): string | undefined {
     const cookie = socket.handshake.headers.cookie;
     if (cookie) {
