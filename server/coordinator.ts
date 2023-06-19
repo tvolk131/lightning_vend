@@ -92,15 +92,7 @@ export class Coordinator {
       });
   }
 
-  public getUserNameFromAdminSessionId(
-    adminSessionId: string
-  ): UserName | undefined {
-    return this.adminSessionManager.getUserNameFromAdminSessionId(
-      adminSessionId
-    );
-  }
-
-  public async updateDevice(
+  private async updateDevice(
     deviceName: DeviceName,
     mutateFn: (device: Device) => Device
   ): Promise<Device> {
