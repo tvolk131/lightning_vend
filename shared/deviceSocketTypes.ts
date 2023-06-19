@@ -3,7 +3,7 @@ import {DeviceName} from './proto';
 
 export interface DeviceServerToClientEvents {
   updateDevice: (device: Device | null) => void;
-  invoicePaid: (invoice: string) => void;
+  invoicePaid: (invoice: string, deviceAck: () => void) => void;
 }
 
 export interface DeviceClientToServerEvents {

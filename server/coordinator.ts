@@ -25,6 +25,9 @@ import {AdminSocketManager} from './clientApi/adminSocketManager';
 import {Device} from '../proto/lightning_vend/model';
 import {DeviceSessionManager} from './persistence/deviceSessionManager';
 import {DeviceSocketManager} from './clientApi/deviceSocketManager';
+import {
+  DeviceUnackedSettledInvoiceManager
+} from './persistence/deviceUnackedSettledInvoiceManager';
 import {Server as HttpServer} from 'http';
 import {InvoiceManager} from './persistence/invoiceManager';
 import {Server as SocketServer} from 'socket.io';
@@ -35,11 +38,15 @@ export class Coordinator {
   private adminSessionManager: AdminSessionManager;
   private deviceSessionManager: DeviceSessionManager;
   private invoiceManager: InvoiceManager;
+  private deviceUnackedSettledInvoiceManager:
+    DeviceUnackedSettledInvoiceManager;
 
   public constructor(httpServer: HttpServer, lightning: LightningClientImpl) {
     this.adminSessionManager = new AdminSessionManager();
     this.deviceSessionManager = new DeviceSessionManager();
     this.invoiceManager = new InvoiceManager(lightning);
+    this.deviceUnackedSettledInvoiceManager =
+      new DeviceUnackedSettledInvoiceManager();
 
     this.adminSocketManager = new AdminSocketManager(
       new SocketServer<AdminClientToServerEvents,
@@ -67,7 +74,8 @@ export class Coordinator {
         pingInterval: 5000,
         pingTimeout: 4000
       }),
-      this.deviceSessionManager
+      this.deviceSessionManager,
+      this.deviceUnackedSettledInvoiceManager
     );
 
     this.deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
@@ -79,13 +87,27 @@ export class Coordinator {
         if (invoice.state === InvoiceState.SETTLED && invoice.paymentRequest) {
           const deviceName =
             this.invoiceManager.getInvoiceCreator(invoice.paymentRequest);
+
+          // If we know the device that created the invoice, save it as an
+          // unacked settled invoice linked to that device. This will ensure
+          // that the device is notified even if it is not connected when the
+          // invoice is paid.
           if (deviceName) {
-            // TODO - Check if this message was sent (i.e. if the device is
-            // online) and save the event to retry later if the device is
-            // currently offline.
+            this.deviceUnackedSettledInvoiceManager
+              .addUnackedSettledInvoice(deviceName, invoice.paymentRequest);
+
+              // Tell the device that the invoice has been paid. If the socket
+              // is not connected, no event will be emitted here. In that case,
+              // the device will be notified when it connects thanks to the
+              // `deviceUnackedSettledInvoiceManager`.
             this.deviceSocketManager.emitInvoicePaid(
               deviceName,
-              invoice.paymentRequest
+              invoice.paymentRequest,
+              () => {
+                // If the device acks the invoice, we can delete it.
+                this.deviceUnackedSettledInvoiceManager
+                  .ackAndDeleteSettledInvoice(invoice.paymentRequest);
+              }
             );
           }
         }

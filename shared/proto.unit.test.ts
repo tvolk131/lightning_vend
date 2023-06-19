@@ -85,4 +85,18 @@ describe('DeviceName', () => {
       expect(userName!.toString()).toBe('users/user123');
     });
   });
+
+  describe('equals', () => {
+    it('should return true when the names are equal', () => {
+      const deviceName1 = DeviceName.parse('users/user123/devices/device456')!;
+      const deviceName2 = DeviceName.parse('users/user123/devices/device456')!;
+      expect(deviceName1.equals(deviceName2)).toBe(true);
+    });
+
+    it('should return false when the names are not equal', () => {
+      const deviceName1 = DeviceName.parse('users/user123/devices/device456')!;
+      const deviceName2 = DeviceName.parse('users/user123/devices/device789')!;
+      expect(deviceName1.equals(deviceName2)).toBe(false);
+    });
+  });
 });
