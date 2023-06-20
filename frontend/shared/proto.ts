@@ -1,6 +1,8 @@
-// Represents a unique resource identifer for a User.
-// This is a top-level resource, so it has no parent.
-// Formatted as: `users/{user}`.
+/**
+ * Represents a unique resource identifer for a User.
+ * This is a top-level resource, so it has no parent.
+ * Formatted as: `users/{user}`.
+ */
 export class UserName {
   private readonly user: string;
 
@@ -29,9 +31,11 @@ export class UserName {
   }
 }
 
-// Represents a unique resource identifer for a UnclaimedDevice.
-// This is a top-level resource, so it has no parent.
-// Formatted as: `unclaimedDevices/{unclaimed_device}`.
+/**
+ * Represents a unique resource identifer for a UnclaimedDevice.
+ * This is a top-level resource, so it has no parent.
+ * Formatted as: `unclaimedDevices/{unclaimed_device}`.
+ */
 export class UnclaimedDeviceName {
   private readonly unclaimedDevice: string;
 
@@ -60,9 +64,11 @@ export class UnclaimedDeviceName {
   }
 }
 
-// Represents a unique resource identifer for a Device.
-// This resource is a child of a User.
-// Formatted as: `users/{user}/devices/{device}`.
+/**
+ * Represents a unique resource identifer for a Device.
+ * This resource is a child of a User.
+ * Formatted as: `users/{user}/devices/{device}`.
+ */
 export class DeviceName {
   private readonly user: string;
   private readonly device: string;
