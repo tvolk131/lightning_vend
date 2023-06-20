@@ -198,9 +198,11 @@ export const DevicePage = () => {
         {loadableDevice.state === 'loaded' && loadableDevice.data && (
             <SelectionMenu
               size={centerSquareSize}
-              canShowInvoice={
-                connectionStatus === 'connected' && !screensaverActive
-              }
+              // TODO - Only hide the invoice if it has expired or is manually
+              // cancelled. This will provide the best user experience since an
+              // invoice will only be hidden if it is no longer usable or the
+              // user explicitly indicates they don't want to pay it.
+              canShowInvoice={!screensaverActive}
               inventory={loadableDevice.data.inventory}
             />
         )}
