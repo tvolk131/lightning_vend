@@ -3,6 +3,7 @@ import * as webpack from 'webpack';
 const SRC_DIR = path.join(__dirname, '/client/src');
 const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const BundleAnalyzerPlugin =
 //   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -35,7 +36,8 @@ export default (
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
     },
     plugins: [
-      new ForkTsCheckerWebpackPlugin()
+      new ForkTsCheckerWebpackPlugin(),
+      new HtmlWebpackPlugin({template: `${SRC_DIR}/index.html`})
       // new BundleAnalyzerPlugin() // Uncomment for bundle analysis
     ],
     performance: {
