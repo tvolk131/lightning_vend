@@ -12,8 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
-bundle.js
-bundle.js.LICENSE.txt
+/client/out/**
 *.macaroon
 *.cert
 /proto/**/*.ts
