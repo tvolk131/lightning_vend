@@ -15,6 +15,16 @@ import {NotFoundPage} from './notFoundPage';
 import {blue} from '@mui/material/colors';
 import {createRoot} from 'react-dom/client';
 
+// Install the service worker. This allows the app to work offline by caching
+// the app's files and serving them from the cache when the user is offline.
+if ('serviceWorker' in navigator) {
+  // Load the service worker after the page has finished loading. This ensures
+  // that the service worker doesn't slow down the page's initial loading.
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js');
+  });
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
