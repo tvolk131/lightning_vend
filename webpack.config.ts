@@ -39,7 +39,10 @@ export default (
     plugins: [
       new CleanWebpackPlugin(),
       new ForkTsCheckerWebpackPlugin(),
-      new HtmlWebpackPlugin({template: `${SRC_DIR}/index.html`})
+      new HtmlWebpackPlugin({
+        template: `${SRC_DIR}/index.html`,
+        publicPath: '/'
+      })
       // new BundleAnalyzerPlugin() // Uncomment for bundle analysis
     ],
     performance: {
