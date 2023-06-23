@@ -76,9 +76,12 @@ export class DeviceSocketManager {
       this.addSocket(socket, {deviceSessionId, deviceName});
 
       if (deviceName) {
-        socket.emit('updateDevice', deviceSessionManager.getDevice(deviceName));
+        socket.emit(
+          'updateDevice',
+          deviceSessionManager.getDevice(deviceName) || null
+        );
       } else {
-        socket.emit('updateDevice', undefined);
+        socket.emit('updateDevice', null);
       }
 
       socket.on('getDeviceSetupCode', (callback) => {

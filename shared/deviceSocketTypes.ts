@@ -2,7 +2,7 @@ import {Device} from '../proto/lightning_vend/model';
 import {DeviceName} from './proto';
 
 export interface DeviceServerToClientEvents {
-  updateDevice: (device?: Device) => void;
+  updateDevice: (device: Device | null) => void;
   invoicePaid: (invoice: string) => void;
 }
 

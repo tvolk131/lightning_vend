@@ -62,7 +62,10 @@ export class AdminSocketManager {
         undefined;
       this.addSocket(socket, {userName});
 
-      socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
+      socket.emit(
+        'updateAdminData',
+        this.getAdminDataForSocket(socket) || null
+      );
 
       socket.on('getLnAuthMessage', (callback) => {
         // Generate an unsigned message that's valid for 5 minutes.
@@ -74,7 +77,10 @@ export class AdminSocketManager {
         if (adminData && userName) {
           claimDevice(deviceSetupCode, userName, displayName);
           callback('ok');
-          socket.emit('updateAdminData', this.getAdminDataForSocket(socket));
+          socket.emit(
+            'updateAdminData',
+            this.getAdminDataForSocket(socket) || null
+          );
         } else {
           callback('unauthenticatedError');
         }
@@ -147,7 +153,8 @@ export class AdminSocketManager {
     // Only get admin data if a relevant admin is currently connected.
     if (sockets && sockets.length) {
       const adminData = this.getAdminData(userName);
-      sockets.forEach((socket) => socket.emit('updateAdminData', adminData));
+      sockets.forEach((socket) =>
+        socket.emit('updateAdminData', adminData || null));
       return true;
     }
 
