@@ -179,10 +179,18 @@ export const DevicePage = () => {
                     transform: 'translate(0, -50%)'
                   }}
                 >
-                  <Typography>
-                    Error loading device!
+                  <Typography variant={'h4'}>
+                    Error loading device data!
                   </Typography>
-                  {/* TODO - Add retry button. */}
+                  <Button
+                    style={{marginTop: '10px'}}
+                    variant={'contained'}
+                    onClick={() => {
+                      deviceApi.getDevice();
+                    }}
+                  >
+                    Retry
+                  </Button>
                 </div>
               </Paper>
             </div>

@@ -7,6 +7,7 @@ export interface DeviceServerToClientEvents {
 }
 
 export interface DeviceClientToServerEvents {
+  getDevice: (callback: (device: Device | null) => void) => void;
   getDeviceSetupCode: (callback: (deviceSetupCode?: string) => void) => void;
   createInvoice: (
     valueSats: number,

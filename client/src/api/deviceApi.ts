@@ -33,14 +33,18 @@ class DeviceApi extends ReactSocket<
   public constructor() {
     super(socketIoDevicePath);
 
-    this.socket.on('updateDevice', (device) => {
-      storeDevice(device || undefined);
-
-      this.deviceDataManager.setData({
-        state: 'loaded',
-        data: device
-      });
+    // Any time the socket connects (or reconnects), we want to fetch the device
+    // from the server. This will ensure that we always have the latest device
+    // state even if it was updated while the socket was disconnected. Note that
+    // this will handle updating the device in the app state and local storage.
+    // TODO - The server should ack `updateDevice` messages so that the client
+    // isn't responsible for fetching the device on reconnect. This will also
+    // make the client more resilient to out of order updates.
+    this.socket.on('connect', () => {
+      this.getDevice();
     });
+
+    this.socket.on('updateDevice', this.updateAndStoreDevice.bind(this));
 
     this.socket.on('invoicePaid', (invoice) => {
       this.invoicePaidCallbacks.forEach((callback) => {
@@ -87,6 +91,75 @@ class DeviceApi extends ReactSocket<
     }, []);
 
     return data;
+  }
+
+  /**
+   * Fetches the device from the server and updates the app state and local
+   * storage.
+   * @returns A promise that resolves to the device, or null if the device
+   * doesn't exist.
+   */
+  public async getDevice(): Promise<Device | null> {
+    this.deviceDataManager.setData({
+      state: 'loading',
+      cachedData: loadDevice()
+    });
+
+    return new Promise<Device | null>((resolve, reject) => {
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
+        'getDevice',
+        (err, device) => {
+          if (err) {
+            return reject(err);
+          }
+
+          return resolve(device);
+        }
+      );
+    }).then<Device | null>((device) => {
+      this.updateAndStoreDevice(device);
+      return device;
+    }).catch((err) => {
+      this.updateAndStoreDevice(undefined);
+      throw err;
+    });
+  }
+
+  /**
+   * Updates the device in the app state and local storage.
+   *
+   * TODO - Make this resilient to out of order updates. It's possible that this
+   * will be called out of order if the device is updated twice in quick
+   * succession and the second update is received before the first one. This
+   * will cause the second update to then be overwritten by the first one and
+   * the device will be stored in the wrong state. We should fix this by using
+   * an `update_time` proto field and only storing the device if the update time
+   * is newer than on the cached device.
+   * @param device The device to update to. A null value means the device should
+   * be deleted. An undefined value means the device failed to load, which will
+   * cause the device to be kept in the current state.
+   */
+  private updateAndStoreDevice(device: Device | null | undefined) {
+    if (device === undefined) {
+      // If the device is undefined, it means we got an error from the server.
+      // In this case, we want to keep and render the previously cached device
+      // if it exists.
+      this.deviceDataManager.setData({
+        state: 'error',
+        cachedData: loadDevice()
+      });
+    } else {
+      // If the device is null, it means the server told us that the device
+      // doesn't exist. In this case, `storeDevice()` will clear the cache. If
+      // the device is not null, we want to update the cache. Either way, the
+      // data is in a final state, so we can set the state to 'loaded'.
+      storeDevice(device || undefined);
+
+      this.deviceDataManager.setData({
+        state: 'loaded',
+        data: device
+      });
+    }
   }
 
   public async getDeviceSetupCode(): Promise<string> {
