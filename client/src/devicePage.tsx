@@ -53,14 +53,6 @@ export const DevicePage = () => {
     }
   };
 
-  // Whether the screensaver should be displaying.
-  const [screensaverActive, setScreensaverActive] = useState(true);
-  // This state is used specifically for fading in and out smoothly.
-  // Follows the state above, but lags behind during fade-out so that
-  // the screensaver actually fades out rather than instantly disappearing.
-  const [screensaverRendered, setScreensaverRendered] = useState(true);
-  const screensaverTimeout = useRef<NodeJS.Timeout>();
-
   const [supportedExecutionCommands, setSupportedExecutionCommands] =
     useState<AsyncLoadableData<string[]>>({state: 'loading'});
 
@@ -81,6 +73,26 @@ export const DevicePage = () => {
 
   const showLightningLogo = false;
 
+  // Whether the screensaver should be displaying.
+  const [screensaverActive, setScreensaverActive] = useState(false);
+  // This state is used specifically for fading in and out smoothly.
+  // Follows the state above, but lags behind during fade-out so that
+  // the screensaver actually fades out rather than instantly disappearing.
+  const [screensaverRendered, setScreensaverRendered] = useState(false);
+  const screensaverTimeout = useRef<NodeJS.Timeout>();
+  const startTimeout = useCallback(() => {
+    clearTimeout(screensaverTimeout.current);
+    const timeout = setTimeout(
+      () => setScreensaverActive(true), SCREENSAVER_DELAY_MS
+    );
+    screensaverTimeout.current = timeout;
+  }, []);
+
+  // Start the screensaver timeout when the page loads.
+  useEffect(() => {
+    startTimeout();
+  }, []);
+
   const screensaverClicked = useCallback(() => {
     setScreensaverActive(false);
     startTimeout();
@@ -91,14 +103,6 @@ export const DevicePage = () => {
       setScreensaverRendered(true);
     }
   }, [screensaverActive]);
-
-  const startTimeout = useCallback(() => {
-    clearTimeout(screensaverTimeout.current);
-    const timeout = setTimeout(
-      () => setScreensaverActive(true), SCREENSAVER_DELAY_MS
-    );
-    screensaverTimeout.current = timeout;
-  }, []);
 
   const appTouched = useCallback((ev: any) => {
     if (ev.target.id !== 'screensaver') {
