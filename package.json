@@ -90,7 +90,7 @@
       "comma-dangle": "error",
       "complexity": [
         "error",
-        13
+        22
       ],
       "max-len": [
         "error",

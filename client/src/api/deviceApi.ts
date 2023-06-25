@@ -7,6 +7,7 @@ import {
   DeviceClientToServerEvents,
   DeviceServerToClientEvents
 } from '../../../shared/deviceSocketTypes';
+import {loadDevice, storeDevice} from './deviceLocalStorage';
 import {
   socketIoClientRpcTimeoutMs,
   socketIoDevicePath
@@ -24,22 +25,21 @@ class DeviceApi extends ReactSocket<
     ((invoice: string) => void)
   > = new Map();
   private deviceDataManager =
-    new SubscribableDataManager<AsyncLoadableData<Device>>({state: 'loading'});
+    new SubscribableDataManager<AsyncLoadableData<Device | null>>({
+      state: 'loading',
+      cachedData: loadDevice()
+    });
 
   public constructor() {
     super(socketIoDevicePath);
 
     this.socket.on('updateDevice', (device) => {
-      if (device) {
-        this.deviceDataManager.setData({
-          state: 'loaded',
-          data: device
-        });
-      } else {
-        this.deviceDataManager.setData({
-          state: 'error'
-        });
-      }
+      storeDevice(device || undefined);
+
+      this.deviceDataManager.setData({
+        state: 'loaded',
+        data: device
+      });
     });
 
     this.socket.on('invoicePaid', (invoice) => {
@@ -74,9 +74,10 @@ class DeviceApi extends ReactSocket<
     return this.invoicePaidCallbacks.delete(callbackId);
   }
 
-  public useLoadableDevice(): AsyncLoadableData<Device> {
-    const [data, setData] =
-      useState<AsyncLoadableData<Device>>(this.deviceDataManager.getData());
+  public useLoadableDevice(): AsyncLoadableData<Device | null> {
+    const [data, setData] = useState<AsyncLoadableData<Device | null>>(
+      this.deviceDataManager.getData()
+    );
 
     useEffect(() => {
       const callbackId = this.deviceDataManager.subscribe(setData);

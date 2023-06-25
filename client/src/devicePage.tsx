@@ -123,7 +123,71 @@ export const DevicePage = () => {
         )
       }
       <div style={{width: 'fit-content', margin: 'auto'}}>
-        {loadableDevice.state === 'loaded' && (
+        {/* TODO - Indicate that we're still loading the device. */}
+        {loadableDevice.state === 'loading' && loadableDevice.cachedData && (
+            <SelectionMenu
+              size={centerSquareSize}
+              canShowInvoice={
+                connectionStatus === 'connected' && !screensaverActive
+              }
+              inventory={loadableDevice.cachedData.inventory}
+            />
+        )}
+        {loadableDevice.state === 'loading' && !loadableDevice.cachedData && (
+            <Paper
+              style={{
+                height: `${centerSquareSize}px`,
+                width: `${centerSquareSize}px`
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              >
+                <CircularProgress size={100}/>
+              </div>
+            </Paper>
+        )}
+        {/* TODO - Indicate that the device failed to load, and allow retry. */}
+        {loadableDevice.state === 'error' && loadableDevice.cachedData && (
+            <SelectionMenu
+              size={centerSquareSize}
+              canShowInvoice={
+                connectionStatus === 'connected' && !screensaverActive
+              }
+              inventory={loadableDevice.cachedData.inventory}
+            />
+        )}
+        {loadableDevice.state === 'error' && !loadableDevice.cachedData && (
+            <div style={{position: 'relative'}}>
+              <Paper
+                style={{
+                  height: `${centerSquareSize}px`,
+                  width: `${centerSquareSize}px`
+                }}
+              >
+                <div
+                  style={{
+                    padding: '20px',
+                    textAlign: 'center',
+                    position: 'absolute',
+                    top: '50%',
+                    transform: 'translate(0, -50%)'
+                  }}
+                >
+                  <Typography>
+                    Error loading device!
+                  </Typography>
+                  {/* TODO - Add retry button. */}
+                </div>
+              </Paper>
+            </div>
+        )}
+        {loadableDevice.state === 'loaded' && loadableDevice.data && (
             <SelectionMenu
               size={centerSquareSize}
               canShowInvoice={
@@ -132,15 +196,7 @@ export const DevicePage = () => {
               inventory={loadableDevice.data.inventory}
             />
         )}
-        {/* TODO - If loadableDevice.state === 'loading' then display a loading
-            spinner. */}
-        {/* TODO - Make the registration process easier by doing a few things:
-            1. Replace the TextField with an Autocomplete component that
-               dynamically fetches node pubkeys that match what is typed.
-            2. Check for the right text length and possibly even ping LND to
-               make sure the proposed node is real and has active channels.
-        */}
-        {loadableDevice.state === 'error' && (
+        {loadableDevice.state === 'loaded' && !loadableDevice.data && (
             <div style={{position: 'relative'}}>
               <Paper
                 style={{

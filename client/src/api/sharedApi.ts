@@ -180,6 +180,6 @@ export class SubscribableDataManager<T> {
 }
 
 export type AsyncLoadableData<T> =
-  {state: 'loading'} |
-  {state: 'error'} |
+  {state: 'loading', cachedData?: T} |
+  {state: 'error', cachedData?: T} |
   {state: 'loaded', data: T};
