@@ -4,6 +4,7 @@ const SRC_DIR = path.join(__dirname, '/client/src');
 const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 // const BundleAnalyzerPlugin =
 //   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -16,7 +17,7 @@ export default (
   return {
     entry: `${SRC_DIR}/index.tsx`,
     output: {
-      filename: 'bundle.js',
+      filename: '[name].[contenthash].js',
       path: DIST_DIR
     },
     module: {
@@ -36,6 +37,7 @@ export default (
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
     },
     plugins: [
+      new CleanWebpackPlugin(),
       new ForkTsCheckerWebpackPlugin(),
       new HtmlWebpackPlugin({template: `${SRC_DIR}/index.html`})
       // new BundleAnalyzerPlugin() // Uncomment for bundle analysis
