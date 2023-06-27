@@ -1,65 +1,39 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders empty inventory 1`] = `
-[
-  <style
-    dangerouslySetInnerHTML={
-      {
-        "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-      }
+<div
+  className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
+  style={
+    {
+      "height": "330px",
+      "position": "relative",
+      "width": "330px",
     }
-    data-emotion="css 1ps6pg7-MuiPaper-root"
-  />,
+  }
+>
   <div
-    className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
     style={
       {
-        "height": "330px",
-        "position": "relative",
-        "width": "330px",
+        "padding": "20px",
+        "position": "absolute",
+        "textAlign": "center",
+        "top": "50%",
+        "transform": "translateY(-50%)",
       }
     }
   >
-    <div
-      style={
-        {
-          "padding": "20px",
-          "position": "absolute",
-          "textAlign": "center",
-          "top": "50%",
-          "transform": "translateY(-50%)",
-        }
-      }
+    <h5
+      className="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
     >
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ag7rrr-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1.5rem;line-height:1.334;letter-spacing:0em;}",
-          }
-        }
-        data-emotion="css ag7rrr-MuiTypography-root"
-      />
-      <h5
-        className="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
-      >
-        Inventory is empty!
-      </h5>
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-          }
-        }
-        data-emotion="css ahj2mt-MuiTypography-root"
-      />
-      <p
-        className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-      >
-        If you are the owner of this machine, head over to the admin page to add some items.
-      </p>
-    </div>
-  </div>,
-]
+      Inventory is empty!
+    </h5>
+    <p
+      className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+    >
+      If you are the owner of this machine, head over to the admin page to add some items.
+    </p>
+  </div>
+</div>
 `;
 
 exports[`renders inventory with 1 item 1`] = `
@@ -105,14 +79,6 @@ exports[`renders inventory with 1 item 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -144,14 +110,6 @@ exports[`renders inventory with 1 item 1`] = `
                 }
               }
             >
-              <style
-                dangerouslySetInnerHTML={
-                  {
-                    "__html": ".css-gepadz-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:3rem;line-height:1.167;letter-spacing:0em;}",
-                  }
-                }
-                data-emotion="css gepadz-MuiTypography-root"
-              />
               <h3
                 className="MuiTypography-root MuiTypography-h3 css-gepadz-MuiTypography-root"
                 style={
@@ -162,14 +120,6 @@ exports[`renders inventory with 1 item 1`] = `
               >
                 Test Item 1
               </h3>
-              <style
-                dangerouslySetInnerHTML={
-                  {
-                    "__html": ".css-ag7rrr-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1.5rem;line-height:1.334;letter-spacing:0em;}",
-                  }
-                }
-                data-emotion="css ag7rrr-MuiTypography-root"
-              />
               <h5
                 className="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
                 style={
@@ -197,14 +147,6 @@ exports[`renders inventory with 1 item 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -272,14 +214,6 @@ exports[`renders inventory with 1 item 1`] = `
                     }
                   }
                 >
-                  <style
-                    dangerouslySetInnerHTML={
-                      {
-                        "__html": ".css-4b67si-MuiSvgIcon-root{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:1em;height:1em;display:inline-block;fill:currentColor;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;-webkit-transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;font-size:1.5rem;color:#2e7d32;}",
-                      }
-                    }
-                    data-emotion="css 4b67si-MuiSvgIcon-root"
-                  />
                   <svg
                     aria-hidden={true}
                     className="MuiSvgIcon-root MuiSvgIcon-colorSuccess MuiSvgIcon-fontSizeMedium css-4b67si-MuiSvgIcon-root"
@@ -371,14 +305,6 @@ exports[`renders inventory with 2 items 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -408,14 +334,6 @@ exports[`renders inventory with 2 items 1`] = `
                 }
               }
             >
-              <style
-                dangerouslySetInnerHTML={
-                  {
-                    "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-                  }
-                }
-                data-emotion="css azc51k-MuiPaper-root"
-              />
               <div
                 className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
                 onClick={[Function]}
@@ -427,14 +345,6 @@ exports[`renders inventory with 2 items 1`] = `
                   }
                 }
               >
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-                    }
-                  }
-                  data-emotion="css 2ulfj5-MuiTypography-root"
-                />
                 <h6
                   className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
                   style={
@@ -445,14 +355,6 @@ exports[`renders inventory with 2 items 1`] = `
                 >
                   Test Item 1
                 </h6>
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-                    }
-                  }
-                  data-emotion="css ahj2mt-MuiTypography-root"
-                />
                 <p
                   className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   style={
@@ -525,14 +427,6 @@ exports[`renders inventory with 2 items 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -600,14 +494,6 @@ exports[`renders inventory with 2 items 1`] = `
                     }
                   }
                 >
-                  <style
-                    dangerouslySetInnerHTML={
-                      {
-                        "__html": ".css-4b67si-MuiSvgIcon-root{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:1em;height:1em;display:inline-block;fill:currentColor;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;-webkit-transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;font-size:1.5rem;color:#2e7d32;}",
-                      }
-                    }
-                    data-emotion="css 4b67si-MuiSvgIcon-root"
-                  />
                   <svg
                     aria-hidden={true}
                     className="MuiSvgIcon-root MuiSvgIcon-colorSuccess MuiSvgIcon-fontSizeMedium css-4b67si-MuiSvgIcon-root"
@@ -699,14 +585,6 @@ exports[`renders inventory with 3 items 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -736,14 +614,6 @@ exports[`renders inventory with 3 items 1`] = `
                 }
               }
             >
-              <style
-                dangerouslySetInnerHTML={
-                  {
-                    "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-                  }
-                }
-                data-emotion="css azc51k-MuiPaper-root"
-              />
               <div
                 className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
                 onClick={[Function]}
@@ -755,14 +625,6 @@ exports[`renders inventory with 3 items 1`] = `
                   }
                 }
               >
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-                    }
-                  }
-                  data-emotion="css 2ulfj5-MuiTypography-root"
-                />
                 <h6
                   className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
                   style={
@@ -773,14 +635,6 @@ exports[`renders inventory with 3 items 1`] = `
                 >
                   Test Item 1
                 </h6>
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-                    }
-                  }
-                  data-emotion="css ahj2mt-MuiTypography-root"
-                />
                 <p
                   className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   style={
@@ -897,14 +751,6 @@ exports[`renders inventory with 3 items 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -972,14 +818,6 @@ exports[`renders inventory with 3 items 1`] = `
                     }
                   }
                 >
-                  <style
-                    dangerouslySetInnerHTML={
-                      {
-                        "__html": ".css-4b67si-MuiSvgIcon-root{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:1em;height:1em;display:inline-block;fill:currentColor;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;-webkit-transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;font-size:1.5rem;color:#2e7d32;}",
-                      }
-                    }
-                    data-emotion="css 4b67si-MuiSvgIcon-root"
-                  />
                   <svg
                     aria-hidden={true}
                     className="MuiSvgIcon-root MuiSvgIcon-colorSuccess MuiSvgIcon-fontSizeMedium css-4b67si-MuiSvgIcon-root"
@@ -1071,14 +909,6 @@ exports[`renders inventory with 4 items 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -1108,14 +938,6 @@ exports[`renders inventory with 4 items 1`] = `
                 }
               }
             >
-              <style
-                dangerouslySetInnerHTML={
-                  {
-                    "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-                  }
-                }
-                data-emotion="css azc51k-MuiPaper-root"
-              />
               <div
                 className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
                 onClick={[Function]}
@@ -1127,14 +949,6 @@ exports[`renders inventory with 4 items 1`] = `
                   }
                 }
               >
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-                    }
-                  }
-                  data-emotion="css 2ulfj5-MuiTypography-root"
-                />
                 <h6
                   className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
                   style={
@@ -1145,14 +959,6 @@ exports[`renders inventory with 4 items 1`] = `
                 >
                   Test Item 1
                 </h6>
-                <style
-                  dangerouslySetInnerHTML={
-                    {
-                      "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-                    }
-                  }
-                  data-emotion="css ahj2mt-MuiTypography-root"
-                />
                 <p
                   className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   style={
@@ -1313,14 +1119,6 @@ exports[`renders inventory with 4 items 1`] = `
           }
         }
       >
-        <style
-          dangerouslySetInnerHTML={
-            {
-              "__html": ".css-1ps6pg7-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);}",
-            }
-          }
-          data-emotion="css 1ps6pg7-MuiPaper-root"
-        />
         <div
           className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
           style={
@@ -1388,14 +1186,6 @@ exports[`renders inventory with 4 items 1`] = `
                     }
                   }
                 >
-                  <style
-                    dangerouslySetInnerHTML={
-                      {
-                        "__html": ".css-4b67si-MuiSvgIcon-root{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;width:1em;height:1em;display:inline-block;fill:currentColor;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;-webkit-transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;font-size:1.5rem;color:#2e7d32;}",
-                      }
-                    }
-                    data-emotion="css 4b67si-MuiSvgIcon-root"
-                  />
                   <svg
                     aria-hidden={true}
                     className="MuiSvgIcon-root MuiSvgIcon-colorSuccess MuiSvgIcon-fontSizeMedium css-4b67si-MuiSvgIcon-root"
@@ -1455,14 +1245,6 @@ exports[`renders inventory with 5 items 1`] = `
     }
   }
 >
-  <style
-    dangerouslySetInnerHTML={
-      {
-        "__html": "@media print{.css-1h8td7x-MuiDialog-root{position:absolute!important;}}",
-      }
-    }
-    data-emotion="css 1h8td7x-MuiDialog-root"
-  />
   <div
     style={
       {
@@ -1473,14 +1255,6 @@ exports[`renders inventory with 5 items 1`] = `
       }
     }
   >
-    <style
-      dangerouslySetInnerHTML={
-        {
-          "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-        }
-      }
-      data-emotion="css azc51k-MuiPaper-root"
-    />
     <div
       className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
       onClick={[Function]}
@@ -1492,14 +1266,6 @@ exports[`renders inventory with 5 items 1`] = `
         }
       }
     >
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-          }
-        }
-        data-emotion="css 2ulfj5-MuiTypography-root"
-      />
       <h6
         className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
         style={
@@ -1510,14 +1276,6 @@ exports[`renders inventory with 5 items 1`] = `
       >
         Test Item 1
       </h6>
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-          }
-        }
-        data-emotion="css ahj2mt-MuiTypography-root"
-      />
       <p
         className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         style={
@@ -1541,14 +1299,6 @@ exports[`renders inventory with 5 items 1`] = `
       }
     }
   >
-    <style
-      dangerouslySetInnerHTML={
-        {
-          "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-        }
-      }
-      data-emotion="css azc51k-MuiPaper-root"
-    />
     <div
       className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
       onClick={[Function]}
@@ -1560,14 +1310,6 @@ exports[`renders inventory with 5 items 1`] = `
         }
       }
     >
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-          }
-        }
-        data-emotion="css 2ulfj5-MuiTypography-root"
-      />
       <h6
         className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
         style={
@@ -1578,14 +1320,6 @@ exports[`renders inventory with 5 items 1`] = `
       >
         Test Item 2
       </h6>
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-          }
-        }
-        data-emotion="css ahj2mt-MuiTypography-root"
-      />
       <p
         className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         style={
@@ -1609,14 +1343,6 @@ exports[`renders inventory with 5 items 1`] = `
       }
     }
   >
-    <style
-      dangerouslySetInnerHTML={
-        {
-          "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-        }
-      }
-      data-emotion="css azc51k-MuiPaper-root"
-    />
     <div
       className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
       onClick={[Function]}
@@ -1628,14 +1354,6 @@ exports[`renders inventory with 5 items 1`] = `
         }
       }
     >
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-          }
-        }
-        data-emotion="css 2ulfj5-MuiTypography-root"
-      />
       <h6
         className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
         style={
@@ -1646,14 +1364,6 @@ exports[`renders inventory with 5 items 1`] = `
       >
         Test Item 3
       </h6>
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-          }
-        }
-        data-emotion="css ahj2mt-MuiTypography-root"
-      />
       <p
         className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         style={
@@ -1677,14 +1387,6 @@ exports[`renders inventory with 5 items 1`] = `
       }
     }
   >
-    <style
-      dangerouslySetInnerHTML={
-        {
-          "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-        }
-      }
-      data-emotion="css azc51k-MuiPaper-root"
-    />
     <div
       className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
       onClick={[Function]}
@@ -1696,14 +1398,6 @@ exports[`renders inventory with 5 items 1`] = `
         }
       }
     >
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-          }
-        }
-        data-emotion="css 2ulfj5-MuiTypography-root"
-      />
       <h6
         className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
         style={
@@ -1714,14 +1408,6 @@ exports[`renders inventory with 5 items 1`] = `
       >
         Test Item 4
       </h6>
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-          }
-        }
-        data-emotion="css ahj2mt-MuiTypography-root"
-      />
       <p
         className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         style={
@@ -1745,14 +1431,6 @@ exports[`renders inventory with 5 items 1`] = `
       }
     }
   >
-    <style
-      dangerouslySetInnerHTML={
-        {
-          "__html": ".css-azc51k-MuiPaper-root{background-color:#fff;color:rgba(0, 0, 0, 0.87);-webkit-transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;transition:box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;border-radius:4px;box-shadow:0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);}",
-        }
-      }
-      data-emotion="css azc51k-MuiPaper-root"
-    />
     <div
       className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-azc51k-MuiPaper-root"
       onClick={[Function]}
@@ -1764,14 +1442,6 @@ exports[`renders inventory with 5 items 1`] = `
         }
       }
     >
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-2ulfj5-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:500;font-size:1.25rem;line-height:1.6;letter-spacing:0.0075em;}",
-          }
-        }
-        data-emotion="css 2ulfj5-MuiTypography-root"
-      />
       <h6
         className="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
         style={
@@ -1782,14 +1452,6 @@ exports[`renders inventory with 5 items 1`] = `
       >
         Test Item 5
       </h6>
-      <style
-        dangerouslySetInnerHTML={
-          {
-            "__html": ".css-ahj2mt-MuiTypography-root{margin:0;font-family:"Roboto","Helvetica","Arial",sans-serif;font-weight:400;font-size:1rem;line-height:1.5;letter-spacing:0.00938em;}",
-          }
-        }
-        data-emotion="css ahj2mt-MuiTypography-root"
-      />
       <p
         className="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         style={
