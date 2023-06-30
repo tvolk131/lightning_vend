@@ -183,3 +183,28 @@ export type AsyncLoadableData<T> =
   {state: 'loading', cachedData?: T} |
   {state: 'error', cachedData?: T} |
   {state: 'loaded', data: T};
+
+export const getAsyncLoadableDataStats = <T>(
+  asyncLoadableData: AsyncLoadableData<T>
+): {state: AsyncLoadableData<T>['state'], data?: T, dataIsCached: boolean} => {
+  switch (asyncLoadableData.state) {
+    case 'loading':
+      return {
+        state: 'loading',
+        data: asyncLoadableData.cachedData,
+        dataIsCached: !!asyncLoadableData.cachedData
+      };
+    case 'error':
+      return {
+        state: 'error',
+        data: asyncLoadableData.cachedData,
+        dataIsCached: !!asyncLoadableData.cachedData
+      };
+    case 'loaded':
+      return {
+        state: 'loaded',
+        data: asyncLoadableData.data,
+        dataIsCached: false
+      };
+  }
+};

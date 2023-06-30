@@ -1,7 +1,7 @@
 import * as React from 'react';
+import {AsyncLoadableData, getAsyncLoadableDataStats} from './api/sharedApi';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import Alert from '@mui/material/Alert';
-import {AsyncLoadableData} from './api/sharedApi';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -110,6 +110,8 @@ export const DevicePage = () => {
     }
   }, []);
 
+  const loadableDeviceStats = getAsyncLoadableDataStats(loadableDevice);
+
   return (
     <div
       style={{display: 'flex', flexWrap: 'wrap', height: '100vh'}}
@@ -123,47 +125,23 @@ export const DevicePage = () => {
         )
       }
       <div style={{width: 'fit-content', margin: 'auto'}}>
-        {/* TODO - Indicate that we're still loading the device. */}
-        {loadableDevice.state === 'loading' && loadableDevice.cachedData && (
-            <SelectionMenu
-              size={centerSquareSize}
-              canShowInvoice={
-                connectionStatus === 'connected' && !screensaverActive
-              }
-              inventory={loadableDevice.cachedData.inventory}
-            />
+        {/* TODO - Indicate whether we're still loading the device and/or using
+            cached data. And if we're in an error state, indicate that the
+            device failed to load, and allow retry. */}
+        {loadableDeviceStats.data && (
+          <SelectionMenu
+            size={centerSquareSize}
+            // TODO - Only hide the invoice if it has expired or is manually
+            // cancelled. This will provide the best user experience since an
+            // invoice will only be hidden if it is no longer usable or the
+            // user explicitly indicates they don't want to pay it.
+            canShowInvoice={!screensaverActive}
+            inventory={loadableDeviceStats.data.inventory}
+          />
         )}
-        {loadableDevice.state === 'loading' && !loadableDevice.cachedData && (
-            <Paper
-              style={{
-                height: `${centerSquareSize}px`,
-                width: `${centerSquareSize}px`
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)'
-                }}
-              >
-                <CircularProgress size={100}/>
-              </div>
-            </Paper>
-        )}
-        {/* TODO - Indicate that the device failed to load, and allow retry. */}
-        {loadableDevice.state === 'error' && loadableDevice.cachedData && (
-            <SelectionMenu
-              size={centerSquareSize}
-              canShowInvoice={
-                connectionStatus === 'connected' && !screensaverActive
-              }
-              inventory={loadableDevice.cachedData.inventory}
-            />
-        )}
-        {loadableDevice.state === 'error' && !loadableDevice.cachedData && (
-            <div style={{position: 'relative'}}>
+        {!loadableDeviceStats.data && (() => {
+          if (loadableDeviceStats.state === 'loading') {
+            return (
               <Paper
                 style={{
                   height: `${centerSquareSize}px`,
@@ -172,80 +150,97 @@ export const DevicePage = () => {
               >
                 <div
                   style={{
-                    padding: '20px',
-                    textAlign: 'center',
                     position: 'absolute',
                     top: '50%',
-                    transform: 'translate(0, -50%)'
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
                   }}
                 >
-                  <Typography variant={'h4'}>
-                    Error loading device data!
-                  </Typography>
-                  <Button
-                    style={{marginTop: '10px'}}
-                    variant={'contained'}
-                    onClick={() => {
-                      deviceApi.getDevice();
+                  <CircularProgress size={100}/>
+                </div>
+              </Paper>
+            );
+          }
+
+          if (loadableDeviceStats.state === 'error') {
+            return (
+              <div style={{position: 'relative'}}>
+                <Paper
+                  style={{
+                    height: `${centerSquareSize}px`,
+                    width: `${centerSquareSize}px`
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '20px',
+                      textAlign: 'center',
+                      position: 'absolute',
+                      top: '50%',
+                      transform: 'translate(0, -50%)'
                     }}
                   >
-                    Retry
-                  </Button>
-                </div>
-              </Paper>
-            </div>
-        )}
-        {loadableDevice.state === 'loaded' && loadableDevice.data && (
-            <SelectionMenu
-              size={centerSquareSize}
-              // TODO - Only hide the invoice if it has expired or is manually
-              // cancelled. This will provide the best user experience since an
-              // invoice will only be hidden if it is no longer usable or the
-              // user explicitly indicates they don't want to pay it.
-              canShowInvoice={!screensaverActive}
-              inventory={loadableDevice.data.inventory}
-            />
-        )}
-        {loadableDevice.state === 'loaded' && !loadableDevice.data && (
-            <div style={{position: 'relative'}}>
-              <Paper
-                style={{
-                  height: `${centerSquareSize}px`,
-                  width: `${centerSquareSize}px`
-                }}
-              >
-                <div
+                    <Typography variant={'h4'}>
+                      Error loading device data!
+                    </Typography>
+                    <Button
+                      style={{marginTop: '10px'}}
+                      variant={'contained'}
+                      onClick={() => {
+                        deviceApi.getDevice();
+                      }}
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                </Paper>
+              </div>
+            );
+          }
+
+          if (loadableDeviceStats.state === 'loaded') {
+            return (
+              <div style={{position: 'relative'}}>
+                <Paper
                   style={{
-                    padding: '20px',
-                    textAlign: 'center',
-                    position: 'absolute',
-                    top: '50%',
-                    transform: 'translate(0, -50%)'
+                    height: `${centerSquareSize}px`,
+                    width: `${centerSquareSize}px`
                   }}
                 >
-                  <Typography style={{paddingBottom: '20px'}}>
-                    Device is not setup! Please login to an admin account on
-                    another device and enter the following setup code:
-                  </Typography>
-                  {renderDeviceSetupCode()}
-                </div>
-              </Paper>
-              {supportedExecutionCommands.state === 'error' && (
-                  <div style={{position: 'absolute', marginTop: '20px'}}>
-                    <Alert
-                      severity={'error'}
-                      action={
-                        <Button onClick={loadSupportedExecutionCommands}>
-                          Retry
-                        </Button>
-                      }
-                    >
-                      Failed to load device execution commands!
-                    </Alert>
+                  <div
+                    style={{
+                      padding: '20px',
+                      textAlign: 'center',
+                      position: 'absolute',
+                      top: '50%',
+                      transform: 'translate(0, -50%)'
+                    }}
+                  >
+                    <Typography style={{paddingBottom: '20px'}}>
+                      Device is not setup! Please login to an admin account on
+                      another device and enter the following setup code:
+                    </Typography>
+                    {renderDeviceSetupCode()}
                   </div>
-              )}
-            </div>
-        )}
+                </Paper>
+                {supportedExecutionCommands.state === 'error' && (
+                    <div style={{position: 'absolute', marginTop: '20px'}}>
+                      <Alert
+                        severity={'error'}
+                        action={
+                          <Button onClick={loadSupportedExecutionCommands}>
+                            Retry
+                          </Button>
+                        }
+                      >
+                        Failed to load device execution commands!
+                      </Alert>
+                    </div>
+                )}
+              </div>
+            );
+          }
+        })()}
       </div>
       <div style={{position: 'absolute', top: 0, right: 0, padding: '10px'}}>
         <Chip
