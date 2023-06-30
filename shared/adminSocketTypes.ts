@@ -2,7 +2,7 @@ import {AdminData} from '../server/persistence/adminSessionManager';
 import {UserName} from './proto';
 
 export interface AdminServerToClientEvents {
-  updateAdminData: (adminData?: AdminData) => void;
+  updateAdminData: (adminData: AdminData | null) => void;
 }
 
 export interface AdminClientToServerEvents {

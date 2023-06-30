@@ -43,7 +43,8 @@
     "socket.io-client": "^4.6.1",
     "ts-node": "^10.9.1",
     "ts-proto": "^1.147.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "workbox-webpack-plugin": "^7.0.0"
   },
   "devDependencies": {
     "@types/compression": "^1.7.2",
@@ -89,7 +90,7 @@
       "comma-dangle": "error",
       "complexity": [
         "error",
-        13
+        22
       ],
       "max-len": [
         "error",

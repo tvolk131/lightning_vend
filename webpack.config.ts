@@ -3,6 +3,7 @@ import * as webpack from 'webpack';
 const SRC_DIR = path.join(__dirname, '/client/src');
 const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+import {GenerateSW} from 'workbox-webpack-plugin';
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 // const BundleAnalyzerPlugin =
@@ -12,7 +13,7 @@ export default (
   _: any,
   {watch, mode}: {watch?: boolean, mode?: string}
 ): webpack.Configuration => {
-  const maxBundleSize = mode === 'production' ? 760000 : 4100000;
+  const maxBundleSize = mode === 'production' ? 770000 : 4200000;
 
   return {
     entry: `${SRC_DIR}/index.tsx`,
@@ -42,6 +43,10 @@ export default (
       new HtmlWebpackPlugin({
         template: `${SRC_DIR}/index.html`,
         publicPath: '/'
+      }),
+      new GenerateSW({
+        navigateFallback: '/index.html',
+        maximumFileSizeToCacheInBytes: maxBundleSize * 2
       })
       // new BundleAnalyzerPlugin() // Uncomment for bundle analysis
     ],

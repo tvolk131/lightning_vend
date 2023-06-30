@@ -53,14 +53,6 @@ export const DevicePage = () => {
     }
   };
 
-  // Whether the screensaver should be displaying.
-  const [screensaverActive, setScreensaverActive] = useState(true);
-  // This state is used specifically for fading in and out smoothly.
-  // Follows the state above, but lags behind during fade-out so that
-  // the screensaver actually fades out rather than instantly disappearing.
-  const [screensaverRendered, setScreensaverRendered] = useState(true);
-  const screensaverTimeout = useRef<NodeJS.Timeout>();
-
   const [supportedExecutionCommands, setSupportedExecutionCommands] =
     useState<AsyncLoadableData<string[]>>({state: 'loading'});
 
@@ -81,6 +73,26 @@ export const DevicePage = () => {
 
   const showLightningLogo = false;
 
+  // Whether the screensaver should be displaying.
+  const [screensaverActive, setScreensaverActive] = useState(false);
+  // This state is used specifically for fading in and out smoothly.
+  // Follows the state above, but lags behind during fade-out so that
+  // the screensaver actually fades out rather than instantly disappearing.
+  const [screensaverRendered, setScreensaverRendered] = useState(false);
+  const screensaverTimeout = useRef<NodeJS.Timeout>();
+  const startTimeout = useCallback(() => {
+    clearTimeout(screensaverTimeout.current);
+    const timeout = setTimeout(
+      () => setScreensaverActive(true), SCREENSAVER_DELAY_MS
+    );
+    screensaverTimeout.current = timeout;
+  }, []);
+
+  // Start the screensaver timeout when the page loads.
+  useEffect(() => {
+    startTimeout();
+  }, []);
+
   const screensaverClicked = useCallback(() => {
     setScreensaverActive(false);
     startTimeout();
@@ -91,14 +103,6 @@ export const DevicePage = () => {
       setScreensaverRendered(true);
     }
   }, [screensaverActive]);
-
-  const startTimeout = useCallback(() => {
-    clearTimeout(screensaverTimeout.current);
-    const timeout = setTimeout(
-      () => setScreensaverActive(true), SCREENSAVER_DELAY_MS
-    );
-    screensaverTimeout.current = timeout;
-  }, []);
 
   const appTouched = useCallback((ev: any) => {
     if (ev.target.id !== 'screensaver') {
@@ -119,7 +123,79 @@ export const DevicePage = () => {
         )
       }
       <div style={{width: 'fit-content', margin: 'auto'}}>
-        {loadableDevice.state === 'loaded' && (
+        {/* TODO - Indicate that we're still loading the device. */}
+        {loadableDevice.state === 'loading' && loadableDevice.cachedData && (
+            <SelectionMenu
+              size={centerSquareSize}
+              canShowInvoice={
+                connectionStatus === 'connected' && !screensaverActive
+              }
+              inventory={loadableDevice.cachedData.inventory}
+            />
+        )}
+        {loadableDevice.state === 'loading' && !loadableDevice.cachedData && (
+            <Paper
+              style={{
+                height: `${centerSquareSize}px`,
+                width: `${centerSquareSize}px`
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              >
+                <CircularProgress size={100}/>
+              </div>
+            </Paper>
+        )}
+        {/* TODO - Indicate that the device failed to load, and allow retry. */}
+        {loadableDevice.state === 'error' && loadableDevice.cachedData && (
+            <SelectionMenu
+              size={centerSquareSize}
+              canShowInvoice={
+                connectionStatus === 'connected' && !screensaverActive
+              }
+              inventory={loadableDevice.cachedData.inventory}
+            />
+        )}
+        {loadableDevice.state === 'error' && !loadableDevice.cachedData && (
+            <div style={{position: 'relative'}}>
+              <Paper
+                style={{
+                  height: `${centerSquareSize}px`,
+                  width: `${centerSquareSize}px`
+                }}
+              >
+                <div
+                  style={{
+                    padding: '20px',
+                    textAlign: 'center',
+                    position: 'absolute',
+                    top: '50%',
+                    transform: 'translate(0, -50%)'
+                  }}
+                >
+                  <Typography variant={'h4'}>
+                    Error loading device data!
+                  </Typography>
+                  <Button
+                    style={{marginTop: '10px'}}
+                    variant={'contained'}
+                    onClick={() => {
+                      deviceApi.getDevice();
+                    }}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </Paper>
+            </div>
+        )}
+        {loadableDevice.state === 'loaded' && loadableDevice.data && (
             <SelectionMenu
               size={centerSquareSize}
               canShowInvoice={
@@ -128,15 +204,7 @@ export const DevicePage = () => {
               inventory={loadableDevice.data.inventory}
             />
         )}
-        {/* TODO - If loadableDevice.state === 'loading' then display a loading
-            spinner. */}
-        {/* TODO - Make the registration process easier by doing a few things:
-            1. Replace the TextField with an Autocomplete component that
-               dynamically fetches node pubkeys that match what is typed.
-            2. Check for the right text length and possibly even ping LND to
-               make sure the proposed node is real and has active channels.
-        */}
-        {loadableDevice.state === 'error' && (
+        {loadableDevice.state === 'loaded' && !loadableDevice.data && (
             <div style={{position: 'relative'}}>
               <Paper
                 style={{

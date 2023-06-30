@@ -75,11 +75,14 @@ export class DeviceSocketManager {
           undefined;
       this.addSocket(socket, {deviceSessionId, deviceName});
 
-      if (deviceName) {
-        socket.emit('updateDevice', deviceSessionManager.getDevice(deviceName));
-      } else {
-        socket.emit('updateDevice', undefined);
-      }
+      socket.on('getDevice', (callback) => {
+        if (socket.data.deviceName) {
+          const device = deviceSessionManager.getDevice(socket.data.deviceName);
+          return callback(device || null);
+        } else {
+          return callback(null);
+        }
+      });
 
       socket.on('getDeviceSetupCode', (callback) => {
         const deviceSessionId = socket.data.deviceSessionId;
