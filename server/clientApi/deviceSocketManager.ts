@@ -10,6 +10,9 @@ import {parse, serialize} from 'cookie';
 import {Device} from '../../proto/lightning_vend/model';
 import {DeviceName} from '../../shared/proto';
 import {DeviceSessionManager} from '../persistence/deviceSessionManager';
+import {
+  DeviceUnackedSettledInvoiceManager
+} from '../persistence/deviceUnackedSettledInvoiceManager';
 import {InvoiceManager} from '../persistence/invoiceManager';
 import {Request} from 'express';
 import {SubscribableEventManager} from '../../client/src/api/sharedApi';
@@ -39,7 +42,8 @@ export class DeviceSocketManager {
                    DeviceServerToClientEvents,
                    DeviceInterServerEvents,
                    DeviceSocketData>,
-    deviceSessionManager: DeviceSessionManager
+    deviceSessionManager: DeviceSessionManager,
+    deviceUnackedSettledInvoiceManager: DeviceUnackedSettledInvoiceManager
   ) {
     this.invoiceManager = invoiceManager;
 
@@ -84,6 +88,20 @@ export class DeviceSocketManager {
         }
       });
 
+      if (deviceName) {
+        // Send any unacked settled invoices to the device. This is necessary
+        // because the device may have missed an `invoicePaid` event if it was
+        // offline when an invoice was paid.
+        const unackedInvoices = deviceUnackedSettledInvoiceManager
+          .getUnackedSettledInvoicesForDevice(deviceName);
+        unackedInvoices.forEach((unackedInvoice) => {
+          socket.emit('invoicePaid', unackedInvoice, () => {
+            deviceUnackedSettledInvoiceManager
+              .ackAndDeleteSettledInvoice(unackedInvoice);
+          });
+        });
+      }
+
       socket.on('getDeviceSetupCode', (callback) => {
         const deviceSessionId = socket.data.deviceSessionId;
         if (deviceSessionId) {
@@ -118,8 +136,17 @@ export class DeviceSocketManager {
    * @param invoice The invoice that was successfully paid.
    * @returns Whether there is an open socket to the device.
    */
-  public emitInvoicePaid(deviceName: DeviceName, invoice: string): boolean {
-    return this.sendMessageToDevice(deviceName, 'invoicePaid', invoice);
+  public emitInvoicePaid(
+    deviceName: DeviceName,
+    invoice: string,
+    deviceAck: () => void
+  ): boolean {
+    return this.sendMessageToDevice(
+      deviceName,
+      'invoicePaid',
+      invoice,
+      deviceAck
+    );
   }
 
   /**

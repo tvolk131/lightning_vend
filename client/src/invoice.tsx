@@ -1,8 +1,11 @@
 import * as React from 'react';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline';
 import Paper from '@mui/material/Paper';
 import QRCode from 'react-qr-code';
+import {deviceApi} from './api/deviceApi';
 
 interface InvoiceProps {
   size: number,
@@ -11,6 +14,8 @@ interface InvoiceProps {
 }
 
 export const Invoice = (props: InvoiceProps) => {
+  const connectionStatus = deviceApi.useConnectionStatus();
+
   const lightTheme = createTheme({
     palette: {
       mode: 'light'
@@ -37,7 +42,8 @@ export const Invoice = (props: InvoiceProps) => {
           <div
             style={{
               position: 'absolute',
-              opacity: props.invoiceIsPaid ? 0 : 100,
+              opacity: (connectionStatus === 'connected' &&
+                        !props.invoiceIsPaid) ? 100 : 0,
               transition: `opacity ${transitionTimeSecs}s`
             }}
           >
@@ -46,7 +52,8 @@ export const Invoice = (props: InvoiceProps) => {
           <div
             style={{
               position: 'absolute',
-              opacity: props.invoiceIsPaid ? 100 : 0,
+              opacity: (connectionStatus === 'connected' &&
+                        props.invoiceIsPaid) ? 100 : 0,
               transition: `opacity ${transitionTimeSecs}s`
             }}
           >
@@ -59,6 +66,32 @@ export const Invoice = (props: InvoiceProps) => {
                 }}
               />
             </div>
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              opacity: connectionStatus === 'disconnected' ? 100 : 0,
+              transition: `opacity ${transitionTimeSecs}s`,
+              height: `${size + (padding * 2)}px`,
+              width: `${size + (padding * 2)}px`,
+              transform: 'translate(-15px, -15px)'
+            }}
+          >
+            <Alert
+              severity={'warning'}
+              style={{
+                height: '100%',
+                boxSizing: 'border-box'
+              }}
+            >
+              <AlertTitle>Device is Offline</AlertTitle>
+              This device requires an internet connection to know if a payment
+              has been received. Please wait until a connection has been
+              reestablished before paying the invoice. If you have already paid
+              the invoice, you will need to wait until the device is online
+              again to receive your product - our apologies for the
+              inconvenience!
+            </Alert>
           </div>
         </div>
       </Paper>

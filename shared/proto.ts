@@ -66,4 +66,8 @@ export class DeviceName {
   public getUserName(): UserName {
     return UserName.parse(`users/${this.user}`)!;
   }
+
+  public equals(other: DeviceName): boolean {
+    return this.toString() === other.toString();
+  }
 }

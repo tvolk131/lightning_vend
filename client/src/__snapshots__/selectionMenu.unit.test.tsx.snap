@@ -176,7 +176,7 @@ exports[`renders inventory with 1 item 1`] = `
               <div
                 style={
                   {
-                    "opacity": 100,
+                    "opacity": 0,
                     "position": "absolute",
                     "transition": "opacity 0.5s",
                   }
@@ -231,6 +231,55 @@ exports[`renders inventory with 1 item 1`] = `
                       d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                     />
                   </svg>
+                </div>
+              </div>
+              <div
+                style={
+                  {
+                    "height": "330px",
+                    "opacity": 100,
+                    "position": "absolute",
+                    "transform": "translate(-15px, -15px)",
+                    "transition": "opacity 0.5s",
+                    "width": "330px",
+                  }
+                }
+              >
+                <div
+                  className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-standardWarning MuiAlert-standard css-to2f46-MuiPaper-root-MuiAlert-root"
+                  role="alert"
+                  style={
+                    {
+                      "boxSizing": "border-box",
+                      "height": "100%",
+                    }
+                  }
+                >
+                  <div
+                    className="MuiAlert-icon css-1ytlwq5-MuiAlert-icon"
+                  >
+                    <svg
+                      aria-hidden={true}
+                      className="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1vooibu-MuiSvgIcon-root"
+                      data-testid="ReportProblemOutlinedIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    className="MuiAlert-message css-1pxa9xg-MuiAlert-message"
+                  >
+                    <div
+                      className="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-yslrua-MuiTypography-root-MuiAlertTitle-root"
+                    >
+                      Device is Offline
+                    </div>
+                    This device requires an internet connection to know if a payment has been received. Please wait until a connection has been reestablished before paying the invoice. If you have already paid the invoice, you will need to wait until the device is online again to receive your product - our apologies for the inconvenience!
+                  </div>
                 </div>
               </div>
             </div>
@@ -456,7 +505,7 @@ exports[`renders inventory with 2 items 1`] = `
               <div
                 style={
                   {
-                    "opacity": 100,
+                    "opacity": 0,
                     "position": "absolute",
                     "transition": "opacity 0.5s",
                   }
@@ -511,6 +560,55 @@ exports[`renders inventory with 2 items 1`] = `
                       d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                     />
                   </svg>
+                </div>
+              </div>
+              <div
+                style={
+                  {
+                    "height": "330px",
+                    "opacity": 100,
+                    "position": "absolute",
+                    "transform": "translate(-15px, -15px)",
+                    "transition": "opacity 0.5s",
+                    "width": "330px",
+                  }
+                }
+              >
+                <div
+                  className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-standardWarning MuiAlert-standard css-to2f46-MuiPaper-root-MuiAlert-root"
+                  role="alert"
+                  style={
+                    {
+                      "boxSizing": "border-box",
+                      "height": "100%",
+                    }
+                  }
+                >
+                  <div
+                    className="MuiAlert-icon css-1ytlwq5-MuiAlert-icon"
+                  >
+                    <svg
+                      aria-hidden={true}
+                      className="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1vooibu-MuiSvgIcon-root"
+                      data-testid="ReportProblemOutlinedIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    className="MuiAlert-message css-1pxa9xg-MuiAlert-message"
+                  >
+                    <div
+                      className="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-yslrua-MuiTypography-root-MuiAlertTitle-root"
+                    >
+                      Device is Offline
+                    </div>
+                    This device requires an internet connection to know if a payment has been received. Please wait until a connection has been reestablished before paying the invoice. If you have already paid the invoice, you will need to wait until the device is online again to receive your product - our apologies for the inconvenience!
+                  </div>
                 </div>
               </div>
             </div>
@@ -780,7 +878,7 @@ exports[`renders inventory with 3 items 1`] = `
               <div
                 style={
                   {
-                    "opacity": 100,
+                    "opacity": 0,
                     "position": "absolute",
                     "transition": "opacity 0.5s",
                   }
@@ -835,6 +933,55 @@ exports[`renders inventory with 3 items 1`] = `
                       d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                     />
                   </svg>
+                </div>
+              </div>
+              <div
+                style={
+                  {
+                    "height": "330px",
+                    "opacity": 100,
+                    "position": "absolute",
+                    "transform": "translate(-15px, -15px)",
+                    "transition": "opacity 0.5s",
+                    "width": "330px",
+                  }
+                }
+              >
+                <div
+                  className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-standardWarning MuiAlert-standard css-to2f46-MuiPaper-root-MuiAlert-root"
+                  role="alert"
+                  style={
+                    {
+                      "boxSizing": "border-box",
+                      "height": "100%",
+                    }
+                  }
+                >
+                  <div
+                    className="MuiAlert-icon css-1ytlwq5-MuiAlert-icon"
+                  >
+                    <svg
+                      aria-hidden={true}
+                      className="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1vooibu-MuiSvgIcon-root"
+                      data-testid="ReportProblemOutlinedIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    className="MuiAlert-message css-1pxa9xg-MuiAlert-message"
+                  >
+                    <div
+                      className="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-yslrua-MuiTypography-root-MuiAlertTitle-root"
+                    >
+                      Device is Offline
+                    </div>
+                    This device requires an internet connection to know if a payment has been received. Please wait until a connection has been reestablished before paying the invoice. If you have already paid the invoice, you will need to wait until the device is online again to receive your product - our apologies for the inconvenience!
+                  </div>
                 </div>
               </div>
             </div>
@@ -1148,7 +1295,7 @@ exports[`renders inventory with 4 items 1`] = `
               <div
                 style={
                   {
-                    "opacity": 100,
+                    "opacity": 0,
                     "position": "absolute",
                     "transition": "opacity 0.5s",
                   }
@@ -1203,6 +1350,55 @@ exports[`renders inventory with 4 items 1`] = `
                       d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                     />
                   </svg>
+                </div>
+              </div>
+              <div
+                style={
+                  {
+                    "height": "330px",
+                    "opacity": 100,
+                    "position": "absolute",
+                    "transform": "translate(-15px, -15px)",
+                    "transition": "opacity 0.5s",
+                    "width": "330px",
+                  }
+                }
+              >
+                <div
+                  className="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-standardWarning MuiAlert-standard css-to2f46-MuiPaper-root-MuiAlert-root"
+                  role="alert"
+                  style={
+                    {
+                      "boxSizing": "border-box",
+                      "height": "100%",
+                    }
+                  }
+                >
+                  <div
+                    className="MuiAlert-icon css-1ytlwq5-MuiAlert-icon"
+                  >
+                    <svg
+                      aria-hidden={true}
+                      className="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1vooibu-MuiSvgIcon-root"
+                      data-testid="ReportProblemOutlinedIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    className="MuiAlert-message css-1pxa9xg-MuiAlert-message"
+                  >
+                    <div
+                      className="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-yslrua-MuiTypography-root-MuiAlertTitle-root"
+                    >
+                      Device is Offline
+                    </div>
+                    This device requires an internet connection to know if a payment has been received. Please wait until a connection has been reestablished before paying the invoice. If you have already paid the invoice, you will need to wait until the device is online again to receive your product - our apologies for the inconvenience!
+                  </div>
                 </div>
               </div>
             </div>

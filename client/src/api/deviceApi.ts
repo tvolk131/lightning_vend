@@ -46,10 +46,14 @@ class DeviceApi extends ReactSocket<
 
     this.socket.on('updateDevice', this.updateAndStoreDevice.bind(this));
 
-    this.socket.on('invoicePaid', (invoice) => {
+    this.socket.on('invoicePaid', (invoice, deviceAck) => {
       this.invoicePaidCallbacks.forEach((callback) => {
         callback(invoice);
       });
+
+      // Acknowledge to the server that this event
+      // has been fully processed by the client.
+      deviceAck();
     });
   }
 
