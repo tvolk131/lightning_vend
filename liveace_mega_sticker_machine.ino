@@ -41,6 +41,33 @@ void setup() {
   pinMode(stepper1PowerPin1, OUTPUT);
 }
 
+void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
+  // Start sending power to both stepper motor coils.
+  digitalWrite(powerPin0, HIGH);
+  digitalWrite(powerPin1, HIGH);
+
+  // Turn the stepper motor backwards until it hits the homing switch.
+  int homingSensorOn = digitalRead(homingSensorPin);
+  while (homingSensorOn == 0) {
+    stepper.step(10);
+    homingSensorOn = digitalRead(homingSensorPin);
+  }
+
+  // Turn the stepper motor forward by a hardcoded amount to vend the product.
+  stepper.step(-stepsPerRevolution * revolutionsPerVend);
+
+  // Turn the stepper motor backwards until it hits the homing switch.
+  homingSensorOn = digitalRead(homingSensorPin);
+  while (homingSensorOn == 0) {
+    stepper.step(10);
+    homingSensorOn = digitalRead(homingSensorPin);
+  }
+
+  // Stop sending power to both stepper motor coils.
+  digitalWrite(powerPin0, LOW);
+  digitalWrite(powerPin1, LOW);
+}
+
 void loop() {
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
@@ -48,79 +75,21 @@ void loop() {
     if (command.equals("list_commands")) {
       Serial.println("{\"status\": \"ok\", \"command\": \"list_commands\", \"response\": [\"stepper0\", \"stepper1\"]}");
     } else if (command.equals("stepper0")) {
-      // Start sending power to both stepper motor coils.
-      digitalWrite(stepper0PowerPin0, HIGH);
-      digitalWrite(stepper0PowerPin1, HIGH);
-
-      // Turn the stepper motor backwards until it hits the homing switch.
-      int stepper0HomingSensorOn = digitalRead(stepper0HomingSensorPin);
-      while (stepper0HomingSensorOn == 0) {
-        stepper0.step(10);
-        stepper0HomingSensorOn = digitalRead(stepper0HomingSensorPin);
-      }
-
-      // Turn the stepper motor forward by a hardcoded amount to vend the product.
-      stepper0.step(-stepsPerRevolution * revolutionsPerVend);
-
-      // Turn the stepper motor backwards until it hits the homing switch.
-      stepper0HomingSensorOn = digitalRead(stepper0HomingSensorPin);
-      while (stepper0HomingSensorOn == 0) {
-        stepper0.step(10);
-        stepper0HomingSensorOn = digitalRead(stepper0HomingSensorPin);
-      }
-
-      // Stop sending power to both stepper motor coils.
-      digitalWrite(stepper0PowerPin0, LOW);
-      digitalWrite(stepper0PowerPin1, LOW);
-
-      // Return response to the COM port.
+      moveStepper(stepper0, stepper0HomingSensorPin, stepper0PowerPin0, stepper0PowerPin1);
       Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\"}");
     } else if (command.equals("stepper1")) {
-      // Start sending power to both stepper motor coils.
-      digitalWrite(stepper1PowerPin0, HIGH);
-      digitalWrite(stepper1PowerPin1, HIGH);
-
-      // Turn the stepper motor backwards until it hits the homing switch.
-      int stepper1HomingSensorOn = digitalRead(stepper1HomingSensorPin);
-      while (stepper1HomingSensorOn == 0) {
-        stepper1.step(10);
-        stepper1HomingSensorOn = digitalRead(stepper1HomingSensorPin);
-      }
-
-      // Turn the stepper motor forward by a hardcoded amount to vend the product.
-      stepper1.step(-stepsPerRevolution * revolutionsPerVend);
-
-      // Turn the stepper motor backwards until it hits the homing switch.
-      stepper1HomingSensorOn = digitalRead(stepper1HomingSensorPin);
-      while (stepper1HomingSensorOn == 0) {
-        stepper1.step(10);
-        stepper1HomingSensorOn = digitalRead(stepper1HomingSensorPin);
-      }
-
-      // Stop sending power to both stepper motor coils.
-      digitalWrite(stepper1PowerPin0, LOW);
-      digitalWrite(stepper1PowerPin1, LOW);
-
-      // Return response to the COM port.
+      moveStepper(stepper1, stepper1HomingSensorPin, stepper1PowerPin0, stepper1PowerPin1);
       Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\"}");
     } else if (command.equals("stepper0Inventory")) {
       String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
       bool stepper0Inventory = digitalRead(stepper0InventorySensorPin);
-      if (stepper0Inventory) {
-        response += "true";
-      } else {
-        response += "false";
-      }
+      response += stepper0Inventory ? "true" : "false";
       response += "}";
       Serial.println(response);
     } else if (command.equals("stepper1Inventory")) {
       String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
       bool stepper1Inventory = digitalRead(stepper1InventorySensorPin);
-      if (stepper1Inventory) {
-        response += "true";
-      } else {
-        response += "false";
-      }
+      response += stepper1Inventory ? "true" : "false";
       response += "}";
       Serial.println(response);
     } else {
