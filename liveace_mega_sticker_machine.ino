@@ -11,16 +11,16 @@ const int revolutionsPerVend = 22;
 const int motorSpeed = 330;
 
 Stepper stepper0 = Stepper(stepsPerRevolution, 39, 43, 41, 45);
-const int stepper0InventorySensorPin = 53;
 const int stepper0PowerPin0 = 35;
 const int stepper0PowerPin1 = 37;
 const int stepper0HomingSensorPin = 33;
+const int stepper0InventorySensorPin = 53;
 
 Stepper stepper1 = Stepper(stepsPerRevolution, 38, 42, 40, 44);
-const int stepper1InventorySensorPin = 52;
 const int stepper1PowerPin0 = 34;
 const int stepper1PowerPin1 = 36;
 const int stepper1HomingSensorPin = 27;
+const int stepper1InventorySensorPin = 52;
 
 String command;
 
