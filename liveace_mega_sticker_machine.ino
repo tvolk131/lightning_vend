@@ -84,19 +84,33 @@ void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
 
   // Turn the stepper motor backwards until it hits the homing switch.
   int homingSensorOn = digitalRead(homingSensorPin);
-  while (homingSensorOn == 0) {
+  unsigned long timeoutStart = millis();
+  while (homingSensorOn == 0 && millis() - timeoutStart < 5000) {  // Timeout after 5 seconds
     stepper.step(10);
     homingSensorOn = digitalRead(homingSensorPin);
   }
 
-  // Turn the stepper motor forward by a hardcoded amount to vend the product.
-  stepper.step(-stepsPerRevolution * revolutionsPerVend);
+  if (homingSensorOn == 0) {
+    // Homing switch not triggered within the timeout period.
+    // Handle the error or take appropriate action.
+    Serial.println("Homing switch not triggered within timeout.");
+  } else {
+    // Turn the stepper motor forward by a hardcoded amount to vend the product.
+    stepper.step(-stepsPerRevolution * revolutionsPerVend);
 
-  // Turn the stepper motor backwards until it hits the homing switch.
-  homingSensorOn = digitalRead(homingSensorPin);
-  while (homingSensorOn == 0) {
-    stepper.step(10);
+    // Turn the stepper motor backwards until it hits the homing switch.
     homingSensorOn = digitalRead(homingSensorPin);
+    timeoutStart = millis();
+    while (homingSensorOn == 0 && millis() - timeoutStart < 5000) {  // Timeout after 5 seconds
+      stepper.step(10);
+      homingSensorOn = digitalRead(homingSensorPin);
+    }
+
+    if (homingSensorOn == 0) {
+      // Homing switch not triggered within the timeout period.
+      // Handle the error or take appropriate action.
+      Serial.println("Homing switch not triggered within timeout.");
+    }
   }
 
   // Stop sending power to both stepper motor coils.
