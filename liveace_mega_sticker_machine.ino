@@ -7,6 +7,7 @@
 #include <Stepper.h>
 
 const int stepsPerRevolution = 200;
+const int revolutionsPerVend = 22;
 const int motorSpeed = 330;
 
 String command;
@@ -59,7 +60,7 @@ void loop() {
       }
 
       // Turn the stepper motor forward by a hardcoded amount to vend the product.
-      stepper0.step(-stepsPerRevolution * 22);
+      stepper0.step(-stepsPerRevolution * revolutionsPerVend);
 
       // Turn the stepper motor backwards until it hits the homing switch.
       stepper0HomingSensorOn = digitalRead(stepper0HomingSensorPin);
@@ -87,7 +88,7 @@ void loop() {
       }
 
       // Turn the stepper motor forward by a hardcoded amount to vend the product.
-      stepper1.step(-stepsPerRevolution * 22);
+      stepper1.step(-stepsPerRevolution * revolutionsPerVend);
 
       // Turn the stepper motor backwards until it hits the homing switch.
       stepper1HomingSensorOn = digitalRead(stepper1HomingSensorPin);
