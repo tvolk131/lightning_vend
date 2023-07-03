@@ -10,8 +10,6 @@ const int stepsPerRevolution = 200;
 const int revolutionsPerVend = 22;
 const int motorSpeed = 330;
 
-String command;
-
 Stepper stepper0 = Stepper(stepsPerRevolution, 39, 43, 41, 45);
 const int stepper0InventorySensorPin = 53;
 const int stepper0PowerPin0 = 35;
@@ -23,6 +21,8 @@ const int stepper1InventorySensorPin = 52;
 const int stepper1PowerPin0 = 34;
 const int stepper1PowerPin1 = 36;
 const int stepper1HomingSensorPin = 27;
+
+String command;
 
 void setup() {
   Serial.begin(57600);
