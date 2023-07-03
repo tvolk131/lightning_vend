@@ -13,16 +13,16 @@ const int motorSpeed = 330;
 String command;
 
 Stepper stepper0 = Stepper(stepsPerRevolution, 39, 43, 41, 45);
-int stepper0InventorySensorPin = 53;
-int stepper0PowerPin0 = 35;
-int stepper0PowerPin1 = 37;
-int stepper0HomingSensorPin = 33;
+const int stepper0InventorySensorPin = 53;
+const int stepper0PowerPin0 = 35;
+const int stepper0PowerPin1 = 37;
+const int stepper0HomingSensorPin = 33;
 
 Stepper stepper1 = Stepper(stepsPerRevolution, 38, 42, 40, 44);
-int stepper1InventorySensorPin = 52;
-int stepper1PowerPin0 = 34;
-int stepper1PowerPin1 = 36;
-int stepper1HomingSensorPin = 27;
+const int stepper1InventorySensorPin = 52;
+const int stepper1PowerPin0 = 34;
+const int stepper1PowerPin1 = 36;
+const int stepper1HomingSensorPin = 27;
 
 void setup() {
   Serial.begin(57600);
