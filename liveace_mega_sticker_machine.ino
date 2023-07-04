@@ -83,14 +83,13 @@ void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   digitalWrite(powerPin1, HIGH);
 
   // Turn the stepper motor backwards until it hits the homing switch.
-  int homingSensorOn = digitalRead(homingSensorPin);
   unsigned long timeoutStart = millis();
-  while (homingSensorOn == 0 && millis() - timeoutStart < 5000) {  // Timeout after 5 seconds
+  // Timeout after 5 seconds.
+  while (digitalRead(homingSensorPin) == HIGH && millis() - timeoutStart < 5000) {
     stepper.step(10);
-    homingSensorOn = digitalRead(homingSensorPin);
   }
 
-  if (homingSensorOn == 0) {
+  if (digitalRead(homingSensorPin) == HIGH) {
     // Homing switch not triggered within the timeout period.
     // Handle the error or take appropriate action.
     Serial.println("Homing switch not triggered within timeout.");
@@ -99,14 +98,13 @@ void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
     stepper.step(-stepsPerRevolution * revolutionsPerVend);
 
     // Turn the stepper motor backwards until it hits the homing switch.
-    homingSensorOn = digitalRead(homingSensorPin);
     timeoutStart = millis();
-    while (homingSensorOn == 0 && millis() - timeoutStart < 5000) {  // Timeout after 5 seconds
+    // Timeout after 5 seconds.
+    while (digitalRead(homingSensorPin) == HIGH && millis() - timeoutStart < 5000) {
       stepper.step(10);
-      homingSensorOn = digitalRead(homingSensorPin);
     }
 
-    if (homingSensorOn == 0) {
+    if (digitalRead(homingSensorPin) == HIGH) {
       // Homing switch not triggered within the timeout period.
       // Handle the error or take appropriate action.
       Serial.println("Homing switch not triggered within timeout.");
