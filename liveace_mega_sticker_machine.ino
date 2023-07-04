@@ -54,11 +54,19 @@ void loop() {
     if (command.equals("listCommands")) {
       Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"undefined\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0Inventory\", \"stepper1Inventory\"]}}");
     } else if (command.equals("stepper0")) {
-      moveStepper(stepper0, stepper0HomingSensorPin, stepper0PowerPin0, stepper0PowerPin1);
-      Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": undefined}");
+      bool stepperSucceeded = moveStepper(stepper0, stepper0HomingSensorPin, stepper0PowerPin0, stepper0PowerPin1);
+      if (stepperSucceeded) {
+        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": undefined}");
+      } else {
+        Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper0 homing switch not triggered\"}");
+      }
     } else if (command.equals("stepper1")) {
-      moveStepper(stepper1, stepper1HomingSensorPin, stepper1PowerPin0, stepper1PowerPin1);
-      Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\"}, \"response\": undefined}");
+      bool stepperSucceeded = moveStepper(stepper1, stepper1HomingSensorPin, stepper1PowerPin0, stepper1PowerPin1);
+      if (stepperSucceeded) {
+        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\"}, \"response\": undefined}");
+      } else {
+        Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper1 homing switch not triggered\"}");
+      }
     } else if (command.equals("stepper0Inventory")) {
       String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
       bool stepper0Inventory = digitalRead(stepper0InventorySensorPin);
@@ -77,7 +85,12 @@ void loop() {
   }
 }
 
-void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
+// Moves the stepper motor backwards until it hits the homing switch, then
+// forward by a hardcoded amount to vend the product, then backwards until it
+// hits the homing switch again. Returns true if the homing switch was
+// triggered, false if the homing switch was not triggered within the timeout
+// period for either of the two homing switch checks.
+bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
   // Start sending power to both stepper motor coils.
   digitalWrite(powerPin0, HIGH);
   digitalWrite(powerPin1, HIGH);
@@ -92,7 +105,7 @@ void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   if (digitalRead(homingSensorPin) == HIGH) {
     // Homing switch not triggered within the timeout period.
     // Handle the error or take appropriate action.
-    Serial.println("Homing switch not triggered within timeout.");
+    return false;
   } else {
     // Turn the stepper motor forward by a hardcoded amount to vend the product.
     stepper.step(-stepsPerRevolution * revolutionsPerVend);
@@ -107,11 +120,13 @@ void moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
     if (digitalRead(homingSensorPin) == HIGH) {
       // Homing switch not triggered within the timeout period.
       // Handle the error or take appropriate action.
-      Serial.println("Homing switch not triggered within timeout.");
+      return false;
     }
   }
 
   // Stop sending power to both stepper motor coils.
   digitalWrite(powerPin0, LOW);
   digitalWrite(powerPin1, LOW);
+
+  return true;
 }
