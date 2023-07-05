@@ -6,24 +6,57 @@
 
 #include <Stepper.h>
 
-const int stepsPerRevolution = 200;
-const int revolutionsPerVend = 22;
-const int motorSpeed = 330;
-// The `digitalRead()` state of the homing switch when it is unpressed.
-// This is `HIGH` because the homing switch is normally closed.
-const int homingSwitchUnpressedState = HIGH;
+// --- Configuration ---
 
-Stepper stepper0 = Stepper(stepsPerRevolution, 39, 43, 41, 45);
+// The number of steps the stepper motors take to complete one revolution.
+// This is determined by the stepper motors used and is not configurable.
+// This value is equal to 360 / step angle.
+// For 1.8 degree stepper motors, this is 200.
+// For 0.9 degree stepper motors, this is 400.
+const int stepsPerRevolution = 200;
+// The number of revolutions the motor needs to turn to vend a sticker.
+// Configure to your liking so that the machine vends properly without
+// overshooting or undershooting.
+const int revolutionsPerVend = 22;
+// The speed of the motor in RPM. Configure to your liking. Too fast and the
+// motor may skip steps, stall, or not have enough torque. Too slow and the
+// machine will take longer to vend and may be noisy due to resonance from
+// starting and stopping at each step.
+const int motorSpeed = 330;
+// The state of the homing switch when it is unpressed.
+// Use `LOW` for normally open switches and `HIGH` for normally closed switches.
+const int homingSwitchUnpressedState = HIGH;
+// The maximum amount of time in milliseconds to wait for the homing switch to be pressed.
+// This is to prevent the machine from getting stuck in an infinite loop in case the homing switch
+// is broken. Make sure this is long enough for the machine to fully home when the homing switch is
+// working properly.
+// TODO - Remove this value and instead use `revolutionsPerVend` and `motorSpeed` to calculate the
+// maximum amount of time to wait for the homing switch to be pressed.
+const int homingTimeoutMs = 5000;
+
+// TODO - Figure out why the pins need to be out of order and if we can fix this. If we can't fix
+// this, then we need to document why.
+Stepper stepper0(stepsPerRevolution, 39, 43, 41, 45);
+// TODO - Put these in an array and loop through them.
 const int stepper0PowerPin0 = 35;
 const int stepper0PowerPin1 = 37;
 const int stepper0HomingSensorPin = 33;
 const int stepper0InventorySensorPin = 53;
 
-Stepper stepper1 = Stepper(stepsPerRevolution, 38, 42, 40, 44);
+// TODO - Figure out why the pins need to be out of order and if we can fix this. If we can't fix
+// this, then we need to document why.
+Stepper stepper1(stepsPerRevolution, 38, 42, 40, 44);
+// TODO - Put these in an array and loop through them.
 const int stepper1PowerPin0 = 34;
 const int stepper1PowerPin1 = 36;
 const int stepper1HomingSensorPin = 27;
 const int stepper1InventorySensorPin = 52;
+
+// --------------------------------------
+//    END OF CONFIGURATION, BEGIN CODE
+// DO NOT MODIFY ANYTHING BELOW THIS LINE
+//   UNLESS YOU KNOW WHAT YOU ARE DOING
+// --------------------------------------
 
 String command;
 
@@ -31,26 +64,31 @@ void setup() {
   Serial.begin(57600);
   Serial.setTimeout(500);
 
+  // Setup stepper motor 0.
   stepper0.setSpeed(motorSpeed);
   pinMode(stepper0InventorySensorPin, INPUT);
   pinMode(stepper0HomingSensorPin, INPUT);
   pinMode(stepper0PowerPin0, OUTPUT);
   pinMode(stepper0PowerPin1, OUTPUT);
-  // Stepper motor is off unless we are moving it.
+  // Stepper motor is off unless moving. This is to prevent the motor and
+  // controller from getting hot when the machine is idle.
   digitalWrite(stepper0PowerPin0, LOW);
   digitalWrite(stepper0PowerPin1, LOW);
 
+  // Setup stepper motor 1.
   stepper1.setSpeed(motorSpeed);
   pinMode(stepper1InventorySensorPin, INPUT);
   pinMode(stepper1HomingSensorPin, INPUT);
   pinMode(stepper1PowerPin0, OUTPUT);
   pinMode(stepper1PowerPin1, OUTPUT);
-  // Stepper motor is off unless we are moving it.
+  // Stepper motor is off unless moving. This is to prevent the motor and
+  // controller from getting hot when the machine is idle.
   digitalWrite(stepper1PowerPin0, LOW);
   digitalWrite(stepper1PowerPin1, LOW);
 }
 
 void loop() {
+  // TODO - Add helper function to generate JSON responses.
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
     command.trim();
@@ -90,30 +128,39 @@ void loop() {
 
 // Moves the stepper motor backwards until it hits the homing switch, then
 // forward by a hardcoded amount to vend the product, then backwards until it
-// hits the homing switch again. Returns true if the homing switch was
-// triggered, false if the homing switch was not triggered within the timeout
-// period for either of the two homing switch checks.
+// hits the homing switch again. The homing ensures any previous drift is
+// corrected, and that the stepper motor is in a known position for the next
+// vend. Returns true if the homing switch was triggered, false if the homing
+// switch was not triggered within the timeout period for either of the two
+// homing switch checks.
 bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
-  // Start sending power to both stepper motor coils.
+  // Power on stepper motor coils.
   digitalWrite(powerPin0, HIGH);
   digitalWrite(powerPin1, HIGH);
 
-  // Turn the stepper motor backwards until it hits the homing switch.
+  // Turn the stepper motor backwards until it hits the homing switch. This
+  // initial homing ensures any previous drift is corrected, which is important
+  // because:
+  //   * The stepper motor is not powered when idle, allowing for small drift over time.
+  //   * The Arduino could have previously lost power while the stepper motor was in an
+  //     unknown position (e.g. due to a power outage in the middle of a vend).
   bool homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
     return false;
   }
 
-  // Turn the stepper motor forward by a hardcoded amount to vend the product.
+  // Turn the stepper motor forward to vend the product.
   stepper.step(-stepsPerRevolution * revolutionsPerVend);
 
-  // Turn the stepper motor backwards until it hits the homing switch.
+  // Turn the stepper motor backwards until it hits the homing switch again.
+  // This final homing ensures the stepper motor is immediately ready for the
+  // next vend.
   homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
     return false;
   }
 
-  // Stop sending power to both stepper motor coils.
+  // Power off stepper motor coils.
   digitalWrite(powerPin0, LOW);
   digitalWrite(powerPin1, LOW);
 
@@ -122,19 +169,20 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
 
 // Moves the stepper motor backwards until it hits the homing switch. Returns
 // true if the homing switch was triggered, false if the homing switch was not
-// triggered within the timeout period. The stepper motor must be powered on
-// before calling this function.
+// triggered within the timeout period. The timeout is used to prevent the
+// stepper motor from running forever if the homing switch is not triggered,
+// which could happen if the homing switch is broken or disconnected.
+// Note: The stepper motor must be powered on before calling this function.
 bool homeStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
-  // Turn the stepper motor backwards until it hits the homing switch.
-  unsigned long timeoutStart = millis();
-  // Timeout after 5 seconds.
-  while (digitalRead(homingSensorPin) == homingSwitchUnpressedState && millis() - timeoutStart < 5000) {
+  // Timeout is used to prevent the stepper motor from running forever if the
+  // homing switch is not triggered.
+  unsigned long timeoutStartMs = millis();
+  while (digitalRead(homingSensorPin) == homingSwitchUnpressedState && millis() - timeoutStartMs < homingTimeoutMs) {
     stepper.step(10);
   }
 
   if (digitalRead(homingSensorPin) == homingSwitchUnpressedState) {
-    // Homing switch not triggered within the timeout period.
-    // Handle the error or take appropriate action.
+    // Homing switch not triggered within timeout period.
     return false;
   }
 
