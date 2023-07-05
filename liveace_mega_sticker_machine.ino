@@ -9,6 +9,9 @@
 const int stepsPerRevolution = 200;
 const int revolutionsPerVend = 22;
 const int motorSpeed = 330;
+// The `digitalRead()` state of the homing switch when it is unpressed.
+// This is `HIGH` because the homing switch is normally closed.
+const int homingSwitchUnpressedState = HIGH;
 
 Stepper stepper0 = Stepper(stepsPerRevolution, 39, 43, 41, 45);
 const int stepper0PowerPin0 = 35;
@@ -96,37 +99,44 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   digitalWrite(powerPin1, HIGH);
 
   // Turn the stepper motor backwards until it hits the homing switch.
-  unsigned long timeoutStart = millis();
-  // Timeout after 5 seconds.
-  while (digitalRead(homingSensorPin) == HIGH && millis() - timeoutStart < 5000) {
-    stepper.step(10);
+  bool homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
+  if (!homingSucceeded) {
+    return false;
   }
 
-  if (digitalRead(homingSensorPin) == HIGH) {
-    // Homing switch not triggered within the timeout period.
-    // Handle the error or take appropriate action.
+  // Turn the stepper motor forward by a hardcoded amount to vend the product.
+  stepper.step(-stepsPerRevolution * revolutionsPerVend);
+
+  // Turn the stepper motor backwards until it hits the homing switch.
+  homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
+  if (!homingSucceeded) {
     return false;
-  } else {
-    // Turn the stepper motor forward by a hardcoded amount to vend the product.
-    stepper.step(-stepsPerRevolution * revolutionsPerVend);
-
-    // Turn the stepper motor backwards until it hits the homing switch.
-    timeoutStart = millis();
-    // Timeout after 5 seconds.
-    while (digitalRead(homingSensorPin) == HIGH && millis() - timeoutStart < 5000) {
-      stepper.step(10);
-    }
-
-    if (digitalRead(homingSensorPin) == HIGH) {
-      // Homing switch not triggered within the timeout period.
-      // Handle the error or take appropriate action.
-      return false;
-    }
   }
 
   // Stop sending power to both stepper motor coils.
   digitalWrite(powerPin0, LOW);
   digitalWrite(powerPin1, LOW);
+
+  return true;
+}
+
+// Moves the stepper motor backwards until it hits the homing switch. Returns
+// true if the homing switch was triggered, false if the homing switch was not
+// triggered within the timeout period. The stepper motor must be powered on
+// before calling this function.
+bool homeStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
+  // Turn the stepper motor backwards until it hits the homing switch.
+  unsigned long timeoutStart = millis();
+  // Timeout after 5 seconds.
+  while (digitalRead(homingSensorPin) == homingSwitchUnpressedState && millis() - timeoutStart < 5000) {
+    stepper.step(10);
+  }
+
+  if (digitalRead(homingSensorPin) == homingSwitchUnpressedState) {
+    // Homing switch not triggered within the timeout period.
+    // Handle the error or take appropriate action.
+    return false;
+  }
 
   return true;
 }
