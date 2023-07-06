@@ -1,16 +1,17 @@
 /*
-  Arduino Program that interfaces using LiVeACE (LightningVend Arduino Command Execution) protocol
-  to control 2 stepper motors that each have a homing switch and inventory sensor. Currently only
-  designed for and tested on an Arduino Mega.
+  Arduino Program that interfaces using LiVeACE 1.0 (LightningVend Arduino
+  Command Execution) protocol to control 2 stepper motors that each have a
+  homing switch and inventory sensor. Currently only designed for and tested on
+  an Arduino Mega.
 */
 
 #include <Stepper.h>
 
 // --- Configuration ---
 
-// The number of steps the stepper motors take to complete one revolution.
-// This is determined by the stepper motors used and is not configurable.
-// This value is equal to 360 / step angle.
+// The number of steps the stepper motors take to complete one revolution. This
+// is determined by the stepper motors used and is not configurable. This value
+// is equal to 360 / step angle.
 // For 1.8 degree stepper motors, this is 200.
 // For 0.9 degree stepper motors, this is 400.
 const int stepsPerRevolution = 200;
@@ -23,12 +24,12 @@ const int revolutionsPerVend = 22;
 // torque. Too slow and the machine will take longer to vend and may be noisy
 // due to resonance from starting and stopping at each step.
 const int motorRpm = 300;
-// The state of the homing switch when it is unpressed.
-// Use `LOW` for normally open switches and `HIGH` for normally closed switches.
+// The state of the homing switch when it is unpressed. Use `LOW` for normally
+// open switches and `HIGH` for normally closed switches.
 const int homingSwitchUnpressedState = HIGH;
 
-// TODO - Figure out why the pins need to be out of order and if we can fix this. If we can't fix
-// this, then we need to document why.
+// TODO - Figure out why the pins need to be out of order and if we can fix
+// this. If we can't fix this, then we need to document why.
 Stepper stepper0(stepsPerRevolution, 39, 43, 41, 45);
 // TODO - Put these in an array and loop through them.
 const int stepper0PowerPin0 = 35;
@@ -36,8 +37,8 @@ const int stepper0PowerPin1 = 37;
 const int stepper0HomingSensorPin = 2;
 const int stepper0InventorySensorPin = 53;
 
-// TODO - Figure out why the pins need to be out of order and if we can fix this. If we can't fix
-// this, then we need to document why.
+// TODO - Figure out why the pins need to be out of order and if we can fix
+// this. If we can't fix this, then we need to document why.
 Stepper stepper1(stepsPerRevolution, 38, 42, 40, 44);
 // TODO - Put these in an array and loop through them.
 const int stepper1PowerPin0 = 34;
@@ -68,9 +69,10 @@ const int stepper1InventorySensorPin = 52;
 // Which finally simplifies to:
 // (milliseconds per vend).
 const int millisecondsPerVendRetraction = 1000.0 * 60.0 * revolutionsPerVend / motorRpm;
-// The maximum amount of time in milliseconds to wait for the homing switch to be pressed.
-// This is to prevent the machine from getting stuck in an infinite loop in case the homing switch
-// is broken. We add a little extra time just in case.
+// The maximum amount of time in milliseconds to wait for the homing switch to
+// be pressed. This is to prevent the machine from getting stuck in an infinite
+// loop in case the homing switch is broken. We add a little extra time just in
+// case.
 const int homingTimeoutMs = millisecondsPerVendRetraction + 100;
 
 // Global buffer for reading commands from the serial port.
@@ -157,9 +159,11 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   // Turn the stepper motor backwards until it hits the homing switch. This
   // initial homing ensures any previous drift is corrected, which is important
   // because:
-  //   * The stepper motor is not powered when idle, allowing for small drift over time.
-  //   * The Arduino could have previously lost power while the stepper motor was in an
-  //     unknown position (e.g. due to a power outage in the middle of a vend).
+  //   * The stepper motor is not powered when idle, allowing for small drift
+  //     over time.
+  //   * The Arduino could have previously lost power while the stepper motor
+  //     was in an unknown position (e.g. due to a power outage in the middle of
+  //     a vend).
   bool homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
     // Power off stepper motor coils.
