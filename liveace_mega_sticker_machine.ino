@@ -22,7 +22,7 @@ const int revolutionsPerVend = 22;
 // your liking. Too fast and the motor may skip steps, stall, or not have enough
 // torque. Too slow and the machine will take longer to vend and may be noisy
 // due to resonance from starting and stopping at each step.
-const int motorRpm = 330;
+const int motorRpm = 300;
 // The state of the homing switch when it is unpressed.
 // Use `LOW` for normally open switches and `HIGH` for normally closed switches.
 const int homingSwitchUnpressedState = HIGH;
@@ -33,7 +33,7 @@ Stepper stepper0(stepsPerRevolution, 39, 43, 41, 45);
 // TODO - Put these in an array and loop through them.
 const int stepper0PowerPin0 = 35;
 const int stepper0PowerPin1 = 37;
-const int stepper0HomingSensorPin = 33;
+const int stepper0HomingSensorPin = 2;
 const int stepper0InventorySensorPin = 53;
 
 // TODO - Figure out why the pins need to be out of order and if we can fix this. If we can't fix
@@ -42,7 +42,7 @@ Stepper stepper1(stepsPerRevolution, 38, 42, 40, 44);
 // TODO - Put these in an array and loop through them.
 const int stepper1PowerPin0 = 34;
 const int stepper1PowerPin1 = 36;
-const int stepper1HomingSensorPin = 27;
+const int stepper1HomingSensorPin = 8;
 const int stepper1InventorySensorPin = 52;
 
 // --------------------------------------
@@ -162,6 +162,9 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   //     unknown position (e.g. due to a power outage in the middle of a vend).
   bool homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
+    // Power off stepper motor coils.
+    digitalWrite(powerPin0, LOW);
+    digitalWrite(powerPin1, LOW);
     return false;
   }
 
@@ -173,13 +176,15 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   // next vend.
   homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
+    // Power off stepper motor coils.
+    digitalWrite(powerPin0, LOW);
+    digitalWrite(powerPin1, LOW);
     return false;
   }
 
   // Power off stepper motor coils.
   digitalWrite(powerPin0, LOW);
   digitalWrite(powerPin1, LOW);
-
   return true;
 }
 
