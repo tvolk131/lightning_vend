@@ -18,21 +18,14 @@ const int stepsPerRevolution = 200;
 // Configure to your liking so that the machine vends properly without
 // overshooting or undershooting.
 const int revolutionsPerVend = 22;
-// The speed of the motor in RPM. Configure to your liking. Too fast and the
-// motor may skip steps, stall, or not have enough torque. Too slow and the
-// machine will take longer to vend and may be noisy due to resonance from
-// starting and stopping at each step.
-const int motorSpeed = 330;
+// How fast the motor controller will drive the stepper motors. Configure to
+// your liking. Too fast and the motor may skip steps, stall, or not have enough
+// torque. Too slow and the machine will take longer to vend and may be noisy
+// due to resonance from starting and stopping at each step.
+const int motorRpm = 330;
 // The state of the homing switch when it is unpressed.
 // Use `LOW` for normally open switches and `HIGH` for normally closed switches.
 const int homingSwitchUnpressedState = HIGH;
-// The maximum amount of time in milliseconds to wait for the homing switch to be pressed.
-// This is to prevent the machine from getting stuck in an infinite loop in case the homing switch
-// is broken. Make sure this is long enough for the machine to fully home when the homing switch is
-// working properly.
-// TODO - Remove this value and instead use `revolutionsPerVend` and `motorSpeed` to calculate the
-// maximum amount of time to wait for the homing switch to be pressed.
-const int homingTimeoutMs = 5000;
 
 // TODO - Figure out why the pins need to be out of order and if we can fix this. If we can't fix
 // this, then we need to document why.
@@ -58,6 +51,29 @@ const int stepper1InventorySensorPin = 52;
 //   UNLESS YOU KNOW WHAT YOU ARE DOING
 // --------------------------------------
 
+// The amount of time in milliseconds it takes to fully retract the motor after
+// vending. Only counts the time the motor moves in one direction. Used to
+// calculate the maximum amount of time to wait for the homing switch to be
+// pressed before giving up. Let's break down the math:
+//
+// (milliseconds per second) * (seconds per minute) *
+// (revolutions per vend) / (motor revolutions per minute).
+//
+// (milliseconds per second) * (seconds per minute) = (milliseconds per minute).
+// (revolutions per vend) / (motor revolutions per minute) = (minutes per vend).
+//
+// So this simplifies to:
+// (milliseconds per minute) * (minutes per vend).
+//
+// Which finally simplifies to:
+// (milliseconds per vend).
+const int millisecondsPerVendRetraction = 1000 * 60 * revolutionsPerVend / motorRpm;
+// The maximum amount of time in milliseconds to wait for the homing switch to be pressed.
+// This is to prevent the machine from getting stuck in an infinite loop in case the homing switch
+// is broken. We add a little extra time just in case.
+const int homingTimeoutMs = millisecondsPerVendRetraction + 100;
+
+// Global buffer for reading commands from the serial port.
 String command;
 
 void setup() {
@@ -65,7 +81,7 @@ void setup() {
   Serial.setTimeout(500);
 
   // Setup stepper motor 0.
-  stepper0.setSpeed(motorSpeed);
+  stepper0.setSpeed(motorRpm);
   pinMode(stepper0InventorySensorPin, INPUT);
   pinMode(stepper0HomingSensorPin, INPUT);
   pinMode(stepper0PowerPin0, OUTPUT);
@@ -76,7 +92,7 @@ void setup() {
   digitalWrite(stepper0PowerPin1, LOW);
 
   // Setup stepper motor 1.
-  stepper1.setSpeed(motorSpeed);
+  stepper1.setSpeed(motorRpm);
   pinMode(stepper1InventorySensorPin, INPUT);
   pinMode(stepper1HomingSensorPin, INPUT);
   pinMode(stepper1PowerPin0, OUTPUT);
