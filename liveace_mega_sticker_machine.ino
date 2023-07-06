@@ -111,7 +111,7 @@ void loop() {
     command = Serial.readStringUntil('\n');
     command.trim();
     if (command.equals("listCommands")) {
-      Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"undefined\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0Inventory\", \"stepper1Inventory\"]}}");
+      Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"undefined\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0HasInventory\", \"stepper1HasInventory\", \"stepper0OutOfInventory\", \"stepper1OutOfInventory\"]}}");
     } else if (command.equals("stepper0")) {
       bool stepperSucceeded = moveStepper(stepper0, stepper0HomingSensorPin, stepper0PowerPin0, stepper0PowerPin1);
       if (stepperSucceeded) {
@@ -126,13 +126,25 @@ void loop() {
       } else {
         Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper1 homing switch not triggered\"}");
       }
-    } else if (command.equals("stepper0Inventory")) {
+    } else if (command.equals("stepper0HasInventory")) {
+      String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
+      bool stepper0Inventory = digitalRead(stepper0InventorySensorPin);
+      response += stepper0Inventory ? "false" : "true";
+      response += "}";
+      Serial.println(response);
+    } else if (command.equals("stepper1HasInventory")) {
+      String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
+      bool stepper1Inventory = digitalRead(stepper1InventorySensorPin);
+      response += stepper1Inventory ? "false" : "true";
+      response += "}";
+      Serial.println(response);
+    } else if (command.equals("stepper0OutOfInventory")) {
       String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
       bool stepper0Inventory = digitalRead(stepper0InventorySensorPin);
       response += stepper0Inventory ? "true" : "false";
       response += "}";
       Serial.println(response);
-    } else if (command.equals("stepper1Inventory")) {
+    } else if (command.equals("stepper1OutOfInventory")) {
       String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
       bool stepper1Inventory = digitalRead(stepper1InventorySensorPin);
       response += stepper1Inventory ? "true" : "false";
