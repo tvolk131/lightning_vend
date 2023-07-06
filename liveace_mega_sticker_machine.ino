@@ -122,7 +122,7 @@ void loop() {
     } else if (command.equals("stepper1")) {
       bool stepperSucceeded = moveStepper(stepper1, stepper1HomingSensorPin, stepper1PowerPin0, stepper1PowerPin1);
       if (stepperSucceeded) {
-        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\"}, \"response\": undefined}");
+        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": undefined}");
       } else {
         Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper1 homing switch not triggered\"}");
       }
