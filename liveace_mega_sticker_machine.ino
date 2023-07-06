@@ -67,7 +67,7 @@ const int stepper1InventorySensorPin = 52;
 //
 // Which finally simplifies to:
 // (milliseconds per vend).
-const int millisecondsPerVendRetraction = 1000 * 60 * revolutionsPerVend / motorRpm;
+const int millisecondsPerVendRetraction = 1000.0 * 60.0 * revolutionsPerVend / motorRpm;
 // The maximum amount of time in milliseconds to wait for the homing switch to be pressed.
 // This is to prevent the machine from getting stuck in an infinite loop in case the homing switch
 // is broken. We add a little extra time just in case.
