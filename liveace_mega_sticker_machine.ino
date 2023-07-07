@@ -111,18 +111,18 @@ void loop() {
     command = Serial.readStringUntil('\n');
     command.trim();
     if (command.equals("listCommands")) {
-      Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"undefined\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0HasInventory\", \"stepper1HasInventory\", \"stepper0OutOfInventory\", \"stepper1OutOfInventory\"]}}");
+      Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"null\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0HasInventory\", \"stepper1HasInventory\", \"stepper0OutOfInventory\", \"stepper1OutOfInventory\"]}}");
     } else if (command.equals("stepper0")) {
       bool stepperSucceeded = moveStepper(stepper0, stepper0HomingSensorPin, stepper0PowerPin0, stepper0PowerPin1);
       if (stepperSucceeded) {
-        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": undefined}");
+        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": null}");
       } else {
         Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper0 homing switch not triggered\"}");
       }
     } else if (command.equals("stepper1")) {
       bool stepperSucceeded = moveStepper(stepper1, stepper1HomingSensorPin, stepper1PowerPin0, stepper1PowerPin1);
       if (stepperSucceeded) {
-        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": undefined}");
+        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": null}");
       } else {
         Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper1 homing switch not triggered\"}");
       }
