@@ -66,7 +66,8 @@ const int stepper1InventorySensorPin = 52;
 //
 // Which finally simplifies to:
 // (milliseconds per vend).
-const int millisecondsPerVendRetraction = 1000.0 * 60.0 * revolutionsPerVend / motorRpm;
+const int millisecondsPerVendRetraction =
+  1000.0 * 60.0 * revolutionsPerVend / motorRpm;
 // The maximum amount of time in milliseconds to wait for the homing switch to
 // be pressed. This is to prevent the machine from getting stuck in an infinite
 // loop in case the homing switch is broken. We add a little extra time just in
@@ -183,7 +184,10 @@ void printJsonErrorResponse(String errorMessage) {
 // vend. Returns true if the homing switch was triggered, false if the homing
 // switch was not triggered within the timeout period for either of the two
 // homing switch checks.
-bool moveStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int powerPin1) {
+bool moveStepper(Stepper& stepper,
+                 int homingSwitchPin,
+                 int powerPin0,
+                 int powerPin1) {
   // Power on stepper motor coils.
   digitalWrite(powerPin0, HIGH);
   digitalWrite(powerPin1, HIGH);
@@ -196,7 +200,12 @@ bool moveStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int power
   //   * The Arduino could have previously lost power while the stepper motor
   //     was in an unknown position (e.g. due to a power outage in the middle of
   //     a vend).
-  bool homingSucceeded = homeStepper(stepper, homingSwitchPin, powerPin0, powerPin1);
+  bool homingSucceeded = homeStepper(
+    stepper,
+    homingSwitchPin,
+    powerPin0,
+    powerPin1
+  );
   if (!homingSucceeded) {
     // Power off stepper motor coils.
     digitalWrite(powerPin0, LOW);
@@ -230,11 +239,15 @@ bool moveStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int power
 // stepper motor from running forever if the homing switch is not triggered,
 // which could happen if the homing switch is broken or disconnected.
 // Note: The stepper motor must be powered on before calling this function.
-bool homeStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int powerPin1) {
+bool homeStepper(Stepper& stepper,
+                 int homingSwitchPin,
+                 int powerPin0,
+                 int powerPin1) {
   unsigned long timeoutStartMs = millis();
 
   while (true) {
-    bool homingSwitchPressed = digitalRead(homingSwitchPin) != homingSwitchUnpressedState;
+    bool homingSwitchPressed =
+      digitalRead(homingSwitchPin) != homingSwitchUnpressedState;
     // Note: millis() overflows after ~50 days, but this is not a problem
     // because `millis() - timeoutStartMs` will also overflow, and the
     // comparison will still work. This is subtly different from using
