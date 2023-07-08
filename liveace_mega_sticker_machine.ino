@@ -34,7 +34,7 @@ Stepper stepper0(stepsPerRevolution, 39, 43, 41, 45);
 // TODO - Put these in an array and loop through them.
 const int stepper0PowerPin0 = 35;
 const int stepper0PowerPin1 = 37;
-const int stepper0HomingSensorPin = 2;
+const int stepper0HomingSwitchPin = 2;
 const int stepper0InventorySensorPin = 53;
 
 // TODO - Figure out why the pins need to be out of order and if we can fix
@@ -43,7 +43,7 @@ Stepper stepper1(stepsPerRevolution, 38, 42, 40, 44);
 // TODO - Put these in an array and loop through them.
 const int stepper1PowerPin0 = 34;
 const int stepper1PowerPin1 = 36;
-const int stepper1HomingSensorPin = 8;
+const int stepper1HomingSwitchPin = 8;
 const int stepper1InventorySensorPin = 52;
 
 // --------------------------------------
@@ -85,7 +85,7 @@ void setup() {
   // Setup stepper motor 0.
   stepper0.setSpeed(motorRpm);
   pinMode(stepper0InventorySensorPin, INPUT);
-  pinMode(stepper0HomingSensorPin, INPUT);
+  pinMode(stepper0HomingSwitchPin, INPUT);
   pinMode(stepper0PowerPin0, OUTPUT);
   pinMode(stepper0PowerPin1, OUTPUT);
   // Stepper motor is off unless moving. This is to prevent the motor and
@@ -96,7 +96,7 @@ void setup() {
   // Setup stepper motor 1.
   stepper1.setSpeed(motorRpm);
   pinMode(stepper1InventorySensorPin, INPUT);
-  pinMode(stepper1HomingSensorPin, INPUT);
+  pinMode(stepper1HomingSwitchPin, INPUT);
   pinMode(stepper1PowerPin0, OUTPUT);
   pinMode(stepper1PowerPin1, OUTPUT);
   // Stepper motor is off unless moving. This is to prevent the motor and
@@ -113,14 +113,14 @@ void loop() {
     if (command.equals("listCommands")) {
       Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"null\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0HasInventory\", \"stepper1HasInventory\", \"stepper0OutOfInventory\", \"stepper1OutOfInventory\"]}}");
     } else if (command.equals("stepper0")) {
-      bool stepperSucceeded = moveStepper(stepper0, stepper0HomingSensorPin, stepper0PowerPin0, stepper0PowerPin1);
+      bool stepperSucceeded = moveStepper(stepper0, stepper0HomingSwitchPin, stepper0PowerPin0, stepper0PowerPin1);
       if (stepperSucceeded) {
         Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": null}");
       } else {
         Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper0 homing switch not triggered\"}");
       }
     } else if (command.equals("stepper1")) {
-      bool stepperSucceeded = moveStepper(stepper1, stepper1HomingSensorPin, stepper1PowerPin0, stepper1PowerPin1);
+      bool stepperSucceeded = moveStepper(stepper1, stepper1HomingSwitchPin, stepper1PowerPin0, stepper1PowerPin1);
       if (stepperSucceeded) {
         Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": null}");
       } else {
@@ -163,7 +163,7 @@ void loop() {
 // vend. Returns true if the homing switch was triggered, false if the homing
 // switch was not triggered within the timeout period for either of the two
 // homing switch checks.
-bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
+bool moveStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int powerPin1) {
   // Power on stepper motor coils.
   digitalWrite(powerPin0, HIGH);
   digitalWrite(powerPin1, HIGH);
@@ -176,7 +176,7 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   //   * The Arduino could have previously lost power while the stepper motor
   //     was in an unknown position (e.g. due to a power outage in the middle of
   //     a vend).
-  bool homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
+  bool homingSucceeded = homeStepper(stepper, homingSwitchPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
     // Power off stepper motor coils.
     digitalWrite(powerPin0, LOW);
@@ -190,7 +190,7 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
   // Turn the stepper motor backwards until it hits the homing switch again.
   // This final homing ensures the stepper motor is immediately ready for the
   // next vend.
-  homingSucceeded = homeStepper(stepper, homingSensorPin, powerPin0, powerPin1);
+  homingSucceeded = homeStepper(stepper, homingSwitchPin, powerPin0, powerPin1);
   if (!homingSucceeded) {
     // Power off stepper motor coils.
     digitalWrite(powerPin0, LOW);
@@ -210,15 +210,15 @@ bool moveStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int power
 // stepper motor from running forever if the homing switch is not triggered,
 // which could happen if the homing switch is broken or disconnected.
 // Note: The stepper motor must be powered on before calling this function.
-bool homeStepper(Stepper& stepper, int homingSensorPin, int powerPin0, int powerPin1) {
+bool homeStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int powerPin1) {
   // Timeout is used to prevent the stepper motor from running forever if the
   // homing switch is not triggered.
   unsigned long timeoutStartMs = millis();
-  while (digitalRead(homingSensorPin) == homingSwitchUnpressedState && millis() - timeoutStartMs < homingTimeoutMs) {
+  while (digitalRead(homingSwitchPin) == homingSwitchUnpressedState && millis() - timeoutStartMs < homingTimeoutMs) {
     stepper.step(10);
   }
 
-  if (digitalRead(homingSensorPin) == homingSwitchUnpressedState) {
+  if (digitalRead(homingSwitchPin) == homingSwitchUnpressedState) {
     // Homing switch not triggered within timeout period.
     return false;
   }
