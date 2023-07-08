@@ -209,17 +209,27 @@ bool moveStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int power
 // which could happen if the homing switch is broken or disconnected.
 // Note: The stepper motor must be powered on before calling this function.
 bool homeStepper(Stepper& stepper, int homingSwitchPin, int powerPin0, int powerPin1) {
-  // Timeout is used to prevent the stepper motor from running forever if the
-  // homing switch is not triggered.
   unsigned long timeoutStartMs = millis();
-  while (digitalRead(homingSwitchPin) == homingSwitchUnpressedState && millis() - timeoutStartMs < homingTimeoutMs) {
-    stepper.step(10);
-  }
 
-  if (digitalRead(homingSwitchPin) == homingSwitchUnpressedState) {
-    // Homing switch not triggered within timeout period.
-    return false;
-  }
+  while (true) {
+    bool homingSwitchPressed = digitalRead(homingSwitchPin) != homingSwitchUnpressedState;
+    // Note: millis() overflows after ~50 days, but this is not a problem
+    // because `millis() - timeoutStartMs` will also overflow, and the
+    // comparison will still work. This is subtly different from using
+    // `millis() >= timeoutStartMs + homingTimeoutMs`, which would not work
+    // because `timeoutStartMs + homingTimeoutMs` compares an absolute times
+    // rather than durations.
+    bool timeoutReached = millis() - timeoutStartMs >= homingTimeoutMs;
 
-  return true;
+    if (homingSwitchPressed) {
+      // Homing switch triggered, so stop moving backwards.
+      return true;
+    } else if (timeoutReached) {
+      // Homing switch not triggered within timeout period.
+      return false;
+    } else {
+      // Homing switch not triggered yet, so keep moving backwards.
+      stepper.step(10);
+    }
+  }
 }
