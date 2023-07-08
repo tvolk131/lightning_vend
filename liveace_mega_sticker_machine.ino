@@ -15,15 +15,18 @@
 // For 1.8 degree stepper motors, this is 200.
 // For 0.9 degree stepper motors, this is 400.
 const int stepsPerRevolution = 200;
+
 // The number of revolutions the motor needs to turn to vend a sticker.
 // Configure to your liking so that the machine vends properly without
 // overshooting or undershooting.
 const int revolutionsPerVend = 22;
+
 // How fast the motor controller will drive the stepper motors. Configure to
 // your liking. Too fast and the motor may skip steps, stall, or not have enough
 // torque. Too slow and the machine will take longer to vend and may be noisy
 // due to resonance from starting and stopping at each step.
 const int motorRpm = 300;
+
 // The state of the homing switch when it is unpressed. Use `LOW` for normally
 // open switches and `HIGH` for normally closed switches.
 const int homingSwitchUnpressedState = HIGH;
@@ -68,6 +71,7 @@ const int stepper1InventorySensorPin = 52;
 // (milliseconds per vend).
 const int millisecondsPerVendRetraction =
   1000.0 * 60.0 * revolutionsPerVend / motorRpm;
+
 // The maximum amount of time in milliseconds to wait for the homing switch to
 // be pressed. This is to prevent the machine from getting stuck in an infinite
 // loop in case the homing switch is broken. We add a little extra time just in
