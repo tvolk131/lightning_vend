@@ -104,54 +104,76 @@ void setup() {
 }
 
 void loop() {
-  // TODO - Add helper function to generate JSON responses.
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
     command.trim();
     if (command.equals("listCommands")) {
-      Serial.println("{\"status\": \"ok\", \"command\": \"listCommands\", \"response\": {\"null\": [\"stepper0\", \"stepper1\"], \"boolean\": [\"stepper0HasInventory\", \"stepper1HasInventory\", \"stepper0OutOfInventory\", \"stepper1OutOfInventory\"]}}");
+      printJsonResponse(
+        true,
+        "{\"null\": [\"stepper0\", "
+                    "\"stepper1\"], "
+         "\"boolean\": [\"stepper0HasInventory\", "
+                       "\"stepper1HasInventory\", "
+                       "\"stepper0OutOfInventory\", "
+                       "\"stepper1OutOfInventory\"]}");
     } else if (command.equals("stepper0")) {
-      bool stepperSucceeded = moveStepper(stepper0, stepper0HomingSwitchPin, stepper0PowerPin0, stepper0PowerPin1);
+      bool stepperSucceeded = moveStepper(
+        stepper0,
+        stepper0HomingSwitchPin,
+        stepper0PowerPin0,
+        stepper0PowerPin1
+      );
+
       if (stepperSucceeded) {
-        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": null}");
+        printJsonSuccessNullResponse();
       } else {
-        Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper0 homing switch not triggered\"}");
+        printJsonErrorResponse("stepper0 homing switch not triggered.");
       }
     } else if (command.equals("stepper1")) {
-      bool stepperSucceeded = moveStepper(stepper1, stepper1HomingSwitchPin, stepper1PowerPin0, stepper1PowerPin1);
+      bool stepperSucceeded = moveStepper(
+        stepper1,
+        stepper1HomingSwitchPin,
+        stepper1PowerPin0,
+        stepper1PowerPin1
+      );
+
       if (stepperSucceeded) {
-        Serial.println("{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": null}");
+        printJsonSuccessNullResponse();
       } else {
-        Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"stepper1 homing switch not triggered\"}");
+        printJsonErrorResponse("stepper1 homing switch not triggered.");
       }
     } else if (command.equals("stepper0HasInventory")) {
-      String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
-      bool stepper0Inventory = digitalRead(stepper0InventorySensorPin);
-      response += stepper0Inventory ? "false" : "true";
-      response += "}";
-      Serial.println(response);
+      printJsonSuccessBoolResponse(!digitalRead(stepper0InventorySensorPin));
     } else if (command.equals("stepper1HasInventory")) {
-      String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
-      bool stepper1Inventory = digitalRead(stepper1InventorySensorPin);
-      response += stepper1Inventory ? "false" : "true";
-      response += "}";
-      Serial.println(response);
+      printJsonSuccessBoolResponse(!digitalRead(stepper1InventorySensorPin));
     } else if (command.equals("stepper0OutOfInventory")) {
-      String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
-      bool stepper0Inventory = digitalRead(stepper0InventorySensorPin);
-      response += stepper0Inventory ? "true" : "false";
-      response += "}";
-      Serial.println(response);
+      printJsonSuccessBoolResponse(digitalRead(stepper0InventorySensorPin));
     } else if (command.equals("stepper1OutOfInventory")) {
-      String response = "{\"status\": \"ok\", \"command\": \"" + command + "\", \"response\": ";
-      bool stepper1Inventory = digitalRead(stepper1InventorySensorPin);
-      response += stepper1Inventory ? "true" : "false";
-      response += "}";
-      Serial.println(response);
+      printJsonSuccessBoolResponse(digitalRead(stepper1InventorySensorPin));
     } else {
-      Serial.println("{\"status\": \"error\", \"command\": \"" + command + "\", \"response\": \"unknown command: `" + command + "`\"}");
+      printJsonErrorResponse("unknown command: `" + command + "`.");
     }
   }
+}
+
+void printJsonResponse(bool isOk, String response) {
+  String status = isOk ? "ok" : "error";
+  Serial.println(
+    "{\"status\": \"" + status + "\", " +
+     "\"command\": \"" + command + "\", " +
+     "\"response\": " + response + "}");
+}
+
+void printJsonSuccessNullResponse() {
+  printJsonResponse(true, "null");
+}
+
+void printJsonSuccessBoolResponse(bool response) {
+  printJsonResponse(true, response ? "true" : "false");
+}
+
+void printJsonErrorResponse(String errorMessage) {
+  printJsonResponse(false, "\"" + errorMessage + "\"");
 }
 
 // Moves the stepper motor backwards until it hits the homing switch, then
