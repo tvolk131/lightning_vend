@@ -24,8 +24,11 @@ message Device {
   // The inventory items available for purchase on the device.
   repeated InventoryItem inventory = 3;
 
-  // The item purchase commands that the device supports.
-  repeated string supported_execution_commands = 4;
+  // The commands that the device supports that return no data.
+  repeated string null_execution_commands = 4;
+
+  // The commands that the device supports that return a boolean value.
+  repeated string bool_execution_commands = 5;
 }
 
 message InventoryItem {
@@ -36,5 +39,12 @@ message InventoryItem {
   int32 price_sats = 2;
 
   // The command to run on the device upon successful item payment.
-  string execution_command = 3;
+  string vend_null_execution_command = 3;
+
+  // The command to run to check whether the item slot still has available
+  // inventory. If empty, it is up to the customer to see if there is inventory
+  // available before purchasing the item. If this command returns true, that
+  // means there is still inventory left, and false means the item is out of
+  // inventory.
+  string inventory_check_bool_execution_command = 4;
 }

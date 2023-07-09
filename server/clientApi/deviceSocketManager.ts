@@ -49,7 +49,6 @@ export class DeviceSocketManager {
 
     // Initialize all incoming device sockets with a device session cookie.
     server.engine.on('initial_headers', (headers, req: Request, ...args) => {
-      // console.log(headers, req, ...args);
       const cookie = req.headers.cookie ? parse(req.headers.cookie) : undefined;
       const deviceSessionId = cookie ?
         cookie[deviceSessionCookieName]
@@ -110,6 +109,19 @@ export class DeviceSocketManager {
           );
         } else {
           return callback(undefined);
+        }
+      });
+
+      socket.on('setDeviceExecutionCommands', (commands, callback) => {
+        const deviceName = socket.data.deviceName;
+        if (deviceName) {
+          deviceSessionManager.setDeviceExecutionCommands(
+            deviceName,
+            commands
+          );
+          return callback(true);
+        } else {
+          return callback(false);
         }
       });
 
