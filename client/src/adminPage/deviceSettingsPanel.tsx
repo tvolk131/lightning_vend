@@ -127,7 +127,12 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
               <Typography>Item Name: {inventoryItem.displayName}</Typography>
               <Typography>Price: {inventoryItem.priceSats} sats</Typography>
               <Typography>
-                Execution Command: {inventoryItem.executionCommand}
+                Vend Execution Command: {inventoryItem.vendNullExecutionCommand}
+              </Typography>
+              <Typography>
+                Inventory Check Command: {
+                  inventoryItem.inventoryCheckBoolExecutionCommand
+                }
               </Typography>
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
@@ -189,17 +194,34 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
                 <TextField
                   {...params}
                   style={{display: 'flex', marginTop: '15px'}}
-                  label={'Execution Command'}
+                  label={'Vend Execution Command'}
                 />
               )}
-              options={props.adminDeviceView.device.supportedExecutionCommands}
+              options={props.adminDeviceView.device.nullExecutionCommands}
               onChange={
                 (e, selectedCommand) => setNewInventoryItem({
                   ...newInventoryItem,
-                  executionCommand: selectedCommand || ''
+                  vendNullExecutionCommand: selectedCommand || ''
                 })
               }
-              value={newInventoryItem.executionCommand}
+              value={newInventoryItem.vendNullExecutionCommand}
+            />
+            <Autocomplete
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  style={{display: 'flex', marginTop: '15px'}}
+                  label={'Inventory Check Command'}
+                />
+              )}
+              options={props.adminDeviceView.device.boolExecutionCommands}
+              onChange={
+                (e, selectedCommand) => setNewInventoryItem({
+                  ...newInventoryItem,
+                  inventoryCheckBoolExecutionCommand: selectedCommand || ''
+                })
+              }
+              value={newInventoryItem.inventoryCheckBoolExecutionCommand}
             />
           </DialogContent>
           <DialogActions>

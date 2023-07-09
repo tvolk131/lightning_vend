@@ -1,5 +1,9 @@
 import * as React from 'react';
 import {AsyncLoadableData, getAsyncLoadableDataStats} from './api/sharedApi';
+import {
+  ExecutionCommands,
+  executionCommandsAreEqual
+} from '../../shared/commandExecutor';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -29,11 +33,17 @@ export const DevicePage = () => {
   const [deviceSetupCode, setDeviceSetupCode] =
     useState<AsyncLoadableData<string>>({state: 'loading'});
 
-  useEffect(() => {
-    deviceApi.getDeviceSetupCode().then((code) => {
-      setDeviceSetupCode({state: 'loaded', data: code});
-    });
-  }, []);
+  const fetchDeviceSetupCode = () => {
+    setDeviceSetupCode({state: 'loading'});
+    deviceApi.getDeviceSetupCode()
+      .then((code) => {
+        setDeviceSetupCode({state: 'loaded', data: code});
+      }).catch(() => {
+        setDeviceSetupCode({state: 'error'});
+      });
+  };
+
+  useEffect(fetchDeviceSetupCode, []);
 
   const renderDeviceSetupCode = () => {
     if (deviceSetupCode.state === 'loaded') {
@@ -44,32 +54,69 @@ export const DevicePage = () => {
       );
     } else if (deviceSetupCode.state === 'error') {
       return (
-        <Typography variant={'h3'}>
-          Error loading setup code!
-        </Typography>
+        <div>
+          <Typography variant={'h4'}>
+            Error loading setup code!
+          </Typography>
+          <Button
+            style={{marginTop: theme.spacing(2)}}
+            variant={'contained'}
+            onClick={fetchDeviceSetupCode}
+          >
+            Retry
+          </Button>
+        </div>
       );
     } else {
       return <CircularProgress/>;
     }
   };
 
-  const [supportedExecutionCommands, setSupportedExecutionCommands] =
-    useState<AsyncLoadableData<string[]>>({state: 'loading'});
+  const [executionCommands, setExecutionCommands] =
+    useState<AsyncLoadableData<ExecutionCommands>>({state: 'loading'});
 
-  // TODO - Any time the page is refreshed, update the discovered execution
-  // commands to the backend.
-  const loadSupportedExecutionCommands = () => {
-    setSupportedExecutionCommands({state: 'loading'});
-    axios.get('http://localhost:21000/listCommands')
-      .then((res) => {
-        let commands = res.data as string[];
-        setSupportedExecutionCommands({state: 'loaded', data: commands});
-      }).catch(() => {
-        setSupportedExecutionCommands({state: 'error'});
+  const loadAndSaveExecutionCommands = async () => {
+    setExecutionCommands({state: 'loading'});
+    try {
+      const res = await axios.get('http://localhost:21000/listCommands');
+
+      const {
+        nullCommands,
+        boolCommands
+      } = res.data as ExecutionCommands;
+
+      await deviceApi.setDeviceExecutionCommands({nullCommands, boolCommands});
+      setExecutionCommands({
+        state: 'loaded',
+        data: {
+          nullCommands,
+          boolCommands
+        }
       });
+    } catch (err) {
+      setExecutionCommands({state: 'error'});
+    }
   };
 
-  useEffect(loadSupportedExecutionCommands, []);
+  // Load execution commands from the device if the device is already claimed
+  // and setup, and the previously loaded commands differ from the current ones.
+  useEffect(() => {
+    if (loadableDevice.state === 'loaded' && loadableDevice.data) {
+      const savedExecutionCommands: ExecutionCommands = {
+        nullCommands: loadableDevice.data.nullExecutionCommands,
+        boolCommands: loadableDevice.data.boolExecutionCommands
+      };
+      if (executionCommands.state !== 'loaded' || (
+            executionCommands.state === 'loaded' &&
+            !executionCommandsAreEqual(
+              savedExecutionCommands,
+              executionCommands.data
+            )
+          )) {
+        loadAndSaveExecutionCommands();
+      }
+    }
+  }, [loadableDevice]);
 
   const showLightningLogo = false;
 
@@ -223,12 +270,12 @@ export const DevicePage = () => {
                     {renderDeviceSetupCode()}
                   </div>
                 </Paper>
-                {supportedExecutionCommands.state === 'error' && (
+                {executionCommands.state === 'error' && (
                     <div style={{position: 'absolute', marginTop: '20px'}}>
                       <Alert
                         severity={'error'}
                         action={
-                          <Button onClick={loadSupportedExecutionCommands}>
+                          <Button onClick={loadAndSaveExecutionCommands}>
                             Retry
                           </Button>
                         }

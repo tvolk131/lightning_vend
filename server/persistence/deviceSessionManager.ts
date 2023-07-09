@@ -1,6 +1,7 @@
 import {DeviceName, UserName} from '../../shared/proto';
 import {Device} from '../../proto/lightning_vend/model';
 import {DeviceSetupCodeManager} from './deviceSetupCodeManager';
+import {ExecutionCommands} from '../../shared/commandExecutor';
 
 /**
  * Manages the persistence of device sessions and all related device data.
@@ -70,7 +71,8 @@ export class DeviceSessionManager {
       name: deviceName.toString(),
       displayName: deviceDisplayName,
       inventory: [],
-      supportedExecutionCommands: []
+      nullExecutionCommands: [],
+      boolExecutionCommands: []
     };
 
     this.devicesByName.set(deviceName.toString(), device);
@@ -137,5 +139,16 @@ export class DeviceSessionManager {
       this.devicesByName.set(deviceName.toString(), mutatedDevice);
       return resolve(mutatedDevice);
     });
+  }
+
+  public setDeviceExecutionCommands(
+    deviceName: DeviceName,
+    executionCommands: ExecutionCommands
+  ): Promise<void> {
+    return this.updateDevice(deviceName, (device) => {
+      device.nullExecutionCommands = executionCommands.nullCommands;
+      device.boolExecutionCommands = executionCommands.boolCommands;
+      return device;
+    }).then(() => {});
   }
 }

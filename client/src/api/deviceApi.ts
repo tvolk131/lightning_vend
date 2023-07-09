@@ -14,6 +14,7 @@ import {
 } from '../../../shared/constants';
 import {useEffect, useState} from 'react';
 import {Device} from '../../../proto/lightning_vend/model';
+import {ExecutionCommands} from '../../../shared/commandExecutor';
 import {makeUuid} from '../../../shared/uuid';
 
 class DeviceApi extends ReactSocket<
@@ -180,6 +181,28 @@ class DeviceApi extends ReactSocket<
           } else {
             return reject();
           }
+        }
+      );
+    });
+  }
+
+  public async setDeviceExecutionCommands(
+    commands: ExecutionCommands
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
+        'setDeviceExecutionCommands',
+        commands,
+        (err, success) => {
+          if (err) {
+            return reject(err);
+          }
+
+          if (!success) {
+            return reject();
+          }
+
+          return resolve();
         }
       );
     });

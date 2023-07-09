@@ -15,17 +15,35 @@ use rocket::{
 };
 use std::sync::Mutex;
 
-#[get("/commands/<command>")]
-fn run_command_handler(
+#[get("/nullCommands/<command>")]
+fn run_null_command_handler(
     command: String,
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> Result<rocket::response::content::Html<String>, rocket::response::status::NotFound<String>> {
+) -> Result<rocket::response::content::Json<String>, rocket::response::status::NotFound<String>> {
     let mut command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
-    match command_executor_manager.execute_command(&command) {
-        Ok(_) => Ok(rocket::response::content::Html(String::from(
-            "<div>Success!</div>",
-        ))),
+    match command_executor_manager.execute_null_command(&command) {
+        Ok(_) => Ok(rocket::response::content::Json(
+            serde_json::json!(null).to_string(),
+        )),
+        Err(err) => {
+            // TODO - NotFound isn't always going to be the right response here. Let's take more care to make sure we always return a relevant HTTP status code.
+            Err(rocket::response::status::NotFound(format!("{err:?}")))
+        }
+    }
+}
+
+#[get("/boolCommands/<command>")]
+fn run_bool_command_handler(
+    command: String,
+    command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
+) -> Result<rocket::response::content::Json<String>, rocket::response::status::NotFound<String>> {
+    let mut command_executor_manager = command_executor_manager_mutex.lock().unwrap();
+
+    match command_executor_manager.execute_bool_command(&command) {
+        Ok(bool_res) => Ok(rocket::response::content::Json(
+            serde_json::json!(bool_res).to_string(),
+        )),
         Err(err) => {
             // TODO - NotFound isn't always going to be the right response here. Let's take more care to make sure we always return a relevant HTTP status code.
             Err(rocket::response::status::NotFound(format!("{err:?}")))
@@ -38,9 +56,20 @@ fn list_commands_handler(
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
 ) -> rocket::response::content::Json<String> {
     let command_executor_manager = command_executor_manager_mutex.lock().unwrap();
-    let mut commands: Vec<&str> = command_executor_manager.get_commands().collect();
-    commands.sort();
-    rocket::response::content::Json(serde_json::json!(commands).to_string())
+
+    let mut null_commands: Vec<&str> = command_executor_manager.get_null_commands().collect();
+    null_commands.sort();
+
+    let mut bool_commands: Vec<&str> = command_executor_manager.get_bool_commands().collect();
+    bool_commands.sort();
+
+    rocket::response::content::Json(
+        serde_json::json!({
+            "nullCommands": null_commands,
+            "boolCommands": bool_commands
+        })
+        .to_string(),
+    )
 }
 
 struct Cors;
@@ -103,7 +132,14 @@ async fn rocket() -> _ {
             ..Default::default()
         })
         .attach(Cors)
-        .mount("/", routes![run_command_handler, list_commands_handler])
+        .mount(
+            "/",
+            routes![
+                run_null_command_handler,
+                run_bool_command_handler,
+                list_commands_handler
+            ],
+        )
 }
 
 #[cfg(feature = "liveace")]

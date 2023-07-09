@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {CSSProperties, useEffect, useReducer, useRef} from 'react';
+import {CSSProperties, useEffect, useReducer, useRef, useState} from 'react';
 import Alert from '@mui/material/Alert';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -17,7 +17,7 @@ import {deviceApi} from './api/deviceApi';
 
 // TODO - Store this in LocalStorage so that reloading the page doesn't break
 // existing invoices.
-const invoiceToExecutionCommand: Map<string, string> = new Map();
+const invoiceToNullExecutionCommand: Map<string, string> = new Map();
 
 interface SelectionItemProps {
   inventoryItem: InventoryItem,
@@ -37,6 +37,25 @@ const SlideDownTransition = React.forwardRef(function Transition(
 });
 
 const SelectionItem = (props: SelectionItemProps) => {
+  const [hasInventory, setHasInventory] = useState(true);
+
+  // Periodically check if the item has available inventory.
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const inventoryCommand =
+        props.inventoryItem.inventoryCheckBoolExecutionCommand;
+      if (inventoryCommand) {
+        const res = await axios.get(
+          `http://localhost:21000/boolCommands/${inventoryCommand}`
+        );
+        if (typeof res.data === 'boolean') {
+          setHasInventory(res.data);
+        }
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [props.inventoryItem.inventoryCheckBoolExecutionCommand]);
+
   return (
     <div
       style={{
@@ -51,9 +70,10 @@ const SelectionItem = (props: SelectionItemProps) => {
         style={{
           height: `${props.size}px`,
           width: `${props.size}px`,
-          cursor: 'pointer'
+          cursor: hasInventory ? 'pointer' : undefined,
+          opacity: hasInventory ? 1 : 0.5
         }}
-        onClick={props.onClick}
+        onClick={hasInventory ? props.onClick : undefined}
       >
         <Typography
           variant={props.isOnlySelectionItem ? 'h3' : 'h6'}
@@ -169,10 +189,10 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
 
   useEffect(() => {
     const callbackId = deviceApi.subscribeToInvoicePaid((paidInvoice) => {
-      const command = invoiceToExecutionCommand.get(paidInvoice);
-      if (command) {
+      const nullCommand = invoiceToNullExecutionCommand.get(paidInvoice);
+      if (nullCommand) {
         // TODO - Handle any potential error from the webhook.
-        axios.get(`http://localhost:21000/commands/${command}`);
+        axios.get(`http://localhost:21000/nullCommands/${nullCommand}`);
       }
       dispatch({type: 'showInvoiceIsPaid'});
       setTimeout(() => dispatch({type: 'hideInvoice'}), 1500);
@@ -229,9 +249,9 @@ export const SelectionMenu = (props: SelectionMenuProps) => {
       if (!state.disableItemSelection) {
         dispatch({type: 'showLoadingInvoice'});
         deviceApi.createInvoice(inventoryItem.priceSats).then((invoice) => {
-          invoiceToExecutionCommand.set(
+          invoiceToNullExecutionCommand.set(
             invoice,
-            inventoryItem.executionCommand
+            inventoryItem.vendNullExecutionCommand
           );
           dispatch({type: 'showInvoice', invoice});
         }).catch(() => {

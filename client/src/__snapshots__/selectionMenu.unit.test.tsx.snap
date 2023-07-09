@@ -106,6 +106,7 @@ exports[`renders inventory with 1 item 1`] = `
                 {
                   "cursor": "pointer",
                   "height": "330px",
+                  "opacity": 1,
                   "width": "330px",
                 }
               }
@@ -390,6 +391,7 @@ exports[`renders inventory with 2 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -434,6 +436,7 @@ exports[`renders inventory with 2 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -719,6 +722,7 @@ exports[`renders inventory with 3 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -763,6 +767,7 @@ exports[`renders inventory with 3 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -807,6 +812,7 @@ exports[`renders inventory with 3 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -1092,6 +1098,7 @@ exports[`renders inventory with 4 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -1136,6 +1143,7 @@ exports[`renders inventory with 4 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -1180,6 +1188,7 @@ exports[`renders inventory with 4 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -1224,6 +1233,7 @@ exports[`renders inventory with 4 items 1`] = `
                   {
                     "cursor": "pointer",
                     "height": "135px",
+                    "opacity": 1,
                     "width": "135px",
                   }
                 }
@@ -1458,6 +1468,7 @@ exports[`renders inventory with 5 items 1`] = `
         {
           "cursor": "pointer",
           "height": "135px",
+          "opacity": 1,
           "width": "135px",
         }
       }
@@ -1502,6 +1513,7 @@ exports[`renders inventory with 5 items 1`] = `
         {
           "cursor": "pointer",
           "height": "135px",
+          "opacity": 1,
           "width": "135px",
         }
       }
@@ -1546,6 +1558,7 @@ exports[`renders inventory with 5 items 1`] = `
         {
           "cursor": "pointer",
           "height": "135px",
+          "opacity": 1,
           "width": "135px",
         }
       }
@@ -1590,6 +1603,7 @@ exports[`renders inventory with 5 items 1`] = `
         {
           "cursor": "pointer",
           "height": "135px",
+          "opacity": 1,
           "width": "135px",
         }
       }
@@ -1634,6 +1648,7 @@ exports[`renders inventory with 5 items 1`] = `
         {
           "cursor": "pointer",
           "height": "135px",
+          "opacity": 1,
           "width": "135px",
         }
       }
