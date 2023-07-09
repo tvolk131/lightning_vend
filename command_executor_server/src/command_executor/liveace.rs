@@ -41,20 +41,39 @@ impl std::error::Error for SerialError {}
 pub struct LiVeAceSerialPort {
     port: Mutex<Box<dyn SerialPort>>,
     namespace: String,
-    supported_commands: HashSet<String>,
+    null_commands: HashSet<String>,
+    bool_commands: HashSet<String>,
     timeout_to_retry: Duration,
     max_retries: u32,
 }
 
 impl CommandExecutor for LiVeAceSerialPort {
-    fn get_commands(&self) -> Box<dyn Iterator<Item = &str> + '_> {
-        Box::from(self.supported_commands.iter().map(|s| s.as_str()))
+    fn get_null_commands(&self) -> Box<dyn Iterator<Item = &str> + '_> {
+        Box::from(self.null_commands.iter().map(|s| s.as_str()))
     }
 
-    fn execute_command(&mut self, command: &str) -> Result<(), Box<dyn std::error::Error>> {
-        self.execute_command_internal(command)
-            .map(|_| ())
-            .map_err(Box::from)
+    fn execute_null_command(&mut self, command: &str) -> Result<(), Box<dyn std::error::Error>> {
+        match self.execute_command_internal(command).map_err(Box::from) {
+            Ok(None) => Ok(()),
+            Err(err) => Err(err),
+            _ => Err(Box::from(SerialError::MalformedResponse)),
+        }
+    }
+
+    fn get_bool_commands(&self) -> Box<dyn Iterator<Item = &str> + '_> {
+        Box::from(self.bool_commands.iter().map(|s| s.as_str()))
+    }
+
+    fn execute_bool_command(&mut self, command: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        let res = match self.execute_command_internal(command).map_err(Box::from) {
+            Ok(Some(res)) => res,
+            Ok(None) => return Err(Box::from(SerialError::MalformedResponse)),
+            Err(err) => return Err(err),
+        };
+        match res {
+            serde_json::Value::Bool(b) => Ok(b),
+            _ => Err(Box::from(SerialError::MalformedResponse)),
+        }
     }
 }
 
@@ -72,41 +91,51 @@ impl LiVeAceSerialPort {
         let mut p = Self {
             port: Mutex::from(port),
             namespace: format!("arduino:{board_serial_number}"),
-            supported_commands: HashSet::new(),
+            null_commands: HashSet::new(),
+            bool_commands: HashSet::new(),
             timeout_to_retry: Duration::from_millis(20000),
             max_retries: 10,
         };
 
-        for command in p.get_commands_internal()? {
-            p.supported_commands.insert(command);
-        }
+        p.get_commands_internal()?;
 
         Ok(p)
     }
 
-    fn get_commands_internal(&mut self) -> Result<Vec<String>, SerialError> {
-        let response = match self.execute_command_internal("list_commands") {
-            Ok(response) => response,
-            Err(err) => return Err(err),
-        };
+    fn get_commands_internal(&mut self) -> Result<(), SerialError> {
+        let response_or = self.execute_command_internal("listCommands")?;
+        let response = response_or.ok_or(SerialError::MalformedResponse)?;
+        let response_object = response.as_object().ok_or(SerialError::MalformedResponse)?;
+        let raw_null_commands = response_object
+            .get("null")
+            .ok_or(SerialError::MalformedResponse)?
+            .as_array()
+            .ok_or(SerialError::MalformedResponse)?;
+        let raw_bool_commands = response_object
+            .get("boolean")
+            .ok_or(SerialError::MalformedResponse)?
+            .as_array()
+            .ok_or(SerialError::MalformedResponse)?;
 
-        let raw_command_values = match &response {
-            Some(res) => match res.as_array() {
-                Some(commands) => commands,
-                None => return Err(SerialError::MalformedResponse),
-            },
-            None => return Err(SerialError::MalformedResponse),
-        };
-
-        let mut command_strings = Vec::new();
-        for raw_command_value in raw_command_values {
-            match raw_command_value.as_str() {
-                Some(command_string) => command_strings.push(command_string.to_string()),
-                None => return Err(SerialError::MalformedResponse),
-            };
+        for raw_command_value in raw_null_commands {
+            self.null_commands.insert(
+                raw_command_value
+                    .as_str()
+                    .ok_or(SerialError::MalformedResponse)?
+                    .to_string(),
+            );
         }
 
-        Ok(command_strings)
+        for raw_command_value in raw_bool_commands {
+            self.bool_commands.insert(
+                raw_command_value
+                    .as_str()
+                    .ok_or(SerialError::MalformedResponse)?
+                    .to_string(),
+            );
+        }
+
+        Ok(())
     }
 
     fn execute_command_internal(
@@ -195,18 +224,10 @@ impl LiVeAceSerialPort {
             }
             if stringified_buffer.ends_with('\n') {
                 for line in stringified_buffer.split('\n').map(|line| line.trim()) {
-                    match serde_json::from_str::<ArduinoCommandResponse>(line) {
-                        Ok(response) => {
-                            if response.status != "ok" {
-                                return Err(SerialError::NonOkStatus);
-                            }
-
-                            if response.command == command {
-                                return Ok(response);
-                            }
-                        }
-                        Err(_) => return Err(SerialError::MalformedResponse),
-                    };
+                    let parsed_response = parse_json_response(line)?;
+                    if parsed_response.command == command {
+                        return Ok(parsed_response);
+                    }
                 }
             }
             if std::time::Instant::now().duration_since(start_time) > self.timeout_to_retry {
@@ -221,5 +242,18 @@ impl LiVeAceSerialPort {
                 return Err(SerialError::SerialPortError(err));
             }
         }
+    }
+}
+
+fn parse_json_response(response: &str) -> Result<ArduinoCommandResponse, SerialError> {
+    match serde_json::from_str::<ArduinoCommandResponse>(response) {
+        Ok(response) => {
+            if response.status != "ok" {
+                return Err(SerialError::NonOkStatus);
+            }
+
+            Ok(response)
+        }
+        Err(_) => Err(SerialError::MalformedResponse),
     }
 }
