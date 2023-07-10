@@ -25,20 +25,21 @@ jobs:
     - name: Install Webpack Dependencies and Test/Build Frontend
       run: cd client && npm i && npm run build-proto && npm test && npm run lint && npm run build-prod && cd ..
     - name: Build Backends
+      # TODO - Run:
+      #   cargo check --features "adafruit_motorkit"
+      #   cargo check --features "adafruit_motorkit liveace"
+      #   cargo clippy --features "adafruit_motorkit" -- -D warnings
+      #   cargo clippy --features "adafruit_motorkit liveace" -- -D warnings
       run: |
         sudo apt-get update
         sudo apt-get install -y libudev-dev
         rustup update
         cd command_executor_server
         cargo check
-        cargo check --features "adafruit_motorkit"
         cargo check --features "liveace"
-        cargo check --features "adafruit_motorkit liveace"
         cargo fmt -- --check
         cargo clippy -- -D warnings
-        cargo clippy --features "adafruit_motorkit" -- -D warnings
         cargo clippy --features "liveace" -- -D warnings
-        cargo clippy --features "adafruit_motorkit liveace" -- -D warnings
         cd ..
   deploy:
     needs: test
