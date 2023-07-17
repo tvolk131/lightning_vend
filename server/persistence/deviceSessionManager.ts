@@ -70,6 +70,7 @@ export class DeviceSessionManager {
     const device: Device = {
       name: deviceName.toString(),
       displayName: deviceDisplayName,
+      createTime: new Date(),
       inventory: [],
       nullExecutionCommands: [],
       boolExecutionCommands: []

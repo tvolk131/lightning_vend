@@ -2,24 +2,66 @@ syntax = "proto3";
 
 package lightning_vend;
 
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+
+// A user of the Lightning Vend service.
+// This is a top-level resource that is not owned by any other resource.
 message User {
   // The resource name of the user.
-  // Format: users/{user}
+  // Format: users/{user}.
   string name = 1;
 
-  oneof auth_id {
-    // The user's Lightning Node public key.
-    string lightning_node_pubkey = 2;
+  // When the user was created.
+  google.protobuf.Timestamp create_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // When the user was last updated.
+  google.protobuf.Timestamp update_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  message AuthId {
+    oneof id_type {
+      // The user's Lightning Node public key.
+      string lightning_node_pubkey = 1;
+    }
   }
+
+  // The user's authentication ID.
+  AuthId auth_id = 4 [(google.api.field_behavior) = REQUIRED];
 }
 
+// A device that is not yet claimed by a user.
+// This is a top-level resource that is not owned by any other resource.
+// Once a device is claimed, it is removed as an UnclaimedDevice and created as
+// a Device. The new Device is owned by the User that claimed it, and the
+// `name` field is NOT guaranteed to be the same as the `name` field of the
+// UnclaimedDevice.
+message UnclaimedDevice {
+  // The resource name of the unclaimed device.
+  // Format: unclaimedDevices/{unclaimed_device}.
+  string name = 1;
+
+  // When the unclaimed device was created.
+  google.protobuf.Timestamp create_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  string device_session_id = 3 [(google.api.field_behavior) = INPUT_ONLY];
+
+  string setup_code = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A device that is claimed by a user.
+// This is a child resource of User.
 message Device {
   // The resource name of the device.
-  // Format: users/{user}/devices/{device}
+  // Format: users/{user}/devices/{device}.
   string name = 1;
 
   // The display name of the device.
   string display_name = 2;
+
+  // When the device was created. The device started as an unclaimed device
+  // before being claimed by a user, and the create time here refers to the
+  // time the device was first created as an unclaimed device.
+  google.protobuf.Timestamp create_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The inventory items available for purchase on the device.
   repeated InventoryItem inventory = 3;

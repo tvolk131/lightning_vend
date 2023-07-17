@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken';
-import {Device, User} from '../../proto_out/lightning_vend/model';
+import {Device, User, User_AuthId} from '../../proto_out/lightning_vend/model';
 import {UserName} from '../../shared/proto';
 import {userSessionJwtSecret} from '../lndApi';
 import {userSessionTokenLifetimeMs} from '../../shared/constants';
@@ -52,11 +52,16 @@ export class AdminSessionManager {
 
     // If the user doesn't exist, create it.
     if (!userName) {
+      const now = new Date();
       userName = UserName.create();
       this.userNamesByLightningNodePubkey.set(lightningNodePubkey, userName);
       this.usersByName.set(userName.toString(), {
         name: userName.toString(),
-        lightningNodePubkey
+        createTime: now,
+        updateTime: now,
+        authId: User_AuthId.create({
+          lightningNodePubkey
+        })
       });
     }
 

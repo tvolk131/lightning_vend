@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+package lightning_vend;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/field_mask.proto";
+import "lightning_vend/model.proto";
+
+// A service for managing devices.
+service DeviceService {
+  // ---------------------
+  // Standard AIP methods.
+  // ---------------------
+
+  // Retrieves a device.
+  rpc GetDevice(GetDeviceRequest) returns (Device) {};
+
+  // Lists devices.
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse) {};
+
+  // Updates a device.
+  rpc UpdateDevice(UpdateDeviceRequest) returns (Device) {};
+
+  // ---------------
+  // Custom methods.
+  // ---------------
+
+  // Creates an unclaimed device. The device is unowned and unclaimed. The
+  // device can be claimed by calling ClaimUnclaimedDevice.
+  rpc CreateUnclaimedDevice(CreateUnclaimedDeviceRequest) returns (UnclaimedDevice) {};
+
+  // Converts an UnclaimedDevice to a Device which is then owned by a User.
+  rpc ClaimUnclaimedDevice(ClaimUnclaimedDeviceRequest) returns (Device) {};
+
+  // Converts a Device to an UnclaimedDevice which is then unowned.
+  rpc UnclaimDevice(UnclaimDeviceRequest) returns (UnclaimedDevice) {};
+
+  // Gets a device by its device session id. If the device session id belongs to
+  // an unclaimed device, a not-found error is returned.
+  rpc GetDeviceByDeviceSessionId(GetDeviceByDeviceSessionIdRequest) returns (Device) {};
+
+  // Gets an unclaimed device by its device session id. If the device session id
+  // belongs to a claimed device, a not-found error is returned.
+  rpc GetUnclaimedDeviceByDeviceSessionId(GetUnclaimedDeviceByDeviceSessionIdRequest) returns (UnclaimedDevice) {};
+
+  // Gets a device session id by the Device's or UnclaimedDevice's name. This is
+  // the only method that can be used to get a device session id, remember that
+  // device session ids should be treated as secrets and should not be exposed
+  // to users.
+  rpc GetDeviceSessionId(GetDeviceSessionIdRequest) returns (GetDeviceSessionIdResponse) {};
+}
+
+// Request message for GetDevice.
+message GetDeviceRequest {
+  // The name of the device to retrieve.
+  // Format: users/{user}/devices/{device}.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.lightningvend.com/Device"}
+  ];
+}
+
+// Request message for ListDevices.
+message ListDevicesRequest {
+  // The parent user.
+  // Format: users/{user}.
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.lightningvend.com/Device"}
+  ];
+
+  // The maximum page size.
+  // If unspecified, at most 50 items will be returned.
+  // The maximum value is 1000; values above 1000 will be coerced to 1000.
+  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Page token returned from a previous rpc.
+  string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// Response message for ListDevices.
+message ListDevicesResponse {
+  // The requested devices.
+  repeated Device devices = 1;
+
+  // Opaque string. Can be passed to a subsequent
+  // request to retrieve the next page of items.
+  string next_page_token = 2;
+
+  // The total number of items in the list specified in the request.
+  int64 total_size = 3;
+}
+
+// Request message for UpdateDevice.
+message UpdateDeviceRequest {
+  // The device to update.
+  //
+  // The device's `name` field is used to identify the device to update.
+  // Format: users/{user}/devices/{device}.
+  Device device = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The list of fields to be updated.
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateUnclaimedDeviceRequest {
+  // The device to create.
+  UnclaimedDevice unclaimed_device = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ClaimUnclaimedDeviceRequest {
+  // The parent user to claim the device for.
+  // Format: users/{user}.
+  string parent = 1 [(google.api.field_behavior) = REQUIRED];
+
+  string setup_code = 2 [(google.api.field_behavior) = REQUIRED];
+
+  Device device = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message UnclaimDeviceRequest {
+  // The name of the device to unclaim.
+  // Format: users/{user}/devices/{device}.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.lightningvend.com/Device"}
+  ];
+}
+
+message GetDeviceByDeviceSessionIdRequest {
+  // The device session id to retrieve the device for.
+  string device_session_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetUnclaimedDeviceByDeviceSessionIdRequest {
+  // The device session id to retrieve the unclaimed device for.
+  string device_session_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetDeviceSessionIdRequest {
+  // The name of the device or unclaimed device to retrieve the device session
+  // id for.
+  // Format: users/{user}/devices/{device} or
+  //         unclaimedDevices/{unclaimed_device}.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.lightningvend.com/Device"}
+  ];
+}
+
+message GetDeviceSessionIdResponse {
+  // The device session id.
+  string device_session_id = 1;
+}
