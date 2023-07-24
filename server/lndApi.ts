@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
-import {LightningClientImpl} from '../proto/lnd/lnrpc/lightning';
+import {LightningClientImpl} from '../proto_out/lnd/lnrpc/lightning';
 import {Observable} from 'rxjs';
 
 const loaderOptions: protoLoader.Options = {

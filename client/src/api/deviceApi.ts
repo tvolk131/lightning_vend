@@ -13,7 +13,7 @@ import {
   socketIoDevicePath
 } from '../../../shared/constants';
 import {useEffect, useState} from 'react';
-import {Device} from '../../../proto/lightning_vend/model';
+import {Device} from '../../../proto_out/lightning_vend/model';
 import {ExecutionCommands} from '../../../shared/commandExecutor';
 import {makeUuid} from '../../../shared/uuid';
 

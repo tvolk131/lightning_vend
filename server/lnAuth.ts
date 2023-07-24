@@ -7,7 +7,7 @@ import {
   messageIsExpired,
   messageIsMalformed
 } from '../shared/lnAuthBrowserSafe';
-import {VerifyMessageRequest} from '../proto/lnd/lnrpc/lightning';
+import {VerifyMessageRequest} from '../proto_out/lnd/lnrpc/lightning';
 
 export const createSignableMessageWithTTL = (expireTimeSeconds: number) => {
   return createMessageTokenWithExpiration(expireTimeSeconds, lnAuthJwtSecret);

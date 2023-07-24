@@ -19,10 +19,10 @@ import {
   Invoice_InvoiceState as InvoiceState,
   InvoiceSubscription,
   LightningClientImpl
-} from '../proto/lnd/lnrpc/lightning';
+} from '../proto_out/lnd/lnrpc/lightning';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './clientApi/adminSocketManager';
-import {Device} from '../proto/lightning_vend/model';
+import {Device} from '../proto_out/lightning_vend/model';
 import {DeviceSessionManager} from './persistence/deviceSessionManager';
 import {DeviceSocketManager} from './clientApi/deviceSocketManager';
 import {

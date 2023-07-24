@@ -2,7 +2,7 @@ import {Invoice, decode} from '@node-lightning/invoice';
 import {
   Invoice as LNDInvoice,
   LightningClientImpl
-} from '../../proto/lnd/lnrpc/lightning';
+} from '../../proto_out/lnd/lnrpc/lightning';
 import {DeviceName} from '../../shared/proto';
 
 export class InvoiceManager {

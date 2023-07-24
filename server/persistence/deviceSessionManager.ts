@@ -1,5 +1,5 @@
 import {DeviceName, UserName} from '../../shared/proto';
-import {Device} from '../../proto/lightning_vend/model';
+import {Device} from '../../proto_out/lightning_vend/model';
 import {DeviceSetupCodeManager} from './deviceSetupCodeManager';
 import {ExecutionCommands} from '../../shared/commandExecutor';
 
