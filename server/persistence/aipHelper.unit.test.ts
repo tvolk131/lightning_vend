@@ -1,4 +1,4 @@
-import {createPageToken, parsePageToken} from './aipHelper';
+import {createPageToken, getBoundedPageSize, parsePageToken} from './aipHelper';
 import {Any} from '../../proto_out/google/protobuf/any';
 import {ObjectId} from 'bson';
 
@@ -60,4 +60,41 @@ describe('Page Tokens', () => {
         parsePageToken(pageToken, 'signature');
       }).toThrow('Invalid page token (underlying ObjectId is invalid).');
     });
+});
+
+describe('getBoundedPageSize', () => {
+  it('should return the same page size if it is within the boundaries', () => {
+    const result = getBoundedPageSize(20, 10, 30);
+    expect(result).toBe(20);
+  });
+
+  it('should return the max page size if page size exceeds the maximum', () => {
+    const result = getBoundedPageSize(40, 10, 30);
+    expect(result).toBe(30);
+  });
+
+  it('should return the default page size if page size is zero', () => {
+    const result = getBoundedPageSize(0, 10, 30);
+    expect(result).toBe(10);
+  });
+
+  it('should throw an error if page size is negative', () => {
+    expect(() => getBoundedPageSize(-5, 10, 30))
+      .toThrowError('Page size must be a positive integer.');
+  });
+
+  it('should throw an error if default page size is less than 1', () => {
+    expect(() => getBoundedPageSize(20, 0, 30))
+      .toThrowError('Default page size must be a positive integer.');
+  });
+
+  it(
+    'should throw an error if max page size is less than default page size',
+    () => {
+      expect(() => getBoundedPageSize(20, 30, 10))
+        .toThrowError(
+          'Max page size must be greater than or equal to default page size.'
+        );
+    }
+  );
 });

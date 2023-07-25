@@ -55,3 +55,27 @@ export const parsePageToken = (
     throw new Error('Invalid page token (underlying ObjectId is invalid).');
   }
 };
+
+export const getBoundedPageSize = (
+  pageSize: number,
+  defaultPageSize: number,
+  maxPageSize: number
+): number => {
+  if (pageSize < 0) {
+    throw new Error('Page size must be a positive integer.');
+  }
+  if (defaultPageSize < 1) {
+    throw new Error('Default page size must be a positive integer.');
+  }
+  if (maxPageSize < defaultPageSize) {
+    throw new Error('Max page size must be greater than or equal to ' +
+                    'default page size.');
+  }
+  if (pageSize > maxPageSize) {
+    return maxPageSize;
+  }
+  if (pageSize === 0) {
+    return defaultPageSize;
+  }
+  return pageSize;
+};
