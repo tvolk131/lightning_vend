@@ -106,6 +106,14 @@ export class DeviceName {
     return UserName.parse(`users/${this.user}`)!;
   }
 
+  public getUserSegment(): string {
+    return this.user;
+  }
+
+  public getDeviceSegment(): string {
+    return this.device;
+  }
+
   public equals(other: DeviceName): boolean {
     return this.toString() === other.toString();
   }

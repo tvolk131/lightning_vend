@@ -1,9 +1,9 @@
-import {Device} from '../proto_out/lightning_vend/model';
-import {DeviceName} from './proto';
+import {Device, UnclaimedDevice} from '../proto_out/lightning_vend/model';
+import {DeviceName, UnclaimedDeviceName} from './proto';
 import {ExecutionCommands} from './commandExecutor';
 
 export interface DeviceServerToClientEvents {
-  updateDevice: (device: Device | null) => void;
+  updateDevice: (device: ClaimedOrUnclaimedDevice) => void;
   invoicePaid: (invoice: string, deviceAck: () => void) => void;
   // Indicates that the server is ready to receive messages from the client.
   // This is necessary because the client may send messages before the server
@@ -15,8 +15,7 @@ export interface DeviceServerToClientEvents {
 }
 
 export interface DeviceClientToServerEvents {
-  getDevice: (callback: (device: Device | null) => void) => void;
-  getDeviceSetupCode: (callback: (deviceSetupCode?: string) => void) => void;
+  getDevice: (callback: (device: ClaimedOrUnclaimedDevice) => void) => void;
   setDeviceExecutionCommands: (
     executionCommands: ExecutionCommands,
     callback: (success: boolean) => void
@@ -32,5 +31,11 @@ export interface DeviceInterServerEvents {
 
 export interface DeviceSocketData {
   deviceSessionId: string | undefined;
-  deviceName: DeviceName | undefined;
+  resourceName: ClaimedOrUnclaimedDeviceName | undefined;
 }
+
+export type ClaimedOrUnclaimedDeviceName =
+  {deviceName: DeviceName} | {unclaimedDeviceName: UnclaimedDeviceName};
+
+export type ClaimedOrUnclaimedDevice =
+  {device: Device} | {unclaimedDevice: UnclaimedDevice};

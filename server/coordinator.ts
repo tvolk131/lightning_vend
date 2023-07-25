@@ -5,6 +5,12 @@ import {
   AdminServerToClientEvents,
   AdminSocketData
 } from '../shared/adminSocketTypes';
+import {
+  ClaimUnclaimedDeviceRequest,
+  GetDeviceSessionIdRequest,
+  ListDevicesRequest,
+  UpdateDeviceRequest
+} from '../proto_out/lightning_vend/device_service';
 import {Device, User, User_AuthId} from '../proto_out/lightning_vend/model';
 import {
   DeviceClientToServerEvents,
@@ -21,7 +27,7 @@ import {
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './clientApi/adminSocketManager';
 import {Db} from 'mongodb';
-import {DeviceSessionManager} from './persistence/deviceSessionManager';
+import {DeviceCollection} from './persistence/deviceCollection';
 import {DeviceSocketManager} from './clientApi/deviceSocketManager';
 import {
   DeviceUnackedSettledInvoiceManager
@@ -41,7 +47,7 @@ export class Coordinator {
   private deviceSocketManager: DeviceSocketManager;
   private userSessionManager: UserSessionManager;
   private userCollection: UserCollection;
-  private deviceSessionManager: DeviceSessionManager;
+  private deviceCollection: DeviceCollection;
   private invoiceManager: InvoiceManager;
   private deviceUnackedSettledInvoiceManager:
     DeviceUnackedSettledInvoiceManager;
@@ -53,17 +59,26 @@ export class Coordinator {
   ): Promise<Coordinator> {
     const userCollection = await UserCollection.create(db.collection('users'));
 
-    return new Coordinator(httpServer, lightning, userCollection);
+    const deviceCollection =
+      await DeviceCollection.create(db.collection('devices'));
+
+    return new Coordinator(
+      httpServer,
+      lightning,
+      userCollection,
+      deviceCollection
+    );
   }
 
   private constructor(
     httpServer: HttpServer,
     lightning: LightningClientImpl,
-    userCollection: UserCollection
+    userCollection: UserCollection,
+    deviceCollection: DeviceCollection
   ) {
     this.userSessionManager = new UserSessionManager(userSessionJwtSecret);
     this.userCollection = userCollection;
-    this.deviceSessionManager = new DeviceSessionManager();
+    this.deviceCollection = deviceCollection;
     this.invoiceManager = new InvoiceManager(lightning);
     this.deviceUnackedSettledInvoiceManager =
       new DeviceUnackedSettledInvoiceManager();
@@ -94,12 +109,16 @@ export class Coordinator {
         pingInterval: 5000,
         pingTimeout: 4000
       }),
-      this.deviceSessionManager,
+      this.deviceCollection,
       this.deviceUnackedSettledInvoiceManager
     );
 
     this.deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
-      this.adminSocketManager.updateAdminData(event.deviceName.getUserName());
+      try {
+        this.adminSocketManager.updateAdminData(event.deviceName.getUserName());
+      } catch (err) {
+        // TODO - Log an error here.
+      }
     });
 
     lightning.SubscribeInvoices(InvoiceSubscription.create())
@@ -134,16 +153,14 @@ export class Coordinator {
       });
   }
 
-  private async updateDevice(
-    deviceName: DeviceName,
-    mutateFn: (device: Device) => Device
-  ): Promise<Device> {
-    return await this.deviceSessionManager.updateDevice(deviceName, mutateFn)
-      .then((device) => {
-        this.deviceSocketManager.updateDevice(deviceName, device);
-        this.adminSocketManager.updateAdminData(deviceName.getUserName());
-        return device;
-      });
+  private async updateDevice(request: UpdateDeviceRequest): Promise<Device> {
+    const device = await this.deviceCollection.UpdateDevice(request);
+    const deviceName = DeviceName.parse(device.name);
+    if (deviceName) {
+      this.deviceSocketManager.updateDevice(deviceName, device);
+      await this.adminSocketManager.updateAdminData(deviceName.getUserName());
+    }
+    return device;
   }
 
   public async createUserSessionToken(
@@ -163,35 +180,50 @@ export class Coordinator {
     return this.userSessionManager.createUserSessionToken(userName);
   }
 
-  private claimDevice(
+  private async claimDevice(
     deviceSetupCode: string,
     userName: UserName,
     deviceDisplayName: string
   ) {
-    const claimDeviceRes = this.deviceSessionManager.claimDevice(
-      deviceSetupCode,
-      userName,
-      deviceDisplayName
-    );
-    if (claimDeviceRes) {
-      const {device, deviceSessionId} = claimDeviceRes;
-      const deviceName = DeviceName.parse(device.name);
-      if (deviceName) {
-        this.deviceSocketManager.linkDeviceSessionIdToDeviceName(
-          deviceSessionId,
-          deviceName
-        );
-        this.deviceSocketManager.updateDevice(deviceName, device);
-      }
+    const claimDeviceReq = ClaimUnclaimedDeviceRequest.create({
+      parent: userName.toString(),
+      setupCode: deviceSetupCode,
+      device: Device.create({
+        displayName: deviceDisplayName
+      })
+    });
+    const device =
+      await this.deviceCollection.ClaimUnclaimedDevice(claimDeviceReq);
+    const getDeviceSessionIdReq = GetDeviceSessionIdRequest.create({
+      name: device.name
+    });
+    const getDeviceSessionIdRes =
+      await this.deviceCollection.GetDeviceSessionId(getDeviceSessionIdReq);
+    const deviceName = DeviceName.parse(device.name);
+    if (deviceName) {
+      this.deviceSocketManager.linkDeviceSessionIdToDeviceName(
+        getDeviceSessionIdRes.deviceSessionId,
+        deviceName
+      );
+      this.deviceSocketManager.updateDevice(deviceName, device);
     }
   }
 
-  private getAdminData(userName: UserName): AdminData | undefined {
+  private async getAdminData(
+    userName: UserName
+  ): Promise<AdminData | undefined> {
+    const listDevicesRequest = ListDevicesRequest.create({
+      parent: userName.toString()
+    });
+
+    // TODO - Utilize pagination. Currently this is being called as if it
+    // returns all devices, but it will only return the first page of devices.
+    const listDevicesRes =
+      await this.deviceCollection.ListDevices(listDevicesRequest);
+
     return {
       userName,
-      deviceViews: this.deviceSessionManager
-        .getDevices(userName)
-        .map((device) => {
+      deviceViews: listDevicesRes.devices.map((device) => {
           const deviceName = DeviceName.parse(device.name);
           return {
             isOnline: deviceName ?

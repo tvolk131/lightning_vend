@@ -8,6 +8,9 @@ import {
 import {Device, InventoryItem} from '../../proto_out/lightning_vend/model';
 import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
+import {
+  UpdateDeviceRequest
+} from '../../proto_out/lightning_vend/device_service';
 import {createSignableMessageWithTTL} from '../lnAuth';
 import {parse} from 'cookie';
 import {userSessionCookieName} from '..';
@@ -30,7 +33,7 @@ export class AdminSocketManager {
   private getUserNameFromUserSessionToken: (
     userSessionToken: string
   ) => UserName | undefined;
-  private getAdminData: (userName: UserName) => AdminData | undefined;
+  private getAdminData: (userName: UserName) => Promise<AdminData | undefined>;
 
   public constructor (
     server: Server<AdminClientToServerEvents,
@@ -40,21 +43,18 @@ export class AdminSocketManager {
     getUserNameFromUserSessionToken: (
       userSessionToken: string
     ) => UserName | undefined,
-    getAdminData: (userName: UserName) => AdminData | undefined,
+    getAdminData: (userName: UserName) => Promise<AdminData | undefined>,
     claimDevice: (
       deviceSetupCode: string,
       userName: UserName,
       deviceDisplayName: string
-    ) => void,
-    updateDevice: (
-      deviceName: DeviceName,
-      mutateFn: (device: Device) => Device
-    ) => Promise<Device>
+    ) => Promise<void>,
+    updateDevice: (request: UpdateDeviceRequest) => Promise<Device>
   ) {
     this.getUserNameFromUserSessionToken = getUserNameFromUserSessionToken;
     this.getAdminData = getAdminData;
 
-    server.on('connection', (socket) => {
+    server.on('connection', async (socket) => {
       const userSessionToken = AdminSocketManager.getUserSessionToken(socket);
       const userName = userSessionToken ?
         this.getUserNameFromUserSessionToken(userSessionToken)
@@ -62,29 +62,30 @@ export class AdminSocketManager {
         undefined;
       this.addSocket(socket, {userName});
 
-      socket.emit(
-        'updateAdminData',
-        this.getAdminDataForSocket(socket) || null
-      );
-
       socket.on('getLnAuthMessage', (callback) => {
         // Generate an unsigned message that's valid for 5 minutes.
         callback(createSignableMessageWithTTL(60 * 5));
       });
 
-      socket.on('claimDevice', (deviceSetupCode, displayName, callback) => {
-        const adminData = this.getAdminDataForSocket(socket);
-        if (adminData && userName) {
-          claimDevice(deviceSetupCode, userName, displayName);
-          callback('ok');
-          socket.emit(
-            'updateAdminData',
-            this.getAdminDataForSocket(socket) || null
-          );
-        } else {
-          callback('unauthenticatedError');
+      socket.on(
+        'claimDevice',
+        async (deviceSetupCode, displayName, callback) => {
+          const adminData = await this.getAdminDataForSocket(socket);
+          if (adminData && userName) {
+            // TODO - `claimDevice` can throw an error, but we don't handle it
+            // here yet. Let's do a try/catch and send an error back to the
+            // client.
+            await claimDevice(deviceSetupCode, userName, displayName);
+            callback('ok');
+            socket.emit(
+              'updateAdminData',
+              await this.getAdminDataForSocket(socket) || null
+            );
+          } else {
+            callback('unauthenticatedError');
+          }
         }
-      });
+      );
 
       socket.on(
         'updateDeviceDisplayName',
@@ -96,10 +97,15 @@ export class AdminSocketManager {
             return callback('unauthenticatedError');
           }
 
-          return updateDevice(deviceName, (device) => {
-            device.displayName = displayName;
-            return device;
-          })
+          const updateDeviceRequest = UpdateDeviceRequest.create({
+            device: Device.create({
+              name: deviceName.toString(),
+              displayName
+            }),
+            updateMask: ['display_name']
+          });
+
+          return updateDevice(updateDeviceRequest)
             .then(() => callback('ok'))
             .catch((err) => callback('unknownError'));
         }
@@ -115,11 +121,15 @@ export class AdminSocketManager {
             return callback('unauthenticatedError');
           }
 
-          return updateDevice(deviceName, (device) => {
-            device.inventory =
-              inventoryItemJsonArray.map(InventoryItem.fromJSON);
-            return device;
-          })
+          const updateDeviceRequest = UpdateDeviceRequest.create({
+            device: Device.create({
+              name: deviceName.toString(),
+              inventory: inventoryItemJsonArray.map(InventoryItem.fromJSON)
+            }),
+            updateMask: ['inventory']
+          });
+
+          return updateDevice(updateDeviceRequest)
             .then(() => callback('ok'))
             .catch((err) => callback('unknownError'));
         }
@@ -128,15 +138,22 @@ export class AdminSocketManager {
       socket.on('disconnect', () => {
         this.removeSocket(socket);
       });
+
+      socket.emit(
+        'updateAdminData',
+        await this.getAdminDataForSocket(socket) || null
+      );
     });
   }
 
-  private getAdminDataForSocket(socket: AdminSocket): AdminData | undefined {
+  private async getAdminDataForSocket(
+    socket: AdminSocket
+  ): Promise<AdminData | undefined> {
     const userSessionToken = AdminSocketManager.getUserSessionToken(socket);
     if (userSessionToken) {
       const userName = this.getUserNameFromUserSessionToken(userSessionToken);
       if (userName) {
-        return this.getAdminData(userName);
+        return await this.getAdminData(userName);
       }
     }
   }
@@ -147,12 +164,12 @@ export class AdminSocketManager {
    * @param adminData The new admin data to send.
    * @returns Whether there are any open sockets to the admin.
    */
-  public updateAdminData(userName: UserName): boolean {
+  public async updateAdminData(userName: UserName): Promise<boolean> {
     const sockets = this.socketsByUserName.get(userName.toString());
 
     // Only get admin data if a relevant admin is currently connected.
     if (sockets && sockets.length) {
-      const adminData = this.getAdminData(userName);
+      const adminData = await this.getAdminData(userName);
       sockets.forEach((socket) =>
         socket.emit('updateAdminData', adminData || null));
       return true;

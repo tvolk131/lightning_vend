@@ -4,6 +4,7 @@ import {
   SubscribableDataManager
 } from './sharedApi';
 import {
+  ClaimedOrUnclaimedDevice,
   DeviceClientToServerEvents,
   DeviceServerToClientEvents
 } from '../../../shared/deviceSocketTypes';
@@ -17,6 +18,15 @@ import {Device} from '../../../proto_out/lightning_vend/model';
 import {ExecutionCommands} from '../../../shared/commandExecutor';
 import {makeUuid} from '../../../shared/uuid';
 
+const toClaimedOrUnclaimedDevice = (
+  device: Device | undefined
+): ClaimedOrUnclaimedDevice | undefined => {
+  if (device === null || device === undefined) {
+    return device;
+  }
+  return {device};
+};
+
 class DeviceApi extends ReactSocket<
   DeviceServerToClientEvents,
   DeviceClientToServerEvents
@@ -25,11 +35,14 @@ class DeviceApi extends ReactSocket<
     string,
     ((invoice: string) => void)
   > = new Map();
-  private deviceDataManager =
-    new SubscribableDataManager<AsyncLoadableData<Device | null>>({
+  private deviceDataManager = new SubscribableDataManager<
+    AsyncLoadableData<ClaimedOrUnclaimedDevice>
+  >(
+    {
       state: 'loading',
-      cachedData: loadDevice()
-    });
+      cachedData: toClaimedOrUnclaimedDevice(loadDevice())
+    }
+  );
 
   public constructor() {
     super(socketIoDevicePath);
@@ -83,8 +96,12 @@ class DeviceApi extends ReactSocket<
     return this.invoicePaidCallbacks.delete(callbackId);
   }
 
-  public useLoadableDevice(): AsyncLoadableData<Device | null> {
-    const [data, setData] = useState<AsyncLoadableData<Device | null>>(
+  public useLoadableDevice(
+  ): AsyncLoadableData<ClaimedOrUnclaimedDevice> {
+    const [
+      data,
+      setData
+    ] = useState<AsyncLoadableData<ClaimedOrUnclaimedDevice>>(
       this.deviceDataManager.getData()
     );
 
@@ -104,13 +121,13 @@ class DeviceApi extends ReactSocket<
    * @returns A promise that resolves to the device, or null if the device
    * doesn't exist.
    */
-  public async getDevice(): Promise<Device | null> {
+  public async getDevice(): Promise<ClaimedOrUnclaimedDevice> {
     this.deviceDataManager.setData({
       state: 'loading',
-      cachedData: loadDevice()
+      cachedData: toClaimedOrUnclaimedDevice(loadDevice())
     });
 
-    return new Promise<Device | null>((resolve, reject) => {
+    return new Promise<ClaimedOrUnclaimedDevice>((resolve, reject) => {
       this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
         'getDevice',
         (err, device) => {
@@ -121,7 +138,7 @@ class DeviceApi extends ReactSocket<
           return resolve(device);
         }
       );
-    }).then<Device | null>((device) => {
+    }).then((device) => {
       this.updateAndStoreDevice(device);
       return device;
     }).catch((err) => {
@@ -144,46 +161,31 @@ class DeviceApi extends ReactSocket<
    * be deleted. An undefined value means the device failed to load, which will
    * cause the device to be kept in the current state.
    */
-  private updateAndStoreDevice(device: Device | null | undefined) {
+  private updateAndStoreDevice(device: ClaimedOrUnclaimedDevice | undefined) {
     if (device === undefined) {
       // If the device is undefined, it means we got an error from the server.
       // In this case, we want to keep and render the previously cached device
       // if it exists.
       this.deviceDataManager.setData({
         state: 'error',
-        cachedData: loadDevice()
+        cachedData: toClaimedOrUnclaimedDevice(loadDevice())
       });
     } else {
       // If the device is null, it means the server told us that the device
       // doesn't exist. In this case, `storeDevice()` will clear the cache. If
       // the device is not null, we want to update the cache. Either way, the
       // data is in a final state, so we can set the state to 'loaded'.
-      storeDevice(device || undefined);
+      if (device === null) {
+        storeDevice(undefined);
+      } else if ('device' in device) {
+        storeDevice(device.device);
+      }
 
       this.deviceDataManager.setData({
         state: 'loaded',
         data: device
       });
     }
-  }
-
-  public async getDeviceSetupCode(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
-        'getDeviceSetupCode',
-        (err, deviceSetupCode) => {
-          if (err) {
-            return reject(err);
-          }
-
-          if (deviceSetupCode) {
-            return resolve(deviceSetupCode);
-          } else {
-            return reject();
-          }
-        }
-      );
-    });
   }
 
   public async setDeviceExecutionCommands(
