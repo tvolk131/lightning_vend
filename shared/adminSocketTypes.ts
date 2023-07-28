@@ -1,4 +1,4 @@
-import {AdminData} from '../server/persistence/adminSessionManager';
+import {Device} from '../proto_out/lightning_vend/model';
 import {UserName} from './proto';
 
 export interface AdminServerToClientEvents {
@@ -29,4 +29,14 @@ export interface AdminInterServerEvents {
 
 export interface AdminSocketData {
   userName: UserName | undefined;
+}
+
+export interface AdminData {
+  userName: UserName,
+  deviceViews: AdminDeviceView[]
+}
+
+export interface AdminDeviceView {
+  isOnline: boolean
+  device: Device
 }

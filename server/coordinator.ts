@@ -1,13 +1,11 @@
 import {
   AdminClientToServerEvents,
+  AdminData,
   AdminInterServerEvents,
   AdminServerToClientEvents,
   AdminSocketData
 } from '../shared/adminSocketTypes';
-import {
-  AdminData,
-  AdminSessionManager
-} from './persistence/adminSessionManager';
+import {Device, User, User_AuthId} from '../proto_out/lightning_vend/model';
 import {
   DeviceClientToServerEvents,
   DeviceInterServerEvents,
@@ -22,27 +20,49 @@ import {
 } from '../proto_out/lnd/lnrpc/lightning';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './clientApi/adminSocketManager';
-import {Device} from '../proto_out/lightning_vend/model';
+import {Db} from 'mongodb';
 import {DeviceSessionManager} from './persistence/deviceSessionManager';
 import {DeviceSocketManager} from './clientApi/deviceSocketManager';
 import {
   DeviceUnackedSettledInvoiceManager
 } from './persistence/deviceUnackedSettledInvoiceManager';
+import {
+  GetOrCreateUserByAuthIdRequest
+} from '../proto_out/lightning_vend/user_service';
 import {Server as HttpServer} from 'http';
 import {InvoiceManager} from './persistence/invoiceManager';
 import {Server as SocketServer} from 'socket.io';
+import {UserCollection} from './persistence/userCollection';
+import {UserSessionManager} from './persistence/userSessionManager';
+import {userSessionJwtSecret} from './lndApi';
 
 export class Coordinator {
   private adminSocketManager: AdminSocketManager;
   private deviceSocketManager: DeviceSocketManager;
-  private adminSessionManager: AdminSessionManager;
+  private userSessionManager: UserSessionManager;
+  private userCollection: UserCollection;
   private deviceSessionManager: DeviceSessionManager;
   private invoiceManager: InvoiceManager;
   private deviceUnackedSettledInvoiceManager:
     DeviceUnackedSettledInvoiceManager;
 
-  public constructor(httpServer: HttpServer, lightning: LightningClientImpl) {
-    this.adminSessionManager = new AdminSessionManager();
+  public static async create(
+    httpServer: HttpServer,
+    lightning: LightningClientImpl,
+    db: Db
+  ): Promise<Coordinator> {
+    const userCollection = await UserCollection.create(db.collection('users'));
+
+    return new Coordinator(httpServer, lightning, userCollection);
+  }
+
+  private constructor(
+    httpServer: HttpServer,
+    lightning: LightningClientImpl,
+    userCollection: UserCollection
+  ) {
+    this.userSessionManager = new UserSessionManager(userSessionJwtSecret);
+    this.userCollection = userCollection;
     this.deviceSessionManager = new DeviceSessionManager();
     this.invoiceManager = new InvoiceManager(lightning);
     this.deviceUnackedSettledInvoiceManager =
@@ -57,8 +77,8 @@ export class Coordinator {
         pingInterval: 5000,
         pingTimeout: 4000
       }),
-      this.adminSessionManager.getUserNameFromUserSessionToken.bind(
-        this.adminSessionManager
+      this.userSessionManager.verifyUserSessionToken.bind(
+        this.userSessionManager
       ),
       this.getAdminData.bind(this),
       this.claimDevice.bind(this),
@@ -126,8 +146,21 @@ export class Coordinator {
       });
   }
 
-  public createUserSessionToken(lightningNodePubkey: string) {
-    return this.adminSessionManager.createUserSessionToken(lightningNodePubkey);
+  public async createUserSessionToken(
+    authId: User_AuthId
+  ): Promise<string | undefined> {
+    const user = await this.userCollection.GetOrCreateUserByAuthId(
+      GetOrCreateUserByAuthIdRequest.create({
+        user: User.create({authId})
+      })
+    );
+
+    const userName = UserName.parse(user.name);
+    if (userName === undefined) {
+      return undefined;
+    }
+
+    return this.userSessionManager.createUserSessionToken(userName);
   }
 
   private claimDevice(

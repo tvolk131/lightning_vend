@@ -1,5 +1,6 @@
 import {
   AdminClientToServerEvents,
+  AdminData,
   AdminServerToClientEvents
 } from '../../../shared/adminSocketTypes';
 import {
@@ -12,7 +13,6 @@ import {
   socketIoClientRpcTimeoutMs
 } from '../../../shared/constants';
 import {useEffect, useState} from 'react';
-import {AdminData} from '../../../server/persistence/adminSessionManager';
 import {DeviceName} from '../../../shared/proto';
 import {InventoryItem} from '../../../proto_out/lightning_vend/model';
 import axios from 'axios';

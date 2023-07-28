@@ -1,5 +1,6 @@
 import {
   AdminClientToServerEvents,
+  AdminData,
   AdminInterServerEvents,
   AdminServerToClientEvents,
   AdminSocketData
@@ -7,7 +8,6 @@ import {
 import {Device, InventoryItem} from '../../proto_out/lightning_vend/model';
 import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
-import {AdminData} from '../persistence/adminSessionManager';
 import {createSignableMessageWithTTL} from '../lnAuth';
 import {parse} from 'cookie';
 import {userSessionCookieName} from '..';

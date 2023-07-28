@@ -29,6 +29,10 @@ export class UserName {
   public toString(): string {
     return `users/${this.user}`;
   }
+
+  public getUserSegment(): string {
+    return this.user;
+  }
 }
 
 // Represents a unique resource identifer for a UnclaimedDevice.
