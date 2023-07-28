@@ -25,6 +25,19 @@ export const deviceSetupCodeAllowedCharacters =
 // change this value unless there is a good reason to do so.
 export const deviceSetupCodeLength = 4;
 
+// Generates a random device setup code. This is used to generate setup codes
+// for unclaimed devices.
+export const generateDeviceSetupCode = (): string => {
+  let code = '';
+
+  for (let i = 0; i < deviceSetupCodeLength; i++) {
+    code += deviceSetupCodeAllowedCharacters.charAt(
+      Math.floor(Math.random() * deviceSetupCodeAllowedCharacters.length));
+  }
+
+  return code;
+};
+
 // TODO - Do some testing using slow internet connections and see if we can
 // safely reduce this.
 export const socketIoClientRpcTimeoutMs = 5000;
