@@ -1,0 +1,38 @@
+filter ::= (expression)?
+expression ::= sequence (WS AND WS sequence)*
+sequence ::= factor (WS factor)*
+factor ::= term (WS OR WS term)*
+term ::= (not WS | MINUS)? simple
+simple ::= restriction | composite
+restriction ::= comparable (comparator arg)?
+comparable ::= function | member
+member ::= value (DOT field)*
+function ::= name (DOT name)* LPAREN (argList)? RPAREN
+comparator ::= LESS_EQUALS | LESS_THAN | GREATER_EQUALS | GREATER_THAN | NOT_EQUALS | EQUALS | HAS
+composite ::= LPAREN expression RPAREN
+value ::= TEXT | STRING
+field ::= value | keyword
+name ::= TEXT | keyword
+argList ::= arg (COMMA arg)*
+arg ::= comparable | composite
+keyword ::= not | AND | OR
+WS ::= (" ")*
+not ::= "NOT"
+AND ::= "AND"
+OR ::= "OR"
+LPAREN ::= "("
+RPAREN ::= ")"
+DOT ::= "."
+MINUS ::= "-"
+LESS_EQUALS ::= (WS)? "<=" (WS)?
+LESS_THAN ::= (WS)? "<" (WS)?
+GREATER_EQUALS ::= (WS)? ">=" (WS)?
+GREATER_THAN ::= (WS)? ">" (WS)?
+NOT_EQUALS ::= (WS)? "!=" (WS)?
+EQUALS ::= (WS)? "=" (WS)?
+HAS ::= ":"
+COMMA ::= ","
+TEXT ::= (LOWER_ALPHABETIC_CHARACTER | NUMERIC_CHARACTER)*
+STRING ::= '"' ("*")? (TEXT)? ("*")? '"'
+LOWER_ALPHABETIC_CHARACTER ::= "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+NUMERIC_CHARACTER ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
