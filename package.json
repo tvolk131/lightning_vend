@@ -12,7 +12,8 @@
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "start-prod": "ts-node ./server/index.ts",
     "start-dev": "nodemon ./server/index.ts --watch server --watch client/out/**",
-    "build-proto": "sh proto/build.sh"
+    "build-proto": "sh proto/build.sh",
+    "install-proto-linux": "sh proto/install_linux.sh"
   },
   "author": "Tommy Volk",
   "dependencies": {
