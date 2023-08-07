@@ -67,7 +67,16 @@ export class DeviceSocketManager {
       }
     });
 
-    server.on('connection', (socket) => {
+    server.on('connection', async (socket) => {
+      // Setup disconnection handler and record if the socket disconnects before
+      // we call `addSocket`. This way, if the socket disconnects before calling
+      // `addSocket`, we don't end up with a socket that never gets cleaned up.
+      let hasDisconnected = false;
+      socket.on('disconnect', () => {
+        this.removeSocket(socket);
+        hasDisconnected = true;
+      });
+
       // TODO - Emit an event to the socket if a `deviceSessionId` cookie is not
       // present so the device knows to restart the socket.
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
@@ -76,16 +85,18 @@ export class DeviceSocketManager {
           deviceSessionManager.getDeviceNameFromSessionId(deviceSessionId)
           :
           undefined;
-      this.addSocket(socket, {deviceSessionId, deviceName});
 
-      socket.on('getDevice', (callback) => {
-        if (socket.data.deviceName) {
-          const device = deviceSessionManager.getDevice(socket.data.deviceName);
-          return callback(device || null);
-        } else {
-          return callback(null);
-        }
-      });
+      // The device may have disconnected while we were waiting for the
+      // deviceSessionId to be retrieved from the database, so check again.
+      if (!hasDisconnected) {
+        this.addSocket(socket, {deviceSessionId, deviceName});
+      }
+
+      this.initiateSocketHandlers(socket, deviceSessionManager, invoiceManager);
+
+      // The socket is ready to receive events. This must be called only after
+      // all event handlers have been registered.
+      socket.emit('socketReady');
 
       if (deviceName) {
         // Send any unacked settled invoices to the device. This is necessary
@@ -100,45 +111,6 @@ export class DeviceSocketManager {
           });
         });
       }
-
-      socket.on('getDeviceSetupCode', (callback) => {
-        const deviceSessionId = socket.data.deviceSessionId;
-        if (deviceSessionId) {
-          return callback(
-            deviceSessionManager.createDeviceSetupCode(deviceSessionId)
-          );
-        } else {
-          return callback(undefined);
-        }
-      });
-
-      socket.on('setDeviceExecutionCommands', (commands, callback) => {
-        const deviceName = socket.data.deviceName;
-        if (deviceName) {
-          deviceSessionManager.setDeviceExecutionCommands(
-            deviceName,
-            commands
-          );
-          return callback(true);
-        } else {
-          return callback(false);
-        }
-      });
-
-      socket.on('createInvoice', (valueSats, callback) => {
-        const deviceName = socket.data.deviceName;
-        if (deviceName) {
-          return invoiceManager.createInvoice(deviceName, valueSats)
-            .then((invoice) => callback(invoice))
-            .catch(() => callback(undefined));
-        } else {
-          return callback(undefined);
-        }
-      });
-
-      socket.on('disconnect', () => {
-        this.removeSocket(socket);
-      });
     });
   }
 
@@ -219,6 +191,56 @@ export class DeviceSocketManager {
     }
 
     return false;
+  }
+
+  private initiateSocketHandlers(
+    socket: DeviceSocket,
+    deviceSessionManager: DeviceSessionManager,
+    invoiceManager: InvoiceManager
+  ) {
+    socket.on('getDevice', (callback) => {
+      if (socket.data.deviceName) {
+        const device = deviceSessionManager.getDevice(socket.data.deviceName);
+        return callback(device || null);
+      } else {
+        return callback(null);
+      }
+    });
+
+    socket.on('getDeviceSetupCode', (callback) => {
+      const deviceSessionId = socket.data.deviceSessionId;
+      if (deviceSessionId) {
+        return callback(
+          deviceSessionManager.createDeviceSetupCode(deviceSessionId)
+        );
+      } else {
+        return callback(undefined);
+      }
+    });
+
+    socket.on('setDeviceExecutionCommands', (commands, callback) => {
+      const deviceName = socket.data.deviceName;
+      if (deviceName) {
+        deviceSessionManager.setDeviceExecutionCommands(
+          deviceName,
+          commands
+        );
+        return callback(true);
+      } else {
+        return callback(false);
+      }
+    });
+
+    socket.on('createInvoice', (valueSats, callback) => {
+      const deviceName = socket.data.deviceName;
+      if (deviceName) {
+        return invoiceManager.createInvoice(deviceName, valueSats)
+          .then((invoice) => callback(invoice))
+          .catch(() => callback(undefined));
+      } else {
+        return callback(undefined);
+      }
+    });
   }
 
   private addSocket(socket: DeviceSocket, socketData: DeviceSocketData) {

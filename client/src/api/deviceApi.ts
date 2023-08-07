@@ -41,7 +41,7 @@ class DeviceApi extends ReactSocket<
     // TODO - The server should ack `updateDevice` messages so that the client
     // isn't responsible for fetching the device on reconnect. This will also
     // make the client more resilient to out of order updates.
-    this.socket.on('connect', () => {
+    this.socket.on('socketReady', () => {
       this.getDevice();
     });
 
