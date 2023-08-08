@@ -1,5 +1,3 @@
-import {makeUuid} from './uuid';
-
 // Represents a unique resource identifer for a User.
 // This is a top-level resource, so it has no parent.
 // Formatted as: `users/{user}`.
@@ -20,10 +18,6 @@ export class UserName {
     } catch (e) {
       return undefined;
     }
-  }
-
-  public static create(): UserName {
-    return new UserName(`users/${makeUuid()}`);
   }
 
   public toString(): string {
@@ -57,10 +51,6 @@ export class UnclaimedDeviceName {
     }
   }
 
-  public static create(): UnclaimedDeviceName {
-    return new UnclaimedDeviceName(`unclaimedDevices/${makeUuid()}`);
-  }
-
   public toString(): string {
     return `unclaimedDevices/${this.unclaimedDevice}`;
   }
@@ -92,10 +82,6 @@ export class DeviceName {
     } catch (e) {
       return undefined;
     }
-  }
-
-  public static createFromParent(user: UserName): DeviceName {
-    return new DeviceName(`${user.toString()}/devices/${makeUuid()}`);
   }
 
   public toString(): string {

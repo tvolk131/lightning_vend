@@ -1,9 +1,5 @@
 import {DeviceName, UnclaimedDeviceName, UserName} from './proto';
 
-jest.mock('./uuid', () => ({
-  makeUuid: jest.fn().mockReturnValue('mockedUuid')
-}));
-
 describe('UserName', () => {
   describe('parse', () => {
     it(
@@ -20,14 +16,6 @@ describe('UserName', () => {
       const name = 'invalidName';
       const userName = UserName.parse(name);
       expect(userName).toBeUndefined();
-    });
-  });
-
-  describe('create', () => {
-    it('should return a UserName instance with a valid name', () => {
-      const userName = UserName.create();
-      expect(userName).toBeInstanceOf(UserName);
-      expect(userName.toString()).toBe('users/mockedUuid');
     });
   });
 
@@ -59,14 +47,6 @@ describe('UnclaimedDeviceName', () => {
     });
   });
 
-  describe('create', () => {
-    it('should return a UnclaimedDeviceName instance with a valid name', () => {
-      const unclaimedDeviceName = UnclaimedDeviceName.create();
-      expect(unclaimedDeviceName).toBeInstanceOf(UnclaimedDeviceName);
-      expect(unclaimedDeviceName.toString()).toBe('users/mockedUuid');
-    });
-  });
-
   describe('toString', () => {
     it('should return the string representation of UnclaimedDeviceName', () => {
       const unclaimedDeviceName = UnclaimedDeviceName.parse('users/user123')!;
@@ -92,18 +72,6 @@ describe('DeviceName', () => {
       const deviceName = DeviceName.parse(name);
       expect(deviceName).toBeUndefined();
     });
-  });
-
-  describe('createFromParent', () => {
-    it(
-      'should return a DeviceName instance with a valid name and parent user',
-      () => {
-        const user = UserName.parse('users/user123')!;
-        const deviceName = DeviceName.createFromParent(user);
-        expect(deviceName).toBeInstanceOf(DeviceName);
-        expect(deviceName.toString()).toBe('users/user123/devices/mockedUuid');
-      }
-    );
   });
 
   describe('toString', () => {
