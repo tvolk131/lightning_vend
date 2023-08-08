@@ -31,6 +31,41 @@ export class UserName {
   }
 }
 
+// Represents a unique resource identifer for a UnclaimedDevice.
+// This is a top-level resource, so it has no parent.
+// Formatted as: `unclaimedDevices/{unclaimed_device}`.
+export class UnclaimedDeviceName {
+  private readonly unclaimedDevice: string;
+
+  private constructor(name: string) {
+    const match = name.match(/^unclaimedDevices\/(.+)$/);
+    if (!match) {
+      throw new Error(`Invalid unclaimed device name: ${name}`);
+    }
+    this.unclaimedDevice = match[1];
+  }
+
+  public static parse(name: string): UnclaimedDeviceName | undefined {
+    try {
+      return new UnclaimedDeviceName(name);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  public static create(): UnclaimedDeviceName {
+    return new UnclaimedDeviceName(`unclaimedDevices/${makeUuid()}`);
+  }
+
+  public toString(): string {
+    return `unclaimedDevices/${this.unclaimedDevice}`;
+  }
+
+  public getUnclaimedDeviceSegment(): string {
+    return this.unclaimedDevice;
+  }
+}
+
 // Represents a unique resource identifer for a Device.
 // This resource is a child of a User.
 // Formatted as: `users/{user}/devices/{device}`.
