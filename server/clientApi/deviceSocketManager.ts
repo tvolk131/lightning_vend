@@ -7,7 +7,7 @@ import {
 import {EventNames, EventParams} from 'socket.io/dist/typed-events';
 import {Server, Socket} from 'socket.io';
 import {parse, serialize} from 'cookie';
-import {Device} from '../../proto/lightning_vend/model';
+import {Device} from '../../proto_out/lightning_vend/model';
 import {DeviceName} from '../../shared/proto';
 import {DeviceSessionManager} from '../persistence/deviceSessionManager';
 import {

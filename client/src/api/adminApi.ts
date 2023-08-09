@@ -14,7 +14,7 @@ import {
 import {useEffect, useState} from 'react';
 import {AdminData} from '../../../server/persistence/adminSessionManager';
 import {DeviceName} from '../../../shared/proto';
-import {InventoryItem} from '../../../proto/lightning_vend/model';
+import {InventoryItem} from '../../../proto_out/lightning_vend/model';
 import axios from 'axios';
 
 class AdminApi extends ReactSocket<

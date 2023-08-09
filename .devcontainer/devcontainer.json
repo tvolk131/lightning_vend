@@ -12,5 +12,5 @@
 			]
 		}
 	},
-	"onCreateCommand": "cd client && npm i && npm run build-proto && npm run build-dev-no-watch && cd .. && cd command_executor_server && cargo build && cd .."
+	"onCreateCommand": "cd client && npm i && npm run install-proto-linux && npm run build-proto && npm run build-dev-no-watch && cd .. && cd command_executor_server && cargo build && cd .."
 }

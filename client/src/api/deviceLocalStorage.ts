@@ -1,4 +1,4 @@
-import {Device} from '../../../proto/lightning_vend/model';
+import {Device} from '../../../proto_out/lightning_vend/model';
 
 const deviceKey = 'device';
 

@@ -5,7 +5,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import Fab from '@mui/material/Fab';
-import {InventoryItem} from '../../proto/lightning_vend/model';
+import {InventoryItem} from '../../proto_out/lightning_vend/model';
 import {Invoice} from './invoice';
 import Paper from '@mui/material/Paper';
 import Slide from '@mui/material/Slide';

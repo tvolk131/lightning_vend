@@ -4,7 +4,7 @@ import {
   AdminServerToClientEvents,
   AdminSocketData
 } from '../../shared/adminSocketTypes';
-import {Device, InventoryItem} from '../../proto/lightning_vend/model';
+import {Device, InventoryItem} from '../../proto_out/lightning_vend/model';
 import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from '../persistence/adminSessionManager';

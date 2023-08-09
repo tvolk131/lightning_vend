@@ -15,7 +15,7 @@ dist-ssr
 /client/out/**
 *.macaroon
 *.cert
-/proto/**/*.ts
+/proto_out/**/*.ts
 
 # Editor directories and files
 .vscode/*

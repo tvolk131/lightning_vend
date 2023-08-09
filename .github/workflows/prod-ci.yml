@@ -23,7 +23,7 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Install Webpack Dependencies and Test/Build Frontend
-      run: cd client && npm i && npm run build-proto && npm test && npm run lint && npm run build-prod && cd ..
+      run: cd client && npm i && npm run install-proto-linux && npm run build-proto && npm test && npm run lint && npm run build-prod && cd ..
     - name: Build Backends
       # TODO - Run:
       #   cargo check --features "adafruit_motorkit"
