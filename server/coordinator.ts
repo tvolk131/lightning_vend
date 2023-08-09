@@ -57,7 +57,7 @@ export class Coordinator {
         pingInterval: 5000,
         pingTimeout: 4000
       }),
-      this.adminSessionManager.getUserNameFromAdminSessionId.bind(
+      this.adminSessionManager.getUserNameFromUserSessionToken.bind(
         this.adminSessionManager
       ),
       this.getAdminData.bind(this),
@@ -126,14 +126,8 @@ export class Coordinator {
       });
   }
 
-  public getOrCreateAdminSession(
-    adminSessionId: string,
-    lightningNodePubkey: string
-  ) {
-    return this.adminSessionManager.getOrCreateAdminSession(
-      adminSessionId,
-      lightningNodePubkey
-    );
+  public createUserSessionToken(lightningNodePubkey: string) {
+    return this.adminSessionManager.createUserSessionToken(lightningNodePubkey);
   }
 
   private claimDevice(

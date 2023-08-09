@@ -8,9 +8,9 @@ import {Device, InventoryItem} from '../../proto_out/lightning_vend/model';
 import {DeviceName, UserName} from '../../shared/proto';
 import {Server, Socket} from 'socket.io';
 import {AdminData} from '../persistence/adminSessionManager';
-import {adminSessionCookieName} from '..';
 import {createSignableMessageWithTTL} from '../lnAuth';
 import {parse} from 'cookie';
+import {userSessionCookieName} from '..';
 
 type AdminSocket = Socket<AdminClientToServerEvents,
                           AdminServerToClientEvents,
@@ -27,8 +27,8 @@ export class AdminSocketManager {
     string, {socket: AdminSocket, userName: UserName | undefined}
   > = new Map();
   private socketsByUserName: Map<string, AdminSocket[]> = new Map();
-  private getUserNameFromAdminSessionId: (
-    adminSessionId: string
+  private getUserNameFromUserSessionToken: (
+    userSessionToken: string
   ) => UserName | undefined;
   private getAdminData: (userName: UserName) => AdminData | undefined;
 
@@ -37,8 +37,8 @@ export class AdminSocketManager {
                    AdminServerToClientEvents,
                    AdminInterServerEvents,
                    AdminSocketData>,
-    getUserNameFromAdminSessionId: (
-      adminSessionId: string
+    getUserNameFromUserSessionToken: (
+      userSessionToken: string
     ) => UserName | undefined,
     getAdminData: (userName: UserName) => AdminData | undefined,
     claimDevice: (
@@ -51,13 +51,13 @@ export class AdminSocketManager {
       mutateFn: (device: Device) => Device
     ) => Promise<Device>
   ) {
-    this.getUserNameFromAdminSessionId = getUserNameFromAdminSessionId;
+    this.getUserNameFromUserSessionToken = getUserNameFromUserSessionToken;
     this.getAdminData = getAdminData;
 
     server.on('connection', (socket) => {
-      const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
-      const userName = adminSessionId ?
-        this.getUserNameFromAdminSessionId(adminSessionId)
+      const userSessionToken = AdminSocketManager.getUserSessionToken(socket);
+      const userName = userSessionToken ?
+        this.getUserNameFromUserSessionToken(userSessionToken)
         :
         undefined;
       this.addSocket(socket, {userName});
@@ -132,9 +132,9 @@ export class AdminSocketManager {
   }
 
   private getAdminDataForSocket(socket: AdminSocket): AdminData | undefined {
-    const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
-    if (adminSessionId) {
-      const userName = this.getUserNameFromAdminSessionId(adminSessionId);
+    const userSessionToken = AdminSocketManager.getUserSessionToken(socket);
+    if (userSessionToken) {
+      const userName = this.getUserNameFromUserSessionToken(userSessionToken);
       if (userName) {
         return this.getAdminData(userName);
       }
@@ -163,10 +163,10 @@ export class AdminSocketManager {
 
   private addSocket(socket: AdminSocket, socketData: AdminSocketData) {
     socket.data = socketData;
-    const adminSessionId = AdminSocketManager.getAdminSessionId(socket);
+    const userSessionToken = AdminSocketManager.getUserSessionToken(socket);
     let userName;
-    if (adminSessionId) {
-      userName = this.getUserNameFromAdminSessionId(adminSessionId);
+    if (userSessionToken) {
+      userName = this.getUserNameFromUserSessionToken(userSessionToken);
     }
 
     this.socketsBySocketId.set(socket.id, {socket, userName});
@@ -198,10 +198,10 @@ export class AdminSocketManager {
     }
   }
 
-  private static getAdminSessionId(socket: AdminSocket): string | undefined {
+  private static getUserSessionToken(socket: AdminSocket): string | undefined {
     const cookie = socket.handshake.headers.cookie;
     if (cookie) {
-      return parse(cookie, {})[adminSessionCookieName];
+      return parse(cookie, {})[userSessionCookieName];
     }
   }
 }
