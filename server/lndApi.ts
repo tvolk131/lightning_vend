@@ -32,6 +32,13 @@ const macaroon = fs.readFileSync(
 // TODO - Find a better place for this. It makes no sense to have
 // here, but it's a convenient place for now.
 export const lnAuthJwtSecret = macaroon;
+
+// This value is used for generating and verifying user session JWTs, so it
+// should be kept secret and changed if it's ever compromised.
+// TODO - Find a better place for this. It makes no sense to have here, but it's
+// a convenient place for now.
+export const userSessionJwtSecret = macaroon;
+
 const metadata = new grpc.Metadata();
 metadata.add('macaroon', macaroon);
 const macaroonCreds = grpc.credentials.createFromMetadataGenerator(
