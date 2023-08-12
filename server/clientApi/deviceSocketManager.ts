@@ -85,66 +85,74 @@ export class DeviceSocketManager {
         hasDisconnected = true;
       });
 
-      // TODO - Emit an event to the socket if a `deviceSessionId` cookie is not
-      // present so the device knows to restart the socket.
       const deviceSessionId = DeviceSocketManager.getDeviceSessionId(socket);
-      let resourceName: ClaimedOrUnclaimedDeviceName | undefined = undefined;
-      if (deviceSessionId !== undefined) {
-        try {
-          const deviceName = DeviceName.parse(
-            (
-              await deviceCollection.GetDeviceByDeviceSessionId(
-                GetDeviceByDeviceSessionIdRequest.create({
-                  deviceSessionId
-                })
-              )
-            ).name
-          );
-          if (deviceName) {
-            resourceName = {deviceName};
-          }
-        } catch (err) {
-          // This error probably means that the device session id doesn't yet
-          // exist in the database, or it maps to an unclaimed device. Either
-          // way, we can leave `deviceName` as undefined.
-          // TODO - Treat database read errors differently from other errors.
-          // If the database is down, we don't want to treat that as a
-          // non-existent device session id.
-        }
+      if (!deviceSessionId) {
+        // The socket has no device session id, so it cannot be registered as a
+        // database-backed device. Initial socket handshake sets a device
+        // session id cookie if one doesn't already exist, so the socket client
+        // should just need to disconnect and reconnect the socket.
+        socket.emit('noDeviceSessionId');
+        // There's no device session id, so we can't register bind socket to any
+        // device, claimed or unclaimed. Once the socket reconnects with a
+        // device session id, we'll be able to bind it to a device.
+        return;
+      }
 
+      let resourceName: ClaimedOrUnclaimedDeviceName | undefined = undefined;
+      try {
+        const deviceName = DeviceName.parse(
+          (
+            await deviceCollection.GetDeviceByDeviceSessionId(
+              GetDeviceByDeviceSessionIdRequest.create({
+                deviceSessionId
+              })
+            )
+          ).name
+        );
+        if (deviceName) {
+          resourceName = {deviceName};
+        }
+      } catch (err) {
+        // This error probably means that the device session id doesn't yet
+        // exist in the database, or it maps to an unclaimed device. Either
+        // way, we can leave `deviceName` as undefined.
+        // TODO - Treat database read errors differently from other errors.
+        // If the database is down, we don't want to treat that as a
+        // non-existent device session id.
+      }
+
+      try {
+        const unclaimedDeviceName = UnclaimedDeviceName.parse(
+          (
+            await deviceCollection.GetUnclaimedDeviceByDeviceSessionId(
+              GetUnclaimedDeviceByDeviceSessionIdRequest.create({
+                deviceSessionId
+              })
+            )
+          ).name
+        );
+        if (unclaimedDeviceName) {
+          resourceName = {unclaimedDeviceName};
+        }
+      } catch (err) {
         try {
-          const unclaimedDeviceName = UnclaimedDeviceName.parse(
-            (
-              await deviceCollection.GetUnclaimedDeviceByDeviceSessionId(
-                GetUnclaimedDeviceByDeviceSessionIdRequest.create({
+          const unclaimedDevice =
+            await deviceCollection.CreateUnclaimedDevice(
+            CreateUnclaimedDeviceRequest.create({
+                unclaimedDevice: UnclaimedDevice.create({
                   deviceSessionId
                 })
-              )
-            ).name
-          );
+              })
+            );
+
+          const unclaimedDeviceName =
+            UnclaimedDeviceName.parse(unclaimedDevice.name);
           if (unclaimedDeviceName) {
             resourceName = {unclaimedDeviceName};
           }
         } catch (err) {
-          try {
-            const unclaimedDevice =
-              await deviceCollection.CreateUnclaimedDevice(
-              CreateUnclaimedDeviceRequest.create({
-                  unclaimedDevice: UnclaimedDevice.create({
-                    deviceSessionId
-                  })
-                })
-              );
-
-            const unclaimedDeviceName =
-              UnclaimedDeviceName.parse(unclaimedDevice.name);
-            if (unclaimedDeviceName) {
-              resourceName = {unclaimedDeviceName};
-            }
-          } catch (err) {
-            // TODO - This is probably due to a database error. We can leave
-            // `unclaimedDeviceName` as undefined. Let's handle this later.
-          }
+          // TODO - This is probably due to a database error. We can leave
+          // `unclaimedDeviceName` as undefined. Let's handle this later.
         }
       }
 

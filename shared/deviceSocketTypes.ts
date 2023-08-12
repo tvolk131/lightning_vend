@@ -12,6 +12,11 @@ export interface DeviceServerToClientEvents {
   // the first message sent by the server to the client, and should only be
   // sent once for the lifetime of each socket.
   socketReady: () => void;
+  // Indicates that no device session id was found during the socket handshake.
+  // In this case, the server sets a device session id and send it back to the
+  // client. Because of this, the client should just need to close and reopen
+  // the socket.
+  noDeviceSessionId: () => void;
 }
 
 export interface DeviceClientToServerEvents {

@@ -58,6 +58,10 @@ class DeviceApi extends ReactSocket<
       this.getDevice();
     });
 
+    this.socket.on('noDeviceSessionId', () => {
+      this.disconnectAndReconnectSocket();
+    });
+
     this.socket.on('updateDevice', this.updateAndStoreDevice.bind(this));
 
     this.socket.on('invoicePaid', (invoice, deviceAck) => {
