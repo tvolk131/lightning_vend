@@ -8,24 +8,14 @@ import {
   DeviceClientToServerEvents,
   DeviceServerToClientEvents
 } from '../../../shared/deviceSocketTypes';
-import {loadDevice, storeDevice} from './deviceLocalStorage';
+import {clearDevice, loadDevice, storeDevice} from './deviceLocalStorage';
 import {
   socketIoClientRpcTimeoutMs,
   socketIoDevicePath
 } from '../../../shared/constants';
 import {useEffect, useState} from 'react';
-import {Device} from '../../../proto_out/lightning_vend/model';
 import {ExecutionCommands} from '../../../shared/commandExecutor';
 import {makeUuid} from '../../../shared/uuid';
-
-const toClaimedOrUnclaimedDevice = (
-  device: Device | undefined
-): ClaimedOrUnclaimedDevice | undefined => {
-  if (device === null || device === undefined) {
-    return device;
-  }
-  return {device};
-};
 
 class DeviceApi extends ReactSocket<
   DeviceServerToClientEvents,
@@ -40,7 +30,7 @@ class DeviceApi extends ReactSocket<
   >(
     {
       state: 'loading',
-      cachedData: toClaimedOrUnclaimedDevice(loadDevice())
+      cachedData: loadDevice()
     }
   );
 
@@ -128,7 +118,7 @@ class DeviceApi extends ReactSocket<
   public async getDevice(): Promise<ClaimedOrUnclaimedDevice> {
     this.deviceDataManager.setData({
       state: 'loading',
-      cachedData: toClaimedOrUnclaimedDevice(loadDevice())
+      cachedData: loadDevice()
     });
 
     return new Promise<ClaimedOrUnclaimedDevice>((resolve, reject) => {
@@ -172,7 +162,7 @@ class DeviceApi extends ReactSocket<
       // if it exists.
       this.deviceDataManager.setData({
         state: 'error',
-        cachedData: toClaimedOrUnclaimedDevice(loadDevice())
+        cachedData: loadDevice()
       });
     } else {
       // If the device is null, it means the server told us that the device
@@ -180,9 +170,9 @@ class DeviceApi extends ReactSocket<
       // the device is not null, we want to update the cache. Either way, the
       // data is in a final state, so we can set the state to 'loaded'.
       if (device === null) {
-        storeDevice(undefined);
-      } else if ('device' in device) {
-        storeDevice(device.device);
+        clearDevice();
+      } else {
+        storeDevice(device);
       }
 
       this.deviceDataManager.setData({
