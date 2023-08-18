@@ -1,4 +1,5 @@
 import * as compression from 'compression';
+import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as fs from 'fs';
 import * as http from 'http';
@@ -14,6 +15,8 @@ const coordinator = new Coordinator(server, lightning);
 
 export const userSessionCookieName = 'user-session';
 export const deviceSessionCookieName = 'device-session';
+
+dotenv.config();
 
 app.get('/api/registerAdmin/:message/:signature', async (req, res) => {
   let lightningNodePubkey;
