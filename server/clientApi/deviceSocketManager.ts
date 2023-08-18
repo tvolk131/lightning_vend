@@ -3,7 +3,8 @@ import {
   DeviceClientToServerEvents,
   DeviceInterServerEvents,
   DeviceServerToClientEvents,
-  DeviceSocketData
+  DeviceSocketData,
+  encodeClaimedOrUnclaimedDevice
 } from '../../shared/deviceSocketTypes';
 import {
   CreateUnclaimedDeviceRequest,
@@ -210,7 +211,11 @@ export class DeviceSocketManager {
    * @returns Whether there is an open socket to the device.
    */
   public updateDevice(deviceName: DeviceName, device: Device): boolean {
-    return this.sendMessageToDevice(deviceName, 'updateDevice', {device});
+    return this.sendMessageToDevice(
+      deviceName,
+      'updateDevice',
+      encodeClaimedOrUnclaimedDevice({device})
+    );
   }
 
   public isDeviceConnected(deviceName: DeviceName): boolean {
@@ -288,7 +293,7 @@ export class DeviceSocketManager {
               name: socket.data.resourceName.deviceName.toString()
             })
           );
-          return callback({device});
+          return callback(encodeClaimedOrUnclaimedDevice({device}));
         } else {
           const unclaimedDevice =
             await deviceCollection.GetUnclaimedDeviceByDeviceSessionId(
@@ -296,7 +301,7 @@ export class DeviceSocketManager {
                 deviceSessionId: socket.data.deviceSessionId
               })
             );
-          return callback({unclaimedDevice});
+          return callback(encodeClaimedOrUnclaimedDevice({unclaimedDevice}));
         }
       } catch (err) {
         // TODO - Add a way to invoke the callback to indicate an error.

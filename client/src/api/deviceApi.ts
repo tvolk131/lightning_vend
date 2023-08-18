@@ -6,7 +6,9 @@ import {
 import {
   ClaimedOrUnclaimedDevice,
   DeviceClientToServerEvents,
-  DeviceServerToClientEvents
+  DeviceServerToClientEvents,
+  EncodedClaimedOrUnclaimedDevice,
+  decodeClaimedOrUnclaimedDevice
 } from '../../../shared/deviceSocketTypes';
 import {clearDevice, loadDevice, storeDevice} from './deviceLocalStorage';
 import {
@@ -52,7 +54,9 @@ class DeviceApi extends ReactSocket<
       this.disconnectAndReconnectSocket();
     });
 
-    this.socket.on('updateDevice', this.updateAndStoreDevice.bind(this));
+    this.socket.on('updateDevice', (encodedDevice) => {
+      this.updateAndStoreDevice(decodeClaimedOrUnclaimedDevice(encodedDevice));
+    });
 
     this.socket.on('invoicePaid', (invoice, deviceAck) => {
       this.invoicePaidCallbacks.forEach((callback) => {
@@ -121,18 +125,19 @@ class DeviceApi extends ReactSocket<
       cachedData: loadDevice()
     });
 
-    return new Promise<ClaimedOrUnclaimedDevice>((resolve, reject) => {
+    return new Promise<EncodedClaimedOrUnclaimedDevice>((resolve, reject) => {
       this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
         'getDevice',
-        (err, device) => {
+        (err, encodedDevice) => {
           if (err) {
             return reject(err);
           }
 
-          return resolve(device);
+          return resolve(encodedDevice);
         }
       );
-    }).then((device) => {
+    }).then((encodedDevice) => {
+      const device = decodeClaimedOrUnclaimedDevice(encodedDevice);
       this.updateAndStoreDevice(device);
       return device;
     }).catch((err) => {

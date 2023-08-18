@@ -3,7 +3,7 @@ import {DeviceName, UnclaimedDeviceName} from './proto';
 import {ExecutionCommands} from './commandExecutor';
 
 export interface DeviceServerToClientEvents {
-  updateDevice: (device: ClaimedOrUnclaimedDevice) => void;
+  updateDevice: (device: EncodedClaimedOrUnclaimedDevice) => void;
   invoicePaid: (invoice: string, deviceAck: () => void) => void;
   // Indicates that the server is ready to receive messages from the client.
   // This is necessary because the client may send messages before the server
@@ -20,7 +20,9 @@ export interface DeviceServerToClientEvents {
 }
 
 export interface DeviceClientToServerEvents {
-  getDevice: (callback: (device: ClaimedOrUnclaimedDevice) => void) => void;
+  getDevice: (
+    callback: (device: EncodedClaimedOrUnclaimedDevice) => void
+  ) => void;
   setDeviceExecutionCommands: (
     executionCommands: ExecutionCommands,
     callback: (success: boolean) => void
@@ -44,3 +46,44 @@ export type ClaimedOrUnclaimedDeviceName =
 
 export type ClaimedOrUnclaimedDevice =
   {device: Device} | {unclaimedDevice: UnclaimedDevice};
+
+/**
+ * We need to send encoded versions of Device and UnclaimedDevice over the
+ * socket since they each contain Date objects, which are not supported by
+ * JSON.stringify (which is used by socket.io to encode messages). See
+ * https://github.com/socketio/socket.io/issues/3405.
+ */
+export type EncodedClaimedOrUnclaimedDevice =
+  {device: Uint8Array} | {unclaimedDevice: Uint8Array};
+
+export const encodeClaimedOrUnclaimedDevice = (
+  claimedOrUnclaimedDevice: ClaimedOrUnclaimedDevice
+): EncodedClaimedOrUnclaimedDevice => {
+  if ('device' in claimedOrUnclaimedDevice) {
+    return {device: Device.encode(claimedOrUnclaimedDevice.device).finish()};
+  } else {
+    return {
+      unclaimedDevice: UnclaimedDevice.encode(
+        claimedOrUnclaimedDevice.unclaimedDevice
+      ).finish()
+    };
+  }
+};
+
+export const decodeClaimedOrUnclaimedDevice = (
+  encodedClaimedOrUnclaimedDevice: EncodedClaimedOrUnclaimedDevice
+): ClaimedOrUnclaimedDevice => {
+  if ('device' in encodedClaimedOrUnclaimedDevice) {
+    return {
+      device: Device.decode(
+        new Uint8Array(encodedClaimedOrUnclaimedDevice.device)
+      )
+    };
+  } else {
+    return {
+      unclaimedDevice: UnclaimedDevice.decode(
+        new Uint8Array(encodedClaimedOrUnclaimedDevice.unclaimedDevice)
+      )
+    };
+  }
+};
