@@ -326,7 +326,7 @@ export const DevicePage = () => {
           }
         }}
       >
-        <Typography variant={'h3'}>Tap to Continue</Typography>
+        <Typography variant={'h3'}>Tap Me!</Typography>
       </div>
     </div>
   );
