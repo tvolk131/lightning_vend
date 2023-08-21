@@ -4,16 +4,18 @@ import {
   SubscribableDataManager
 } from './sharedApi';
 import {
+  ClaimedOrUnclaimedDevice,
   DeviceClientToServerEvents,
-  DeviceServerToClientEvents
+  DeviceServerToClientEvents,
+  EncodedClaimedOrUnclaimedDevice,
+  decodeClaimedOrUnclaimedDevice
 } from '../../../shared/deviceSocketTypes';
-import {loadDevice, storeDevice} from './deviceLocalStorage';
+import {clearDevice, loadDevice, storeDevice} from './deviceLocalStorage';
 import {
   socketIoClientRpcTimeoutMs,
   socketIoDevicePath
 } from '../../../shared/constants';
 import {useEffect, useState} from 'react';
-import {Device} from '../../../proto_out/lightning_vend/model';
 import {ExecutionCommands} from '../../../shared/commandExecutor';
 import {makeUuid} from '../../../shared/uuid';
 
@@ -25,11 +27,14 @@ class DeviceApi extends ReactSocket<
     string,
     ((invoice: string) => void)
   > = new Map();
-  private deviceDataManager =
-    new SubscribableDataManager<AsyncLoadableData<Device | null>>({
+  private deviceDataManager = new SubscribableDataManager<
+    AsyncLoadableData<ClaimedOrUnclaimedDevice>
+  >(
+    {
       state: 'loading',
       cachedData: loadDevice()
-    });
+    }
+  );
 
   public constructor() {
     super(socketIoDevicePath);
@@ -41,11 +46,17 @@ class DeviceApi extends ReactSocket<
     // TODO - The server should ack `updateDevice` messages so that the client
     // isn't responsible for fetching the device on reconnect. This will also
     // make the client more resilient to out of order updates.
-    this.socket.on('connect', () => {
+    this.socket.on('socketReady', () => {
       this.getDevice();
     });
 
-    this.socket.on('updateDevice', this.updateAndStoreDevice.bind(this));
+    this.socket.on('noDeviceSessionId', () => {
+      this.disconnectAndReconnectSocket();
+    });
+
+    this.socket.on('updateDevice', (encodedDevice) => {
+      this.updateAndStoreDevice(decodeClaimedOrUnclaimedDevice(encodedDevice));
+    });
 
     this.socket.on('invoicePaid', (invoice, deviceAck) => {
       this.invoicePaidCallbacks.forEach((callback) => {
@@ -83,8 +94,12 @@ class DeviceApi extends ReactSocket<
     return this.invoicePaidCallbacks.delete(callbackId);
   }
 
-  public useLoadableDevice(): AsyncLoadableData<Device | null> {
-    const [data, setData] = useState<AsyncLoadableData<Device | null>>(
+  public useLoadableDevice(
+  ): AsyncLoadableData<ClaimedOrUnclaimedDevice> {
+    const [
+      data,
+      setData
+    ] = useState<AsyncLoadableData<ClaimedOrUnclaimedDevice>>(
       this.deviceDataManager.getData()
     );
 
@@ -104,24 +119,25 @@ class DeviceApi extends ReactSocket<
    * @returns A promise that resolves to the device, or null if the device
    * doesn't exist.
    */
-  public async getDevice(): Promise<Device | null> {
+  public async getDevice(): Promise<ClaimedOrUnclaimedDevice> {
     this.deviceDataManager.setData({
       state: 'loading',
       cachedData: loadDevice()
     });
 
-    return new Promise<Device | null>((resolve, reject) => {
+    return new Promise<EncodedClaimedOrUnclaimedDevice>((resolve, reject) => {
       this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
         'getDevice',
-        (err, device) => {
+        (err, encodedDevice) => {
           if (err) {
             return reject(err);
           }
 
-          return resolve(device);
+          return resolve(encodedDevice);
         }
       );
-    }).then<Device | null>((device) => {
+    }).then((encodedDevice) => {
+      const device = decodeClaimedOrUnclaimedDevice(encodedDevice);
       this.updateAndStoreDevice(device);
       return device;
     }).catch((err) => {
@@ -144,7 +160,7 @@ class DeviceApi extends ReactSocket<
    * be deleted. An undefined value means the device failed to load, which will
    * cause the device to be kept in the current state.
    */
-  private updateAndStoreDevice(device: Device | null | undefined) {
+  private updateAndStoreDevice(device: ClaimedOrUnclaimedDevice | undefined) {
     if (device === undefined) {
       // If the device is undefined, it means we got an error from the server.
       // In this case, we want to keep and render the previously cached device
@@ -158,32 +174,17 @@ class DeviceApi extends ReactSocket<
       // doesn't exist. In this case, `storeDevice()` will clear the cache. If
       // the device is not null, we want to update the cache. Either way, the
       // data is in a final state, so we can set the state to 'loaded'.
-      storeDevice(device || undefined);
+      if (device === null) {
+        clearDevice();
+      } else {
+        storeDevice(device);
+      }
 
       this.deviceDataManager.setData({
         state: 'loaded',
         data: device
       });
     }
-  }
-
-  public async getDeviceSetupCode(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.socket.timeout(socketIoClientRpcTimeoutMs).emit(
-        'getDeviceSetupCode',
-        (err, deviceSetupCode) => {
-          if (err) {
-            return reject(err);
-          }
-
-          if (deviceSetupCode) {
-            return resolve(deviceSetupCode);
-          } else {
-            return reject();
-          }
-        }
-      );
-    });
   }
 
   public async setDeviceExecutionCommands(

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package lightning_vend;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "lightning_vend/model.proto";
+
+// A service for managing users.
+service UserService {
+  // Retrieves a user by its auth id, or creates one if it doesn't exist.
+  rpc GetOrCreateUserByAuthId(GetOrCreateUserByAuthIdRequest) returns (User) {};
+
+  // Retrieves a user.
+  rpc GetUser(GetUserRequest) returns (User) {};
+}
+
+// Request message for GetOrCreateUserByAuthId.
+message GetOrCreateUserByAuthIdRequest {
+  // The user to retrieve or create. The auth id must be set. The `name` field
+  // is always ignored. If the user already exists, all other fields will be
+  // ignored.
+  User user = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for GetUser.
+message GetUserRequest {
+  // The name of the user to retrieve.
+  // Format: users/{user}.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.lightningvend.com/User"}
+  ];
+}

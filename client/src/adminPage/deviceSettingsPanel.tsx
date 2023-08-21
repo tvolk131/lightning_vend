@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {AdminDeviceView} from '../../../server/persistence/adminSessionManager';
+import {AdminDeviceView} from '../../../shared/adminSocketTypes';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';

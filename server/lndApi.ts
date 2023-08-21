@@ -23,14 +23,15 @@ const sslCreds = grpc.credentials.createSsl(lndCert);
 const macaroon = fs.readFileSync(
   __dirname + '/../config/admin.macaroon'
 ).toString('hex');
-// This value is used for generating and verifying short-lived
-// unsigned LN messages used for login authentication, so using
-// any value that's unlikely to change often is fine. If this
-// value is ever changed, users who happen to be in the middle
-// of logging in through LN message signing will simply need to
-// try again.
-// TODO - Find a better place for this. It makes no sense to have
-// here, but it's a convenient place for now.
+
+// This value is used for generating and verifying short-lived unsigned LN
+// messages used for login authentication, so using any value that's unlikely to
+// change often is fine. If this value is ever changed, users who happen to be
+// in the middle of logging in through LN message signing will simply need to
+// try again. This value should be kept secret and changed if it's ever
+// compromised.
+// TODO - Find a better place for this. It makes no sense to have here, but it's
+// a convenient place for now.
 export const lnAuthJwtSecret = macaroon;
 
 // This value is used for generating and verifying user session JWTs, so it

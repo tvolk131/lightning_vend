@@ -30,48 +30,6 @@ export const DevicePage = () => {
   const connectionStatus = deviceApi.useConnectionStatus();
   const loadableDevice = deviceApi.useLoadableDevice();
 
-  const [deviceSetupCode, setDeviceSetupCode] =
-    useState<AsyncLoadableData<string>>({state: 'loading'});
-
-  const fetchDeviceSetupCode = () => {
-    setDeviceSetupCode({state: 'loading'});
-    deviceApi.getDeviceSetupCode()
-      .then((code) => {
-        setDeviceSetupCode({state: 'loaded', data: code});
-      }).catch(() => {
-        setDeviceSetupCode({state: 'error'});
-      });
-  };
-
-  useEffect(fetchDeviceSetupCode, []);
-
-  const renderDeviceSetupCode = () => {
-    if (deviceSetupCode.state === 'loaded') {
-      return (
-        <Typography variant={'h3'}>
-          {deviceSetupCode.data}
-        </Typography>
-      );
-    } else if (deviceSetupCode.state === 'error') {
-      return (
-        <div>
-          <Typography variant={'h4'}>
-            Error loading setup code!
-          </Typography>
-          <Button
-            style={{marginTop: theme.spacing(2)}}
-            variant={'contained'}
-            onClick={fetchDeviceSetupCode}
-          >
-            Retry
-          </Button>
-        </div>
-      );
-    } else {
-      return <CircularProgress/>;
-    }
-  };
-
   const [executionCommands, setExecutionCommands] =
     useState<AsyncLoadableData<ExecutionCommands>>({state: 'loading'});
 
@@ -101,10 +59,13 @@ export const DevicePage = () => {
   // Load execution commands from the device if the device is already claimed
   // and setup, and the previously loaded commands differ from the current ones.
   useEffect(() => {
-    if (loadableDevice.state === 'loaded' && loadableDevice.data) {
+    if (loadableDevice.state === 'loaded' &&
+        loadableDevice.data &&
+        'device' in loadableDevice.data) {
+      const device = loadableDevice.data.device;
       const savedExecutionCommands: ExecutionCommands = {
-        nullCommands: loadableDevice.data.nullExecutionCommands,
-        boolCommands: loadableDevice.data.boolExecutionCommands
+        nullCommands: device.nullExecutionCommands,
+        boolCommands: device.boolExecutionCommands
       };
       if (executionCommands.state !== 'loaded' || (
             executionCommands.state === 'loaded' &&
@@ -175,7 +136,7 @@ export const DevicePage = () => {
         {/* TODO - Indicate whether we're still loading the device and/or using
             cached data. And if we're in an error state, indicate that the
             device failed to load, and allow retry. */}
-        {loadableDeviceStats.data && (
+        {loadableDeviceStats.data && 'device' in loadableDeviceStats.data && (
           <SelectionMenu
             size={centerSquareSize}
             // TODO - Only hide the invoice if it has expired or is manually
@@ -183,8 +144,51 @@ export const DevicePage = () => {
             // invoice will only be hidden if it is no longer usable or the
             // user explicitly indicates they don't want to pay it.
             canShowInvoice={!screensaverActive}
-            inventory={loadableDeviceStats.data.inventory}
+            inventory={loadableDeviceStats.data.device.inventory}
           />
+        )}
+        {loadableDeviceStats.data &&
+         'unclaimedDevice' in loadableDeviceStats.data && (
+          <div style={{position: 'relative'}}>
+            <Paper
+              style={{
+                height: `${centerSquareSize}px`,
+                width: `${centerSquareSize}px`
+              }}
+            >
+              <div
+                style={{
+                  padding: '20px',
+                  textAlign: 'center',
+                  position: 'absolute',
+                  top: '50%',
+                  transform: 'translate(0, -50%)'
+                }}
+              >
+                <Typography style={{paddingBottom: '20px'}}>
+                  Device is not setup! Please login to an admin account on
+                  another device and enter the following setup code:
+                </Typography>
+                <Typography variant={'h3'}>
+                  {loadableDeviceStats.data.unclaimedDevice.setupCode}
+                </Typography>
+              </div>
+            </Paper>
+            {executionCommands.state === 'error' && (
+                <div style={{position: 'absolute', marginTop: '20px'}}>
+                  <Alert
+                    severity={'error'}
+                    action={
+                      <Button onClick={loadAndSaveExecutionCommands}>
+                        Retry
+                      </Button>
+                    }
+                  >
+                    Failed to load device execution commands!
+                  </Alert>
+                </div>
+            )}
+          </div>
         )}
         {!loadableDeviceStats.data && (() => {
           if (loadableDeviceStats.state === 'loading') {
@@ -241,49 +245,6 @@ export const DevicePage = () => {
                     </Button>
                   </div>
                 </Paper>
-              </div>
-            );
-          }
-
-          if (loadableDeviceStats.state === 'loaded') {
-            return (
-              <div style={{position: 'relative'}}>
-                <Paper
-                  style={{
-                    height: `${centerSquareSize}px`,
-                    width: `${centerSquareSize}px`
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: '20px',
-                      textAlign: 'center',
-                      position: 'absolute',
-                      top: '50%',
-                      transform: 'translate(0, -50%)'
-                    }}
-                  >
-                    <Typography style={{paddingBottom: '20px'}}>
-                      Device is not setup! Please login to an admin account on
-                      another device and enter the following setup code:
-                    </Typography>
-                    {renderDeviceSetupCode()}
-                  </div>
-                </Paper>
-                {executionCommands.state === 'error' && (
-                    <div style={{position: 'absolute', marginTop: '20px'}}>
-                      <Alert
-                        severity={'error'}
-                        action={
-                          <Button onClick={loadAndSaveExecutionCommands}>
-                            Retry
-                          </Button>
-                        }
-                      >
-                        Failed to load device execution commands!
-                      </Alert>
-                    </div>
-                )}
               </div>
             );
           }

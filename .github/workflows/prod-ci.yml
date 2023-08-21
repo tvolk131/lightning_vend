@@ -63,7 +63,12 @@ jobs:
         run: docker push registry.digitalocean.com/cards/lightningvend:$(echo $GITHUB_SHA | head -c7)
 
       - name: Update deployment file
-        run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|registry.digitalocean.com/cards/lightningvend:'${TAG}'|' $GITHUB_WORKSPACE/deployment.yml
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          sed -i 's|<IMAGE>|registry.digitalocean.com/cards/lightningvend:'${TAG}'|' $GITHUB_WORKSPACE/deployment.yml
+          sed -i 's|<MONGO_URI>|'${MONGO_URI}'|' $GITHUB_WORKSPACE/deployment.yml
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
 
       - name: Save DigitalOcean kubeconfig with short-lived credentials
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 cards
