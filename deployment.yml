@@ -17,6 +17,9 @@ spec:
         image: <IMAGE>
         ports:
         - containerPort: 80
+        env:
+        - name: MONGO_URI
+          value: "<MONGO_URI>"
         volumeMounts:
           - name: lightning-vend-lnd
             mountPath: /app/config/
