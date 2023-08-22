@@ -30,6 +30,7 @@
     "compression": "^1.7.4",
     "cookie": "^0.5.0",
     "dotenv": "^16.3.1",
+    "eslint-plugin-neverthrow": "^1.1.4",
     "express": "^4.18.2",
     "grpc": "^1.24.11",
     "html-webpack-plugin": "^5.5.3",
@@ -37,6 +38,7 @@
     "jwt-decode": "^3.1.2",
     "mongodb": "^5.7.0",
     "mongodb-memory-server": "^8.14.0",
+    "neverthrow": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intersection-observer-hook": "^2.1.1",
@@ -85,10 +87,12 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
       "@typescript-eslint",
-      "prettier"
+      "prettier",
+      "neverthrow"
     ],
     "parserOptions": {
-      "sourceType": "module"
+      "sourceType": "module",
+      "project": ["./tsconfig.json"]
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -122,7 +126,8 @@
       "semi-style": "error",
       "sort-imports": "error",
       "strict": "error",
-      "@typescript-eslint/explicit-member-accessibility": "error"
+      "@typescript-eslint/explicit-member-accessibility": "error",
+      "neverthrow/must-use-result": "error"
     }
   }
 }
