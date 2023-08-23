@@ -10,7 +10,7 @@ import {
   EncodedClaimedOrUnclaimedDevice,
   decodeClaimedOrUnclaimedDevice
 } from '../../../shared/deviceSocketTypes';
-import {clearDevice, loadDevice, storeDevice} from './deviceLocalStorage';
+import {loadDevice, storeDevice} from './deviceLocalStorage';
 import {
   socketIoClientRpcTimeoutMs,
   socketIoDevicePath
@@ -32,7 +32,7 @@ class DeviceApi extends ReactSocket<
   >(
     {
       state: 'loading',
-      cachedData: loadDevice()
+      cachedData: loadDevice().unwrapOr(undefined)
     }
   );
 
@@ -122,7 +122,7 @@ class DeviceApi extends ReactSocket<
   public async getDevice(): Promise<ClaimedOrUnclaimedDevice> {
     this.deviceDataManager.setData({
       state: 'loading',
-      cachedData: loadDevice()
+      cachedData: loadDevice().unwrapOr(undefined)
     });
 
     return new Promise<EncodedClaimedOrUnclaimedDevice>((resolve, reject) => {
@@ -167,18 +167,12 @@ class DeviceApi extends ReactSocket<
       // if it exists.
       this.deviceDataManager.setData({
         state: 'error',
-        cachedData: loadDevice()
+        cachedData: loadDevice().unwrapOr(undefined)
       });
     } else {
-      // If the device is null, it means the server told us that the device
-      // doesn't exist. In this case, `storeDevice()` will clear the cache. If
-      // the device is not null, we want to update the cache. Either way, the
-      // data is in a final state, so we can set the state to 'loaded'.
-      if (device === null) {
-        clearDevice();
-      } else {
-        storeDevice(device);
-      }
+      // We're calling `unwrapOr` here to throw away any error. We don't care if
+      // the write to localStorage fails since it's just a cache.
+      storeDevice(device).unwrapOr(undefined);
 
       this.deviceDataManager.setData({
         state: 'loaded',
