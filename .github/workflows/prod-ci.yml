@@ -62,11 +62,16 @@ jobs:
       - name: Push image to DigitalOcean Container Registry
         run: docker push registry.digitalocean.com/cards/lightningvend:$(echo $GITHUB_SHA | head -c7)
 
+      # Replace the image tag and environment variables in the deployment file.
+      # The `sed` command interprets the `&` character as a backreference to the
+      # matched string, so we need to re-escape it for strings that contain that
+      # character (such as the MONGO_URI environment variable).
       - name: Update deployment file
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           sed -i 's|<IMAGE>|registry.digitalocean.com/cards/lightningvend:'${TAG}'|' $GITHUB_WORKSPACE/deployment.yml
           sed -i 's|<MONGO_URI>|'${MONGO_URI}'|' $GITHUB_WORKSPACE/deployment.yml
+          sed -i 's|<MONGO_URI>|\&|' $GITHUB_WORKSPACE/deployment.yml
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
 
