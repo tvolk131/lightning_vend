@@ -3,11 +3,14 @@ import * as webpack from 'webpack';
 const SRC_DIR = path.join(__dirname, '/client/src');
 const DIST_DIR = path.join(__dirname, '/client/out');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+import {EsbuildPlugin} from 'esbuild-loader';
 import {GenerateSW} from 'workbox-webpack-plugin';
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 // const BundleAnalyzerPlugin =
 //   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+const target = 'chrome80';
 
 export default (
   _: any,
@@ -23,13 +26,14 @@ export default (
     },
     module: {
       rules: [
+        // Use esbuild to compile JavaScript & TypeScript
         {
-          test: /\.tsx?$/,
-          use: {
-            loader: 'ts-loader',
-            options: {
-              transpileOnly: true
-            }
+          // Match `.js`, `.jsx`, `.ts` or `.tsx` files
+          test: /\.[jt]sx?$/,
+          loader: 'esbuild-loader',
+          options: {
+            // JavaScript version to compile to
+            target
           }
         },
         {
@@ -42,7 +46,7 @@ export default (
       ]
     },
     resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+      extensions: ['.js', '.jsx', '.ts', '.tsx']
     },
     plugins: [
       new CleanWebpackPlugin(),
@@ -61,6 +65,15 @@ export default (
       maxAssetSize: maxBundleSize,
       maxEntrypointSize: maxBundleSize,
       hints: 'error'
+    },
+    optimization: {
+        minimizer: [
+            new EsbuildPlugin({
+                // Syntax to transpile to (see options below for possible
+                // values).
+                target
+            })
+        ]
     }
   };
 };

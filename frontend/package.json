@@ -12,7 +12,9 @@
     "lint": "eslint './**/*.ts' './**/*.tsx'",
     "start-prod": "ts-node ./server/index.ts",
     "start-dev": "nodemon ./server/index.ts --watch server --watch client/out/**",
-    "build-proto": "sh ./build_ts_proto.sh"
+    "build-proto": "sh ./build_ts_proto.sh",
+    "esbuild": "esbuild ./client/src/index.tsx --bundle --minify --sourcemap --metafile=meta.json --platform=browser --target=chrome80 --analyze --outfile=bundle.js",
+    "esbuild-basic": "esbuild"
   },
   "author": "Tommy Volk",
   "dependencies": {
@@ -63,6 +65,7 @@
     "@types/uuid": "^9.0.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "eslint": "^8.48.0",
+    "esbuild-loader": "^4.0.1",
     "eslint-plugin-prettier": "^4.2.1",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "jest": "^29.6.4",
