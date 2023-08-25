@@ -126,14 +126,20 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             <div style={{display: 'inline-block'}}>
               <Typography>Item Name: {inventoryItem.displayName}</Typography>
               <Typography>Price: {inventoryItem.priceSats} sats</Typography>
-              <Typography>
-                Vend Execution Command: {inventoryItem.vendNullExecutionCommand}
-              </Typography>
-              <Typography>
-                Inventory Check Command: {
-                  inventoryItem.inventoryCheckBoolExecutionCommand
-                }
-              </Typography>
+              {inventoryItem.vendNullExecutionCommand && (
+                <Typography>
+                  Vend Execution Command: {
+                    inventoryItem.vendNullExecutionCommand
+                  }
+                </Typography>
+              )}
+              {inventoryItem.inventoryCheckBoolExecutionCommand && (
+                <Typography>
+                  Inventory Check Command: {
+                    inventoryItem.inventoryCheckBoolExecutionCommand
+                  }
+                </Typography>
+              )}
             </div>
             <IconButton style={{float: 'right'}} onClick={() => {
               const deviceName =
