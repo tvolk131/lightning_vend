@@ -34,8 +34,8 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
   return (
     <Paper style={{padding: '10px'}}>
       <EditableDeviceDisplayName device={props.adminDeviceView.device}/>
+      <Typography variant={'h4'}>Inventory</Typography>
       <div>
-        <Typography variant={'h4'}>Inventory</Typography>
         {props.adminDeviceView.device.inventory.map((inventoryItem) => (
           <InventoryItemCard
             inventoryItem={inventoryItem}
@@ -56,43 +56,43 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             }
           />
         ))}
-        <Button onClick={() => setShowAddInventoryItemDialog(true)}>
-          Add Item
-        </Button>
-        <InventoryItemDialog
-          open={showAddInventoryItemDialog}
-          onClose={() => setShowAddInventoryItemDialog(false)}
-          inventoryItem={newInventoryItem}
-          setInventoryItem={setNewInventoryItem}
-          titleText={'Add Inventory Item'}
-          contentText={
-            'Item will be immediately accessible on the device\'s UI.'
-          }
-          submitText={'Add Item'}
-          onSubmit={
-            () => {
-              const deviceName =
-                DeviceName.parse(props.adminDeviceView.device.name);
-              // TODO - Indicate to the user if `deviceName` is undefined.
-              if (deviceName) {
-                return adminApi
-                  .updateDeviceInventory(
-                    deviceName,
-                    [
-                      ...props.adminDeviceView.device.inventory,
-                      newInventoryItem
-                    ]
-                  )
-                  .then(() => {
-                    setNewInventoryItem(emptyInventoryItem);
-                    setShowAddInventoryItemDialog(false);
-                  });
-              }
+      </div>
+      <Button onClick={() => setShowAddInventoryItemDialog(true)}>
+        Add Item
+      </Button>
+      <InventoryItemDialog
+        open={showAddInventoryItemDialog}
+        onClose={() => setShowAddInventoryItemDialog(false)}
+        inventoryItem={newInventoryItem}
+        setInventoryItem={setNewInventoryItem}
+        titleText={'Add Inventory Item'}
+        contentText={
+          'Item will be immediately accessible on the device\'s UI.'
+        }
+        submitText={'Add Item'}
+        onSubmit={
+          () => {
+            const deviceName =
+              DeviceName.parse(props.adminDeviceView.device.name);
+            // TODO - Indicate to the user if `deviceName` is undefined.
+            if (deviceName) {
+              return adminApi
+                .updateDeviceInventory(
+                  deviceName,
+                  [
+                    ...props.adminDeviceView.device.inventory,
+                    newInventoryItem
+                  ]
+                )
+                .then(() => {
+                  setNewInventoryItem(emptyInventoryItem);
+                  setShowAddInventoryItemDialog(false);
+                });
             }
           }
-          device={props.adminDeviceView.device}
-        />
-      </div>
+        }
+        device={props.adminDeviceView.device}
+      />
     </Paper>
   );
 };
