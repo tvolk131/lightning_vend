@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {AdminDeviceView} from '../../../shared/adminSocketTypes';
+import {AdminDeviceView} from '../../../../shared/adminSocketTypes';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {DeviceName} from '../../../shared/proto';
+import {DeviceName} from '../../../../shared/proto';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -14,12 +14,12 @@ import DialogTitle from '@mui/material/DialogTitle';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import {InventoryItem} from '../../../proto_out/lightning_vend/model';
+import {InventoryItem} from '../../../../proto_out/lightning_vend/model';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import {adminApi} from '../api/adminApi';
+import {adminApi} from '../../api/adminApi';
 
 interface DeviceSettingsPanelProps {
   adminDeviceView: AdminDeviceView
