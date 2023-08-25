@@ -39,9 +39,27 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
       <EditableDeviceDisplayName device={props.device}/>
       <Typography variant={'h4'}>Inventory</Typography>
       <div>
-        {props.device.inventory.map((inventoryItem) => (
+        {props.device.inventory.map((inventoryItem, i) => (
           <InventoryItemCard
             inventoryItem={inventoryItem}
+            onUpdate={
+              (updatedInventoryItem) => {
+                const deviceName =
+                  DeviceName.parse(props.device.name);
+                // TODO - Indicate to the user if `deviceName` is undefined.
+                if (deviceName) {
+                  const newInventory = [...props.device.inventory];
+                  newInventory[i] = updatedInventoryItem;
+
+                  return adminApi.updateDeviceInventory(
+                    deviceName,
+                    newInventory
+                  );
+                }
+
+                return Promise.resolve();
+              }
+            }
             onDelete={
               () => {
                 const deviceName =
@@ -57,6 +75,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
                 }
               }
             }
+            device={props.device}
           />
         ))}
       </div>
