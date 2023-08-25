@@ -2,12 +2,12 @@ import * as React from 'react';
 import {
   deviceSetupCodeAllowedCharacters,
   deviceSetupCodeLength
-} from '../../shared/constants';
+} from '../../../shared/constants';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import CircleIcon from '@mui/icons-material/Circle';
 import CircularProgress from '@mui/material/CircularProgress';
-import {DeviceSettingsPanel} from './adminPage/deviceSettingsPanel';
+import {DeviceSettingsPanel} from './deviceSettingsPanel';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -19,11 +19,11 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {LoginBox} from './adminPage/loginBox';
+import {LoginBox} from './loginBox';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import {adminApi} from './api/adminApi';
+import {adminApi} from '../api/adminApi';
 import {useState} from 'react';
 import {useTheme} from '@mui/material/styles';
 
