@@ -1,10 +1,12 @@
 import * as React from 'react';
+import {
+  Device,
+  InventoryItem
+} from '../../../../proto_out/lightning_vend/model';
 import {useEffect, useState} from 'react';
-import {AdminDeviceView} from '../../../../shared/adminSocketTypes';
 import Button from '@mui/material/Button';
 import {DeviceName} from '../../../../shared/proto';
 import {EditableDeviceDisplayName} from './editableDeviceDisplayName';
-import {InventoryItem} from '../../../../proto_out/lightning_vend/model';
 import {InventoryItemCard} from './inventoryItemCard';
 import {InventoryItemDialog} from './inventoryItemDialog';
 import Paper from '@mui/material/Paper';
@@ -12,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import {adminApi} from '../../api/adminApi';
 
 interface DeviceSettingsPanelProps {
-  adminDeviceView: AdminDeviceView
+  device: Device
 }
 
 const emptyInventoryItem = InventoryItem.create({priceSats: 1});
@@ -22,6 +24,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
     showAddInventoryItemDialog,
     setShowAddInventoryItemDialog
   ] = useState(false);
+
   const [
     newInventoryItem,
     setNewInventoryItem
@@ -33,21 +36,21 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
 
   return (
     <Paper style={{padding: '10px'}}>
-      <EditableDeviceDisplayName device={props.adminDeviceView.device}/>
+      <EditableDeviceDisplayName device={props.device}/>
       <Typography variant={'h4'}>Inventory</Typography>
       <div>
-        {props.adminDeviceView.device.inventory.map((inventoryItem) => (
+        {props.device.inventory.map((inventoryItem) => (
           <InventoryItemCard
             inventoryItem={inventoryItem}
             onDelete={
               () => {
                 const deviceName =
-                  DeviceName.parse(props.adminDeviceView.device.name);
+                  DeviceName.parse(props.device.name);
                 // TODO - Indicate to the user if `deviceName` is undefined.
                 if (deviceName) {
                   adminApi.updateDeviceInventory(
                     deviceName,
-                    props.adminDeviceView.device.inventory.filter(
+                    props.device.inventory.filter(
                       (i) => i !== inventoryItem
                     )
                   );
@@ -73,14 +76,14 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
         onSubmit={
           () => {
             const deviceName =
-              DeviceName.parse(props.adminDeviceView.device.name);
+              DeviceName.parse(props.device.name);
             // TODO - Indicate to the user if `deviceName` is undefined.
             if (deviceName) {
               return adminApi
                 .updateDeviceInventory(
                   deviceName,
                   [
-                    ...props.adminDeviceView.device.inventory,
+                    ...props.device.inventory,
                     newInventoryItem
                   ]
                 )
@@ -91,7 +94,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             }
           }
         }
-        device={props.adminDeviceView.device}
+        device={props.device}
       />
     </Paper>
   );

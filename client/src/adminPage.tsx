@@ -86,8 +86,11 @@ export const AdminPage = () => {
             {
               loadableAdminData.data.deviceViews[selectedDeviceIndex] ?
                 <DeviceSettingsPanel
-                  adminDeviceView={
-                    loadableAdminData.data.deviceViews[selectedDeviceIndex]
+                  device={
+                    loadableAdminData
+                      .data
+                      .deviceViews[selectedDeviceIndex]
+                      .device
                   }
                 />
                 :
