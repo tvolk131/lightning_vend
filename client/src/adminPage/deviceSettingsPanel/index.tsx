@@ -124,7 +124,7 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
             style={{padding: '10px', margin: '10px 0'}}
           >
             <div style={{display: 'inline-block'}}>
-              <Typography>Item Name: {inventoryItem.displayName}</Typography>
+              <Typography variant='h5'>{inventoryItem.displayName}</Typography>
               <Typography>Price: {inventoryItem.priceSats} sats</Typography>
               {inventoryItem.vendNullExecutionCommand && (
                 <Typography>
