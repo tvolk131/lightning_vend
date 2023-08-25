@@ -1,23 +1,17 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {AdminDeviceView} from '../../../../shared/adminSocketTypes';
-import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {DeviceName} from '../../../../shared/proto';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import {InventoryItem} from '../../../../proto_out/lightning_vend/model';
+import {InventoryItemDialog} from './inventoryItemDialog';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {adminApi} from '../../api/adminApi';
 
@@ -161,88 +155,23 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
         <Button onClick={() => setShowAddInventoryItemDialog(true)}>
           Add Item
         </Button>
-        <Dialog
+        <InventoryItemDialog
           open={showAddInventoryItemDialog}
           onClose={() => setShowAddInventoryItemDialog(false)}
-        >
-          <DialogTitle>
-            Add Inventory Item
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Item will be immediately accessible on the device's UI.
-            </DialogContentText>
-            <TextField
-              style={{display: 'flex', marginTop: '15px'}}
-              label={'Name'}
-              value={newInventoryItem.displayName}
-              onChange={
-                (e) => setNewInventoryItem({
-                  ...newInventoryItem,
-                  displayName: e.target.value
-                })
-              }
-            />
-            <TextField
-              style={{display: 'flex', marginTop: '15px'}}
-              label={'Price (Sats)'}
-              type={'number'}
-              value={`${newInventoryItem.priceSats}`}
-              onChange={
-                (e) => setNewInventoryItem({
-                  ...newInventoryItem,
-                  priceSats: Math.max(Math.floor(Number(e.target.value)), 1)
-                })
-              }
-            />
-            <Autocomplete
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  style={{display: 'flex', marginTop: '15px'}}
-                  label={'Vend Execution Command'}
-                />
-              )}
-              options={props.adminDeviceView.device.nullExecutionCommands}
-              onChange={
-                (e, selectedCommand) => setNewInventoryItem({
-                  ...newInventoryItem,
-                  vendNullExecutionCommand: selectedCommand || ''
-                })
-              }
-              value={newInventoryItem.vendNullExecutionCommand}
-            />
-            <Autocomplete
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  style={{display: 'flex', marginTop: '15px'}}
-                  label={'Inventory Check Command'}
-                />
-              )}
-              options={props.adminDeviceView.device.boolExecutionCommands}
-              onChange={
-                (e, selectedCommand) => setNewInventoryItem({
-                  ...newInventoryItem,
-                  inventoryCheckBoolExecutionCommand: selectedCommand || ''
-                })
-              }
-              value={newInventoryItem.inventoryCheckBoolExecutionCommand}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowAddInventoryItemDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              // TODO - Show a loading spinner until this promise resolves
-              // below.
-
+          inventoryItem={newInventoryItem}
+          setInventoryItem={setNewInventoryItem}
+          titleText={'Add Inventory Item'}
+          contentText={
+            'Item will be immediately accessible on the device\'s UI.'
+          }
+          submitText={'Add Item'}
+          onSubmit={
+            () => {
               const deviceName =
                 DeviceName.parse(props.adminDeviceView.device.name);
               // TODO - Indicate to the user if `deviceName` is undefined.
               if (deviceName) {
-                adminApi
+                return adminApi
                   .updateDeviceInventory(
                     deviceName,
                     [
@@ -255,11 +184,10 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
                     setShowAddInventoryItemDialog(false);
                   });
               }
-            }}>
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
+            }
+          }
+          device={props.adminDeviceView.device}
+        />
       </div>
     </Paper>
   );
