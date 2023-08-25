@@ -2,11 +2,10 @@ import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {AdminDeviceView} from '../../../../shared/adminSocketTypes';
 import Button from '@mui/material/Button';
-import DeleteIcon from '@mui/icons-material/Delete';
 import {DeviceName} from '../../../../shared/proto';
 import {EditableDeviceDisplayName} from './editableDeviceDisplayName';
-import IconButton from '@mui/material/IconButton';
 import {InventoryItem} from '../../../../proto_out/lightning_vend/model';
+import {InventoryItemCard} from './inventoryItemCard';
 import {InventoryItemDialog} from './inventoryItemDialog';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -38,44 +37,24 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
       <div>
         <Typography variant={'h4'}>Inventory</Typography>
         {props.adminDeviceView.device.inventory.map((inventoryItem) => (
-          <Paper
-            elevation={6}
-            style={{padding: '10px', margin: '10px 0'}}
-          >
-            <div style={{display: 'inline-block'}}>
-              <Typography variant='h5'>{inventoryItem.displayName}</Typography>
-              <Typography>Price: {inventoryItem.priceSats} sats</Typography>
-              {inventoryItem.vendNullExecutionCommand && (
-                <Typography>
-                  Vend Execution Command: {
-                    inventoryItem.vendNullExecutionCommand
-                  }
-                </Typography>
-              )}
-              {inventoryItem.inventoryCheckBoolExecutionCommand && (
-                <Typography>
-                  Inventory Check Command: {
-                    inventoryItem.inventoryCheckBoolExecutionCommand
-                  }
-                </Typography>
-              )}
-            </div>
-            <IconButton style={{float: 'right'}} onClick={() => {
-              const deviceName =
-                DeviceName.parse(props.adminDeviceView.device.name);
-              // TODO - Indicate to the user if `deviceName` is undefined.
-              if (deviceName) {
-                adminApi.updateDeviceInventory(
-                  deviceName,
-                  props.adminDeviceView.device.inventory.filter(
-                    (i) => i !== inventoryItem
-                  )
-                );
+          <InventoryItemCard
+            inventoryItem={inventoryItem}
+            onDelete={
+              () => {
+                const deviceName =
+                  DeviceName.parse(props.adminDeviceView.device.name);
+                // TODO - Indicate to the user if `deviceName` is undefined.
+                if (deviceName) {
+                  adminApi.updateDeviceInventory(
+                    deviceName,
+                    props.adminDeviceView.device.inventory.filter(
+                      (i) => i !== inventoryItem
+                    )
+                  );
+                }
               }
-            }}>
-              <DeleteIcon/>
-            </IconButton>
-          </Paper>
+            }
+          />
         ))}
         <Button onClick={() => setShowAddInventoryItemDialog(true)}>
           Add Item
