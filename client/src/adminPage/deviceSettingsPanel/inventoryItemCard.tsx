@@ -8,6 +8,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import {InventoryItemDialog} from './inventoryItemDialog';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
@@ -33,6 +36,11 @@ export const InventoryItemCard = (props: InventoryItemCardProps) => {
     setUpdatedInventoryItem(props.inventoryItem);
   }, [props.inventoryItem, showUpdateInventoryItemDialog]);
 
+  const [
+    menuAnchorEl,
+    setMenuAnchorEl
+  ] = React.useState<null | HTMLElement>(null);
+
   return (
     <Paper
       elevation={6}
@@ -57,12 +65,29 @@ export const InventoryItemCard = (props: InventoryItemCardProps) => {
         )}
       </div>
       <div style={{float: 'right'}}>
-        <IconButton onClick={() => setShowUpdateInventoryItemDialog(true)}>
-          <EditIcon/>
+        <IconButton onClick={(event) => setMenuAnchorEl(event.currentTarget)}>
+          <MoreVertIcon/>
         </IconButton>
-        <IconButton onClick={props.onDelete}>
-          <DeleteIcon/>
-        </IconButton>
+        <Menu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onClose={() => setMenuAnchorEl(null)}
+        >
+          <MenuItem onClick={() => {
+            setMenuAnchorEl(null);
+            setShowUpdateInventoryItemDialog(true);
+          }}>
+            <EditIcon style={{paddingRight: '10px'}}/>
+            Edit
+          </MenuItem>
+          <MenuItem onClick={() => {
+            setMenuAnchorEl(null);
+            props.onDelete();
+          }}>
+            <DeleteIcon style={{paddingRight: '10px'}}/>
+            Delete
+          </MenuItem>
+        </Menu>
       </div>
       <InventoryItemDialog
         open={showUpdateInventoryItemDialog}
