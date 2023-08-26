@@ -96,7 +96,7 @@ export const InventoryItemCard = (props: InventoryItemCardProps) => {
         setInventoryItem={setUpdatedInventoryItem}
         titleText={'Edit Inventory Item'}
         contentText={
-          'Item will be immediately accessible on the device\'s UI.'
+          'Changes will be immediately reflected on the device\'s UI.'
         }
         submitText={'Save Changes'}
         onSubmit={
