@@ -4,10 +4,17 @@ import {
   InventoryItem
 } from '../../../../proto_out/lightning_vend/model';
 import {useEffect, useState} from 'react';
+import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import {InventoryItemDialog} from './inventoryItemDialog';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -17,7 +24,7 @@ import Typography from '@mui/material/Typography';
 interface InventoryItemCardProps {
   inventoryItem: InventoryItem,
   onUpdate: (inventoryItem: InventoryItem) => Promise<void>,
-  onDelete: () => void,
+  onDelete: () => Promise<void>,
   device: Device
 }
 
@@ -31,6 +38,16 @@ export const InventoryItemCard = (props: InventoryItemCardProps) => {
     updatedInventoryItem,
     setUpdatedInventoryItem
   ] = useState(props.inventoryItem);
+
+  const [
+    showDeleteInventoryItemDialog,
+    setShowDeleteInventoryItemDialog
+  ] = useState(false);
+
+  const [
+    isDeleting,
+    setIsDeleting
+  ] = useState(false);
 
   useEffect(() => {
     setUpdatedInventoryItem(props.inventoryItem);
@@ -82,7 +99,7 @@ export const InventoryItemCard = (props: InventoryItemCardProps) => {
           </MenuItem>
           <MenuItem onClick={() => {
             setMenuAnchorEl(null);
-            props.onDelete();
+            setShowDeleteInventoryItemDialog(true);
           }}>
             <DeleteIcon style={{paddingRight: '10px'}}/>
             Delete
@@ -110,6 +127,33 @@ export const InventoryItemCard = (props: InventoryItemCardProps) => {
         }
         device={props.device}
       />
+      <Dialog
+        open={showDeleteInventoryItemDialog}
+        onClose={() => setShowDeleteInventoryItemDialog(false)}
+      >
+        <DialogTitle>
+          Delete Inventory Item
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this inventory item?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeleteInventoryItemDialog(false)}>
+            Cancel
+          </Button>
+          <LoadingButton loading={isDeleting} onClick={() => {
+            setIsDeleting(true);
+            props.onDelete().then(() => {
+              setIsDeleting(false);
+              setShowDeleteInventoryItemDialog(false);
+            });
+          }}>
+            Delete
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

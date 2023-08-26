@@ -66,13 +66,15 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
                   DeviceName.parse(props.device.name);
                 // TODO - Indicate to the user if `deviceName` is undefined.
                 if (deviceName) {
-                  adminApi.updateDeviceInventory(
+                  return adminApi.updateDeviceInventory(
                     deviceName,
                     props.device.inventory.filter(
                       (i) => i !== inventoryItem
                     )
                   );
                 }
+
+                return Promise.resolve();
               }
             }
             device={props.device}
