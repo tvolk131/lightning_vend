@@ -65,130 +65,141 @@ export const LoginBox = () => {
   }
 
   return (
-    <Paper
+    <div
       style={{
-        padding: '10px',
         textAlign: 'center',
-        width: 'fit-content',
-        margin: 'auto'
+        maxWidth: 'max-content',
+        width: '100%',
+        margin: 0,
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)'
       }}
     >
-      <Typography variant={'h4'} style={{padding: '10px'}}>
-        LightningVend Login
-      </Typography>
-      <Typography style={{padding: '10px'}}>
-        To login, sign the following message using your Lightning Node:
-      </Typography>
-      <div style={{width: 'fit-content', margin: 'auto'}}>
-        <div>
-          <OutlinedInput
-            disabled
-            label={'Unsigned Message'}
-            style={{
-              width: '100%',
-              borderBottomLeftRadius: 0,
-              borderBottomRightRadius: 0
-            }}
-            value={
-              unsignedLnAuthMessage.state === 'loaded' ?
-                unsignedLnAuthMessage.data
-                :
-                undefined
-            }
-            endAdornment={
-              <InputAdornment position={'end'}>
-                {
-                  unsignedLnAuthMessage.state === 'loaded' ?
-                    (
-                      <IconButton
-                        onClick={() => {
-                          navigator
-                            .clipboard
-                            .writeText(unsignedLnAuthMessage.data);
-                        }}
-                      >
-                        <ContentCopyIcon/>
-                      </IconButton>
-                    )
-                    :
-                    (
-                      <InputAdornment position={'end'}>
-                        <CircularProgress/>
-                      </InputAdornment>
-                    )
-                }
-              </InputAdornment>
-            }
-          />
-          {(unsignedLnAuthMessage.state !== 'error' &&
-            messageExpiration && countdown && !countdown.hasExpired) ?
-            (
-              <Paper
-                elevation={6}
-                style={{
-                  // Set to the exact value so that the height matches the
-                  // height of the <Button/> below it.
-                  padding: '6.25px',
-                  borderTopLeftRadius: '0px',
-                  borderTopRightRadius: '0px'
-                }}
-              >
-                <Typography>
-                  {timerString}
-                </Typography>
-              </Paper>
-            )
-            :
-            (
-              <Button
-                variant={'contained'}
-                onClick={getUnsignedLnAuthMessage}
-                style={{
-                  width: '100%',
-                  borderTopLeftRadius: 0,
-                  borderTopRightRadius: 0
-                }}
-              >
-                Retry
-              </Button>
-            )
-          }
-        </div>
-        <div style={{paddingTop: '20px'}}>
-          <CssTextField
-            value={lnAuthMessageSignature}
-            style={{width: '100%'}}
-            onChange={(e) => setLnAuthMessageSignature(e.target.value)}
-            label={'Signature'}
-          />
-          <LoadingButton
-            variant={'contained'}
-            style={{
-              width: '100%',
-              borderTopLeftRadius: 0,
-              borderTopRightRadius: 0
-            }}
-            loading={authenticatingSignature}
-            disabled={
-              !lnAuthMessageSignature.length ||
-              unsignedLnAuthMessage.state !== 'loaded' ||
-              !messageExpiration ||
-              messageExpiration < new Date()
-            }
-            onClick={() => {
-              if (unsignedLnAuthMessage.state === 'loaded') {
-                setAuthenticatingSignature(true);
-                adminApi.registerAdmin(
-                  unsignedLnAuthMessage.data,
-                  lnAuthMessageSignature
-                ).finally(() => setAuthenticatingSignature(false));
+      <Paper
+        style={{
+          padding: '15px',
+          margin: '10px'
+        }}
+      >
+        <Typography variant={'h4'} style={{padding: '10px'}}>
+          LightningVend Login
+        </Typography>
+        <Typography style={{padding: '10px', maxWidth: '300px'}}>
+          To login, sign the following message using your Lightning Node:
+        </Typography>
+        <div style={{width: 'fit-content', margin: 'auto'}}>
+          <div>
+            <OutlinedInput
+              disabled
+              label={'Unsigned Message'}
+              style={{
+                width: '100%',
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0
+              }}
+              value={
+                unsignedLnAuthMessage.state === 'loaded' ?
+                  unsignedLnAuthMessage.data
+                  :
+                  undefined
               }
-            }}
-          >
-            Login / Register
-          </LoadingButton>
+              endAdornment={
+                <InputAdornment position={'end'}>
+                  {
+                    unsignedLnAuthMessage.state === 'loaded' ?
+                      (
+                        <IconButton
+                          onClick={() => {
+                            navigator
+                              .clipboard
+                              .writeText(unsignedLnAuthMessage.data);
+                          }}
+                        >
+                          <ContentCopyIcon/>
+                        </IconButton>
+                      )
+                      :
+                      (
+                        <InputAdornment position={'end'}>
+                          <CircularProgress/>
+                        </InputAdornment>
+                      )
+                  }
+                </InputAdornment>
+              }
+            />
+            {(unsignedLnAuthMessage.state !== 'error' && messageExpiration &&
+              countdown && !countdown.hasExpired) ?
+              (
+                <Paper
+                  elevation={6}
+                  style={{
+                    // Set to the exact value so that the height matches the
+                    // height of the <Button/> below it.
+                    padding: '6.25px',
+                    borderTopLeftRadius: '0px',
+                    borderTopRightRadius: '0px'
+                  }}
+                >
+                  <Typography>
+                    {timerString}
+                  </Typography>
+                </Paper>
+              )
+              :
+              (
+                <Button
+                  variant={'contained'}
+                  onClick={getUnsignedLnAuthMessage}
+                  style={{
+                    width: '100%',
+                    borderTopLeftRadius: 0,
+                    borderTopRightRadius: 0
+                  }}
+                >
+                  Retry
+                </Button>
+              )
+            }
+          </div>
+          <div style={{paddingTop: '20px'}}>
+            <CssTextField
+              value={lnAuthMessageSignature}
+              style={{width: '100%'}}
+              onChange={(e) => setLnAuthMessageSignature(e.target.value)}
+              label={'Signature'}
+            />
+            <LoadingButton
+              variant={'contained'}
+              style={{
+                width: '100%',
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0
+              }}
+              loading={authenticatingSignature}
+              disabled={
+                !lnAuthMessageSignature.length ||
+                unsignedLnAuthMessage.state !== 'loaded' ||
+                !messageExpiration ||
+                messageExpiration < new Date()
+              }
+              onClick={() => {
+                if (unsignedLnAuthMessage.state === 'loaded') {
+                  setAuthenticatingSignature(true);
+                  adminApi.registerAdmin(
+                    unsignedLnAuthMessage.data,
+                    lnAuthMessageSignature
+                  ).finally(() => setAuthenticatingSignature(false));
+                }
+              }}
+            >
+              Login / Register
+            </LoadingButton>
+          </div>
         </div>
-      </div>
-    </Paper>
+      </Paper>
+    </div>
   );
 };
