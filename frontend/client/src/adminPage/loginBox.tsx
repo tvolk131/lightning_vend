@@ -4,7 +4,6 @@ import {AsyncLoadableData} from '../api/sharedApi';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import {CountdownTimer} from './countdownTimer';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -14,6 +13,17 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {adminApi} from '../api/adminApi';
 import {getMessageExpiration} from '../../../shared/lnAuthBrowserSafe';
+import {styled} from '@mui/material/styles';
+import {useCountdown} from './countdownReactHook';
+
+const CssTextField = styled(TextField)({
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0
+    }
+  }
+});
 
 export const LoginBox = () => {
   const [lnAuthMessageSignature, setLnAuthMessageSignature] = useState('');
@@ -43,6 +53,17 @@ export const LoginBox = () => {
 
   const messageExpiration = tryGetExpirationForMessage();
 
+  const countdown = useCountdown(messageExpiration);
+
+  let timerString;
+  if (countdown) {
+    timerString =
+      `${countdown.minutes.toString().padStart(2, '0')}:` +
+      `${countdown.seconds.toString().padStart(2, '0')}`;
+  } else {
+    timerString = 'Expiration unknown';
+  }
+
   return (
     <Paper
       style={{
@@ -58,81 +79,115 @@ export const LoginBox = () => {
       <Typography style={{padding: '10px'}}>
         To login, sign the following message using your Lightning Node:
       </Typography>
-      {unsignedLnAuthMessage.state === 'error' &&
+      <div style={{width: 'fit-content', margin: 'auto'}}>
         <div>
-          <Typography>Failed to get unsigned message.</Typography>
-          <Button
-            onClick={getUnsignedLnAuthMessage}
-          >
-            Retry
-          </Button>
-        </div>
-      }
-      {unsignedLnAuthMessage.state === 'loading' &&
-        <OutlinedInput
-          disabled
-          style={{margin: '10px'}}
-          label={'Unsigned Message'}
-          endAdornment={
-            <InputAdornment position={'end'}>
-              <CircularProgress/>
-            </InputAdornment>
-          }
-        />
-      }
-      {unsignedLnAuthMessage.state === 'loaded' &&
-        <OutlinedInput
-          disabled
-          style={{margin: '10px'}}
-          label={'Unsigned Message'}
-          value={unsignedLnAuthMessage.data}
-          endAdornment={
-            <InputAdornment position={'end'}>
-              <IconButton
-                onClick={() => {
-                  navigator.clipboard.writeText(unsignedLnAuthMessage.data);
+          <OutlinedInput
+            disabled
+            label={'Unsigned Message'}
+            style={{
+              width: '100%',
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0
+            }}
+            value={
+              unsignedLnAuthMessage.state === 'loaded' ?
+                unsignedLnAuthMessage.data
+                :
+                undefined
+            }
+            endAdornment={
+              <InputAdornment position={'end'}>
+                {
+                  unsignedLnAuthMessage.state === 'loaded' ?
+                    (
+                      <IconButton
+                        onClick={() => {
+                          navigator
+                            .clipboard
+                            .writeText(unsignedLnAuthMessage.data);
+                        }}
+                      >
+                        <ContentCopyIcon/>
+                      </IconButton>
+                    )
+                    :
+                    (
+                      <InputAdornment position={'end'}>
+                        <CircularProgress/>
+                      </InputAdornment>
+                    )
+                }
+              </InputAdornment>
+            }
+          />
+          {(unsignedLnAuthMessage.state !== 'error' &&
+            messageExpiration && countdown && !countdown.hasExpired) ?
+            (
+              <Paper
+                elevation={6}
+                style={{
+                  // Set to the exact value so that the height matches the
+                  // height of the <Button/> below it.
+                  padding: '6.25px',
+                  borderTopLeftRadius: '0px',
+                  borderTopRightRadius: '0px'
                 }}
               >
-                <ContentCopyIcon/>
-              </IconButton>
-            </InputAdornment>
+                <Typography>
+                  {timerString}
+                </Typography>
+              </Paper>
+            )
+            :
+            (
+              <Button
+                variant={'contained'}
+                onClick={getUnsignedLnAuthMessage}
+                style={{
+                  width: '100%',
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0
+                }}
+              >
+                Retry
+              </Button>
+            )
           }
-        />
-      }
-      <TextField
-        value={lnAuthMessageSignature}
-        onChange={(e) => setLnAuthMessageSignature(e.target.value)}
-        label={'Signature'}
-        style={{margin: '10px'}}
-      />
-      {
-        messageExpiration && (
-          <div>
-            <CountdownTimer targetDate={messageExpiration}/>
-          </div>
-        )
-      }
-      <div>
-        <LoadingButton
-          variant={'contained'}
-          style={{margin: '10px'}}
-          loading={authenticatingSignature}
-          disabled={
-            !lnAuthMessageSignature.length ||
-            unsignedLnAuthMessage.state !== 'loaded'
-          }
-          onClick={() => {
-            if (unsignedLnAuthMessage.state === 'loaded') {
-              setAuthenticatingSignature(true);
-              adminApi.registerAdmin(
-                unsignedLnAuthMessage.data,
-                lnAuthMessageSignature
-              ).finally(() => setAuthenticatingSignature(false));
+        </div>
+        <div style={{paddingTop: '20px'}}>
+          <CssTextField
+            value={lnAuthMessageSignature}
+            style={{width: '100%'}}
+            onChange={(e) => setLnAuthMessageSignature(e.target.value)}
+            label={'Signature'}
+          />
+          <LoadingButton
+            variant={'contained'}
+            style={{
+              width: '100%',
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0
+            }}
+            loading={authenticatingSignature}
+            disabled={
+              !lnAuthMessageSignature.length ||
+              unsignedLnAuthMessage.state !== 'loaded' ||
+              !messageExpiration ||
+              messageExpiration < new Date()
             }
-          }}
-        >
-          Login / Register
-        </LoadingButton>
+            onClick={() => {
+              if (unsignedLnAuthMessage.state === 'loaded') {
+                setAuthenticatingSignature(true);
+                adminApi.registerAdmin(
+                  unsignedLnAuthMessage.data,
+                  lnAuthMessageSignature
+                ).finally(() => setAuthenticatingSignature(false));
+              }
+            }}
+          >
+            Login / Register
+          </LoadingButton>
+        </div>
       </div>
     </Paper>
   );
