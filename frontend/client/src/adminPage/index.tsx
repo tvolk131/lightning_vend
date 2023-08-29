@@ -5,11 +5,9 @@ import {LoginBox} from './loginBox';
 import {adminApi} from '../api/adminApi';
 import {useTheme} from '@mui/material/styles';
 
-// TODO - Flesh out and clean up admin page.
 export const AdminPage = () => {
   adminApi.useSocket();
   const loadableAdminData = adminApi.useLoadableAdminData();
-
   const theme = useTheme();
 
   return (
@@ -20,12 +18,22 @@ export const AdminPage = () => {
         maxWidth: '1000px'
       }}
     >
-      {loadableAdminData.state === 'loading' && <CircularProgress/>}
+      {loadableAdminData.state === 'loading' && (
+        <div
+          style={{
+            margin: 0,
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}
+        >
+          <CircularProgress size={150}/>
+        </div>
+      )}
       {loadableAdminData.state === 'error' && <LoginBox/>}
       {loadableAdminData.state === 'loaded' && (
-        <AuthenticatedAdminPage
-          adminData={loadableAdminData.data}
-        />
+        <AuthenticatedAdminPage adminData={loadableAdminData.data}/>
       )}
     </div>
   );
