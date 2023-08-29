@@ -112,6 +112,7 @@ export const LoginBox = () => {
                 {
                   unsignedLnAuthMessage.state === 'loaded' && (
                       <IconButton
+                        disabled={!canTypeSignature}
                         onClick={() => {
                           navigator
                             .clipboard
