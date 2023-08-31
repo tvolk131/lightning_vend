@@ -3,6 +3,7 @@ import {CSSProperties, ReactNode, useEffect, useRef, useState} from 'react';
 import {adminPagePath, learnMorePagePath} from '../../shared/constants';
 import {animated, useSpring} from '@react-spring/web';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import Avatar from '@mui/material/Avatar';
 import BoltIcon from '@mui/icons-material/Bolt';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,6 +13,8 @@ import IconButton from '@mui/material/IconButton';
 import TuneIcon from '@mui/icons-material/Tune';
 import {Tweet} from 'react-twitter-widgets';
 import Typography from '@mui/material/Typography';
+import joeProfileImageSrc from '../assets/joe-profile.jpg';
+import tommyProfileImageSrc from '../assets/tommy-profile.jpg';
 import {useNavigate} from 'react-router-dom';
 import {useTheme} from '@mui/material/styles';
 import {useTrackVisibility} from 'react-intersection-observer-hook';
@@ -94,6 +97,45 @@ export const LandingPage = () => {
             options={{style: {margin: 'auto'}}}
           />
         </div>
+      </LandingPageSection>
+      <LandingPageSection headerText={'Meet the Team'}>
+        <Avatar
+          alt={'JoeFi'}
+          src={joeProfileImageSrc}
+          sx={{
+            width: 160,
+            height: 160,
+            display: 'inline-flex'
+          }}
+        />
+        <LandingPageText verticalSpacing={0}>
+          JoeFi
+        </LandingPageText>
+        <LandingPageText verticalSpacing={0}>
+          <i>Chief Tinkering Officer</i>
+        </LandingPageText>
+        <LandingPageText verticalSpacing={0}>
+          Nostr: <b>joe@bitcoinpark.com</b>
+        </LandingPageText>
+        <Avatar
+          alt={'Tommy Volk'}
+          src={tommyProfileImageSrc}
+          sx={{
+            width: 160,
+            height: 160,
+            display: 'inline-flex',
+            marginTop: theme.spacing(4)
+          }}
+        />
+        <LandingPageText verticalSpacing={0}>
+          Tommy Volk
+        </LandingPageText>
+        <LandingPageText verticalSpacing={0}>
+          <i>Software Engineer</i>
+        </LandingPageText>
+        <LandingPageText verticalSpacing={0}>
+          Nostr: <b>tommy@bitcoinpark.com</b>
+        </LandingPageText>
       </LandingPageSection>
       <LandingPageSection headerText={'Links'}>
         <LandingPageText verticalSpacing={0}>
@@ -193,7 +235,7 @@ const LandingPageSection = (props: LandingPageSectionProps) => {
 };
 
 interface LandingPageTextProps {
-  children: string,
+  children: ReactNode | ReactNode[],
   icon?: React.ElementType
   verticalSpacing?: number
 }
