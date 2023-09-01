@@ -1,5 +1,5 @@
 # This file must be executed from the root directory of the repository.
-FROM node:19.0.0
+FROM node:20.6.0
 COPY ./frontend ./app/frontend
 COPY ./proto ./app/proto
 WORKDIR /app
