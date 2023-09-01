@@ -29,7 +29,7 @@ const int motorRpm = 300;
 
 // The state of the homing switch when it is unpressed. Use `LOW` for normally
 // open switches and `HIGH` for normally closed switches.
-const int homingSwitchUnpressedState = HIGH;
+const int homingSwitchUnpressedState = LOW;
 
 // TODO - Figure out why the pins need to be out of order and if we can fix
 // this. If we can't fix this, then we need to document why.
@@ -87,8 +87,8 @@ void setup() {
 
   // Setup stepper motor 0.
   stepper0.setSpeed(motorRpm);
-  pinMode(stepper0InventorySensorPin, INPUT);
-  pinMode(stepper0HomingSwitchPin, INPUT);
+  pinMode(stepper0InventorySensorPin, INPUT_PULLUP);
+  pinMode(stepper0HomingSwitchPin, INPUT_PULLUP);
   pinMode(stepper0PowerPin0, OUTPUT);
   pinMode(stepper0PowerPin1, OUTPUT);
   // Stepper motor is off unless moving. This is to prevent the motor and
@@ -98,8 +98,8 @@ void setup() {
 
   // Setup stepper motor 1.
   stepper1.setSpeed(motorRpm);
-  pinMode(stepper1InventorySensorPin, INPUT);
-  pinMode(stepper1HomingSwitchPin, INPUT);
+  pinMode(stepper1InventorySensorPin, INPUT_PULLUP);
+  pinMode(stepper1HomingSwitchPin, INPUT_PULLUP);
   pinMode(stepper1PowerPin0, OUTPUT);
   pinMode(stepper1PowerPin1, OUTPUT);
   // Stepper motor is off unless moving. This is to prevent the motor and
@@ -148,13 +148,13 @@ void loop() {
         printJsonErrorResponse("stepper1 homing switch not triggered.");
       }
     } else if (command.equals("stepper0HasInventory")) {
-      printJsonSuccessBoolResponse(!digitalRead(stepper0InventorySensorPin));
-    } else if (command.equals("stepper1HasInventory")) {
-      printJsonSuccessBoolResponse(!digitalRead(stepper1InventorySensorPin));
-    } else if (command.equals("stepper0OutOfInventory")) {
       printJsonSuccessBoolResponse(digitalRead(stepper0InventorySensorPin));
-    } else if (command.equals("stepper1OutOfInventory")) {
+    } else if (command.equals("stepper1HasInventory")) {
       printJsonSuccessBoolResponse(digitalRead(stepper1InventorySensorPin));
+    } else if (command.equals("stepper0OutOfInventory")) {
+      printJsonSuccessBoolResponse(!digitalRead(stepper0InventorySensorPin));
+    } else if (command.equals("stepper1OutOfInventory")) {
+      printJsonSuccessBoolResponse(!digitalRead(stepper1InventorySensorPin));
     } else {
       printJsonErrorResponse("unknown command: `" + command + "`.");
     }
