@@ -6,7 +6,7 @@ import {
   LightningClientImpl
 } from '../../proto_out/lnd/lnrpc/lightning';
 import {DeviceName} from '../../shared/proto';
-import { SubscribableEventManager } from '../../client/src/api/sharedApi';
+import {SubscribableEventManager} from '../../client/src/api/sharedApi';
 
 export class InvoiceManager {
   // TODO - Persist this in a MongoDB collection and use
