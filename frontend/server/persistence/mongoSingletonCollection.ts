@@ -1,4 +1,5 @@
 import {Collection, Document, WithId, WithoutId} from 'mongodb';
+import {InvoiceSubscription} from '../../proto_out/lnd/lnrpc/lightning';
 
 /**
  * A singleton resource backed by a MongoDB collection. This provides an
@@ -49,5 +50,25 @@ export class MongoSingletonCollection<T> {
   public async set(singleton: T): Promise<void> {
     // Insert the new singleton document.
     await this.collection.insertOne(this.serializeSingleton(singleton));
+  }
+}
+
+export class LNDInvoiceSubscriptionSingletonCollection {
+  private collection: MongoSingletonCollection<InvoiceSubscription>;
+
+  public constructor(collection: Collection) {
+    this.collection = new MongoSingletonCollection(
+      collection,
+      (invoiceSubscription) => invoiceSubscription,
+      (doc) => InvoiceSubscription.fromJSON(doc)
+    );
+  }
+
+  public async get(): Promise<InvoiceSubscription | undefined> {
+    return await this.collection.get();
+  }
+
+  public async set(invoiceSubscription: InvoiceSubscription): Promise<void> {
+    return await this.collection.set(invoiceSubscription);
   }
 }
