@@ -19,9 +19,6 @@ import {EventNames, EventParams} from 'socket.io/dist/typed-events';
 import {Server, Socket} from 'socket.io';
 import {parse, serialize} from 'cookie';
 import {DeviceCollection} from '../persistence/deviceCollection';
-import {
-  DeviceUnackedSettledInvoiceManager
-} from '../persistence/deviceUnackedSettledInvoiceManager';
 import {InvoiceManager} from '../persistence/invoiceManager';
 import {Request} from 'express';
 import {SubscribableEventManager} from '../../client/src/api/sharedApi';
@@ -51,8 +48,7 @@ export class DeviceSocketManager {
                    DeviceServerToClientEvents,
                    DeviceInterServerEvents,
                    DeviceSocketData>,
-    deviceCollection: DeviceCollection,
-    deviceUnackedSettledInvoiceManager: DeviceUnackedSettledInvoiceManager
+    deviceCollection: DeviceCollection
   ) {
     this.invoiceManager = invoiceManager;
 
@@ -173,12 +169,11 @@ export class DeviceSocketManager {
         // Send any unacked settled invoices to the device. This is necessary
         // because the device may have missed an `invoicePaid` event if it was
         // offline when an invoice was paid.
-        const unackedInvoices = deviceUnackedSettledInvoiceManager
+        const unackedInvoices = invoiceManager
           .getUnackedSettledInvoicesForDevice(resourceName.deviceName);
         unackedInvoices.forEach((unackedInvoice) => {
           socket.emit('invoicePaid', unackedInvoice, () => {
-            deviceUnackedSettledInvoiceManager
-              .ackAndDeleteSettledInvoice(unackedInvoice);
+            invoiceManager.ackAndDeleteSettledInvoice(unackedInvoice);
           });
         });
       }

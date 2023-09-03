@@ -4,6 +4,9 @@ import {
   LightningClientImpl
 } from '../../proto_out/lnd/lnrpc/lightning';
 import {DeviceName} from '../../shared/proto';
+import {
+  DeviceUnackedSettledInvoiceManager
+} from './deviceUnackedSettledInvoiceManager';
 
 export class InvoiceManager {
   // TODO - Persist this in a MongoDB collection and use
@@ -11,6 +14,8 @@ export class InvoiceManager {
   private invoicesToDeviceNames: Map<string, DeviceName> = new Map();
   private lightning: LightningClientImpl;
   private intervalRef: NodeJS.Timer | undefined;
+  private deviceUnackedSettledInvoiceManager =
+    new DeviceUnackedSettledInvoiceManager();
 
   public constructor(lightning: LightningClientImpl) {
     this.lightning = lightning;
@@ -51,6 +56,24 @@ export class InvoiceManager {
 
   public getInvoiceCreator(invoice: string): DeviceName | undefined {
     return this.invoicesToDeviceNames.get(invoice);
+  }
+
+  public addUnackedSettledInvoice(
+    deviceName: DeviceName,
+    invoicePaymentRequest: string
+  ) {
+    return this.deviceUnackedSettledInvoiceManager
+      .addUnackedSettledInvoice(deviceName, invoicePaymentRequest);
+  }
+
+  public getUnackedSettledInvoicesForDevice(deviceName: DeviceName) {
+    return this.deviceUnackedSettledInvoiceManager
+      .getUnackedSettledInvoicesForDevice(deviceName);
+  }
+
+  public ackAndDeleteSettledInvoice(invoicePaymentRequest: string) {
+    return this.deviceUnackedSettledInvoiceManager
+      .ackAndDeleteSettledInvoice(invoicePaymentRequest);
   }
 
   public stop() {

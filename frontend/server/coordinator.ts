@@ -30,9 +30,6 @@ import {Db} from 'mongodb';
 import {DeviceCollection} from './persistence/deviceCollection';
 import {DeviceSocketManager} from './clientApi/deviceSocketManager';
 import {
-  DeviceUnackedSettledInvoiceManager
-} from './persistence/deviceUnackedSettledInvoiceManager';
-import {
   GetOrCreateUserByAuthIdRequest
 } from '../proto_out/lightning_vend/user_service';
 import {Server as HttpServer} from 'http';
@@ -49,8 +46,6 @@ export class Coordinator {
   private userCollection: UserCollection;
   private deviceCollection: DeviceCollection;
   private invoiceManager: InvoiceManager;
-  private deviceUnackedSettledInvoiceManager:
-    DeviceUnackedSettledInvoiceManager;
 
   public static async create(
     httpServer: HttpServer,
@@ -80,8 +75,6 @@ export class Coordinator {
     this.userCollection = userCollection;
     this.deviceCollection = deviceCollection;
     this.invoiceManager = new InvoiceManager(lightning);
-    this.deviceUnackedSettledInvoiceManager =
-      new DeviceUnackedSettledInvoiceManager();
 
     this.adminSocketManager = new AdminSocketManager(
       new SocketServer<AdminClientToServerEvents,
@@ -109,8 +102,7 @@ export class Coordinator {
         pingInterval: 5000,
         pingTimeout: 4000
       }),
-      this.deviceCollection,
-      this.deviceUnackedSettledInvoiceManager
+      this.deviceCollection
     );
 
     this.deviceSocketManager.subscribeToDeviceConnectionStatus((event) => {
@@ -132,7 +124,7 @@ export class Coordinator {
           // that the device is notified even if it is not connected when the
           // invoice is paid.
           if (deviceName) {
-            this.deviceUnackedSettledInvoiceManager
+            this.invoiceManager
               .addUnackedSettledInvoice(deviceName, invoice.paymentRequest);
 
               // Tell the device that the invoice has been paid. If the socket
@@ -144,7 +136,7 @@ export class Coordinator {
               invoice.paymentRequest,
               () => {
                 // If the device acks the invoice, we can delete it.
-                this.deviceUnackedSettledInvoiceManager
+                this.invoiceManager
                   .ackAndDeleteSettledInvoice(invoice.paymentRequest);
               }
             );
