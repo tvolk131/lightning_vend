@@ -1,9 +1,12 @@
 import {Invoice, decode} from '@node-lightning/invoice';
 import {
+  Invoice_InvoiceState as InvoiceState,
+  InvoiceSubscription,
   Invoice as LNDInvoice,
   LightningClientImpl
 } from '../../proto_out/lnd/lnrpc/lightning';
 import {DeviceName} from '../../shared/proto';
+import { SubscribableEventManager } from '../../client/src/api/sharedApi';
 
 export class InvoiceManager {
   // TODO - Persist this in a MongoDB collection and use
@@ -11,6 +14,8 @@ export class InvoiceManager {
   private invoicesToDeviceNames: Map<string, DeviceName> = new Map();
   private lightning: LightningClientImpl;
   private intervalRef: NodeJS.Timer | undefined;
+  private invoiceSettlementEventManager =
+    new SubscribableEventManager<SettledDeviceInvoice>();
 
 /**
  * Stores records of settled invoices that haven't yet been acked by the devices
@@ -43,6 +48,37 @@ export class InvoiceManager {
         this.invoicesToDeviceNames.delete(invoice);
       });
     }, 60000);
+
+    lightning.SubscribeInvoices(InvoiceSubscription.create())
+      .subscribe((invoice) => {
+        if (invoice.state === InvoiceState.SETTLED && invoice.paymentRequest) {
+          const deviceName =
+            this.getInvoiceCreator(invoice.paymentRequest);
+
+          // If we know the device that created the invoice, save it as an
+          // unacked settled invoice linked to that device. This will ensure
+          // that the device is notified even if it is not connected when the
+          // invoice is paid.
+          if (deviceName) {
+            this.addUnackedSettledInvoice(deviceName, invoice.paymentRequest);
+
+            this.invoiceSettlementEventManager.emitEvent({
+              deviceName,
+              invoicePaymentRequest: invoice.paymentRequest
+            });
+          }
+        }
+      });
+  }
+
+  public subscribeToInvoiceSettlements(
+    callback: (data: SettledDeviceInvoice) => void
+  ): string {
+    return this.invoiceSettlementEventManager.subscribe(callback);
+  }
+
+  public unsubscribeFromInvoiceSettlements(callbackId: string) {
+    return this.invoiceSettlementEventManager.unsubscribe(callbackId);
   }
 
   public async createInvoice(
@@ -76,7 +112,7 @@ export class InvoiceManager {
    * @param deviceName The device that the invoice was issued to.
    * @param invoicePaymentRequest The invoice that was settled.
    */
-  public addUnackedSettledInvoice(
+  private addUnackedSettledInvoice(
     deviceName: DeviceName,
     invoicePaymentRequest: string
   ): void {

@@ -52,6 +52,24 @@ export class DeviceSocketManager {
   ) {
     this.invoiceManager = invoiceManager;
 
+    invoiceManager.subscribeToInvoiceSettlements(({
+      deviceName,
+      invoicePaymentRequest
+    }) => {
+      // Tell the device that the invoice has been paid. If the socket
+      // is not connected, no event will be emitted here. In that case,
+      // the device will be notified when it connects (see the `connection`
+      // event handler below).
+      this.emitInvoicePaid(
+        deviceName,
+        invoicePaymentRequest,
+        () => {
+          // If the device acks the invoice, we can delete it.
+          invoiceManager.ackAndDeleteSettledInvoice(invoicePaymentRequest);
+        }
+      );
+    });
+
     // Initialize all incoming device sockets with a device session cookie.
     server.engine.on('initial_headers', (headers, req: Request, ...args) => {
       const cookie = req.headers.cookie ? parse(req.headers.cookie) : undefined;

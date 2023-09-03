@@ -19,11 +19,6 @@ import {
   DeviceSocketData
 } from '../shared/deviceSocketTypes';
 import {DeviceName, UserName} from '../shared/proto';
-import {
-  Invoice_InvoiceState as InvoiceState,
-  InvoiceSubscription,
-  LightningClientImpl
-} from '../proto_out/lnd/lnrpc/lightning';
 import {socketIoAdminPath, socketIoDevicePath} from '../shared/constants';
 import {AdminSocketManager} from './clientApi/adminSocketManager';
 import {Db} from 'mongodb';
@@ -34,6 +29,7 @@ import {
 } from '../proto_out/lightning_vend/user_service';
 import {Server as HttpServer} from 'http';
 import {InvoiceManager} from './persistence/invoiceManager';
+import {LightningClientImpl} from '../proto_out/lnd/lnrpc/lightning';
 import {Server as SocketServer} from 'socket.io';
 import {UserCollection} from './persistence/userCollection';
 import {UserSessionManager} from './persistence/userSessionManager';
@@ -112,37 +108,6 @@ export class Coordinator {
         // TODO - Log an error here.
       }
     });
-
-    lightning.SubscribeInvoices(InvoiceSubscription.create())
-      .subscribe((invoice) => {
-        if (invoice.state === InvoiceState.SETTLED && invoice.paymentRequest) {
-          const deviceName =
-            this.invoiceManager.getInvoiceCreator(invoice.paymentRequest);
-
-          // If we know the device that created the invoice, save it as an
-          // unacked settled invoice linked to that device. This will ensure
-          // that the device is notified even if it is not connected when the
-          // invoice is paid.
-          if (deviceName) {
-            this.invoiceManager
-              .addUnackedSettledInvoice(deviceName, invoice.paymentRequest);
-
-              // Tell the device that the invoice has been paid. If the socket
-              // is not connected, no event will be emitted here. In that case,
-              // the device will be notified when it connects thanks to the
-              // `deviceUnackedSettledInvoiceManager`.
-            this.deviceSocketManager.emitInvoicePaid(
-              deviceName,
-              invoice.paymentRequest,
-              () => {
-                // If the device acks the invoice, we can delete it.
-                this.invoiceManager
-                  .ackAndDeleteSettledInvoice(invoice.paymentRequest);
-              }
-            );
-          }
-        }
-      });
   }
 
   private async updateDevice(request: UpdateDeviceRequest): Promise<Device> {
