@@ -48,30 +48,74 @@ message GetWalletRequest {
 
 // Request message for ListWalletDeposits.
 message ListWalletDepositsRequest {
-  // TODO  - Add fields.
+  // The parent wallet.
+  // Format: users/{user}/wallets/{wallet}.
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.lightningvend.com/WalletDeposit"}
+  ];
+
+  // The maximum page size.
+  // If unspecified, at most 50 items will be returned.
+  // The maximum value is 1000; values above 1000 will be coerced to 1000.
+  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Page token returned from a previous rpc.
+  string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for ListWalletDeposits.
 message ListWalletDepositsResponse {
-  // TODO  - Add fields.
+  // The requested wallet deposits.
+  repeated WalletDeposit wallet_deposits = 1;
+
+  // Opaque string. Can be passed to a subsequent
+  // request to retrieve the next page of items.
+  string next_page_token = 2;
+
+  // The total number of items in the list specified in the request.
+  int64 total_size = 3;
 }
 
 // Request message for CreateWalletDeposit.
 message CreateWalletDepositRequest {
-  // TODO  - Add fields.
+  // The wallet deposit to create.
+  WalletDeposit wallet_deposit = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // Request message for ListWalletWithdrawals.
 message ListWalletWithdrawalsRequest {
-  // TODO  - Add fields.
+  // The parent wallet.
+  // Format: users/{user}/wallets/{wallet}.
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.lightningvend.com/WalletWithdrawal"}
+  ];
+
+  // The maximum page size.
+  // If unspecified, at most 50 items will be returned.
+  // The maximum value is 1000; values above 1000 will be coerced to 1000.
+  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Page token returned from a previous rpc.
+  string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for ListWalletWithdrawals.
 message ListWalletWithdrawalsResponse {
-  // TODO  - Add fields.
+  // The requested wallet withdrawals.
+  repeated WalletWithdrawal wallet_withdrawals = 1;
+
+  // Opaque string. Can be passed to a subsequent
+  // request to retrieve the next page of items.
+  string next_page_token = 2;
+
+  // The total number of items in the list specified in the request.
+  int64 total_size = 3;
 }
 
 // Request message for CreateWalletWithdrawal.
 message CreateWalletWithdrawalRequest {
-  // TODO  - Add fields.
+  // The wallet withdrawal to create.
+  WalletWithdrawal wallet_withdrawal = 1 [(google.api.field_behavior) = REQUIRED];
 }

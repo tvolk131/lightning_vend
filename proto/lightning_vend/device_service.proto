@@ -106,7 +106,7 @@ message UpdateDeviceRequest {
 
 message CreateUnclaimedDeviceRequest {
   // The device to create.
-  UnclaimedDevice unclaimed_device = 2 [(google.api.field_behavior) = REQUIRED];
+  UnclaimedDevice unclaimed_device = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 message ClaimUnclaimedDeviceRequest {

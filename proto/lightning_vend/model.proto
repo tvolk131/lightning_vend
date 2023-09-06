@@ -100,9 +100,15 @@ message Wallet {
   // Format: users/{user}/wallets/{wallet}.
   string name = 1;
 
-  int64 balance_sats = 2;
+  // The display name of the wallet.
+  string display_name = 2;
 
-  StaticWalletWithdrawalDestination automatic_withdrawal_destination = 3;
+  // When the wallet was created.
+  google.protobuf.Timestamp create_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  int64 balance_sats = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  StaticWalletWithdrawalDestination recurring_withdrawal_destination = 5;
 }
 
 message WalletDeposit {
