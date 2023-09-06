@@ -1,11 +1,8 @@
 #[macro_use]
 extern crate rocket;
-#[cfg(feature = "liveace")]
 use serialport::{SerialPortInfo, SerialPortType, UsbPortInfo};
-#[cfg(feature = "liveace")]
 use std::time::Duration;
 mod command_executor;
-#[cfg(feature = "liveace")]
 use command_executor::liveace::LiVeAceSerialPort;
 use command_executor::{CommandExecutor, CommandExecutorManager, NamespacedCommandExecutor};
 use rocket::{
@@ -96,29 +93,15 @@ impl Fairing for Cors {
 
 #[rocket::launch]
 async fn rocket() -> _ {
-    #[cfg(any(feature = "adafruit_motorkit", feature = "liveace"))]
     let mut command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = Vec::new();
-    #[cfg(not(any(feature = "adafruit_motorkit", feature = "liveace")))]
-    let command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = Vec::new();
 
-    #[cfg(feature = "adafruit_motorkit")]
-    {
-        println!("Connecting to Adafruit Motor Controller HAT...");
-        command_executors.push(Box::from(
-            command_executor::adafruit_motorkit::AdafruitMotorHat::new().unwrap(),
-        ));
-    }
-
-    #[cfg(feature = "liveace")]
-    {
-        println!("Bootstrapping Arduino(s)...");
-        // TODO - Spawn a thread for each call to `try_get_call_response_serial_port_from_serial_port_info` since they all block. Then join on all of the handles.
-        for port_info in serialport::available_ports().unwrap_or_default() {
-            if let Some(call_response_serial_port) =
-                try_get_call_response_serial_port_from_serial_port_info(port_info)
-            {
-                command_executors.push(Box::from(call_response_serial_port));
-            }
+    println!("Bootstrapping Arduino(s)...");
+    // TODO - Spawn a thread for each call to `try_get_call_response_serial_port_from_serial_port_info` since they all block. Then join on all of the handles.
+    for port_info in serialport::available_ports().unwrap_or_default() {
+        if let Some(call_response_serial_port) =
+            try_get_call_response_serial_port_from_serial_port_info(port_info)
+        {
+            command_executors.push(Box::from(call_response_serial_port));
         }
     }
 
@@ -142,7 +125,6 @@ async fn rocket() -> _ {
         )
 }
 
-#[cfg(feature = "liveace")]
 fn try_get_call_response_serial_port_from_serial_port_info(
     serial_port_info: SerialPortInfo,
 ) -> Option<LiVeAceSerialPort> {
@@ -175,7 +157,6 @@ fn try_get_call_response_serial_port_from_serial_port_info(
     }
 }
 
-#[cfg(feature = "liveace")]
 fn get_board_type(usb_port_info: &UsbPortInfo) -> ArduinoBoardType {
     // 9025 is the decimal version of 2341.
     // See https://devicehunt.com/view/type/usb/vendor/2341 for board
@@ -191,7 +172,6 @@ fn get_board_type(usb_port_info: &UsbPortInfo) -> ArduinoBoardType {
     ArduinoBoardType::Unknown
 }
 
-#[cfg(feature = "liveace")]
 #[derive(PartialEq, std::fmt::Debug)]
 enum ArduinoBoardType {
     Unknown,
