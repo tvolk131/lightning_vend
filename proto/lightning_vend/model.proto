@@ -4,6 +4,8 @@ package lightning_vend;
 
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+import "lnd/lnrpc/lightning.proto";
 
 // A user of the Lightning Vend service.
 // This is a top-level resource that is not owned by any other resource.
@@ -89,4 +91,57 @@ message InventoryItem {
   // means there is still inventory left, and false means the item is out of
   // inventory.
   string inventory_check_bool_execution_command = 4;
+}
+
+// A wallet containing Bitcoin that belongs to a LightningVend user but is
+// custodied by LightningVend.
+message Wallet {
+  // The resource name of the wallet.
+  // Format: users/{user}/wallets/{wallet}.
+  string name = 1;
+
+  int64 balance_sats = 2;
+
+  StaticWalletWithdrawalDestination automatic_withdrawal_destination = 3;
+}
+
+message WalletDeposit {
+  // The resource name of the wallet deposit.
+  // Format: users/{user}/wallets/{wallet}/deposits/{deposit}.
+  string name = 1;
+
+  // The amount of the deposit. Note that this proto adheres to ISO 4217, which
+  // does not officially include Bitcoin. Bitcoin can be represented in this
+  // field by setting `Money.currency_code` to "XBT", where `Money.units`
+  // represents whole coins and `Money.nanos` represents sats (this works out
+  // nicely since one sat is 10^-9 Bitcoins, or one "nano-Bitcoin").
+  google.type.Money amount = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // The LND invoice that the user should pay to deposit funds into their
+  // wallet. The field is updated when the invoice is paid.
+  lnrpc.Invoice invoice = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message WalletWithdrawal {
+  // The resource name of the wallet withdrawal.
+  // Format: users/{user}/wallets/{wallet}/withdrawals/{withdrawal}.
+  string name = 1;
+
+  oneof destination {
+    StaticWalletWithdrawalDestination static_destination = 2;
+
+    DynamicWalletWithdrawalDestination dynamic_destination = 3;
+  }
+}
+
+// Represents an unchanging (and therefore reusable) Bitcoin withdrawal
+// destination, such as an LNURL-Withdraw link or an on-chain address.
+message StaticWalletWithdrawalDestination {
+  // TODO  - Add fields.
+}
+
+// Represents a single-use Bitcoin withdrawal destination, such as a Bolt-11
+// lightning invoice.
+message DynamicWalletWithdrawalDestination {
+  // TODO  - Add fields.
 }

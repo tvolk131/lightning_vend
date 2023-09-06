@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package lightning_vend;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "lightning_vend/model.proto";
+
+// A service for managing Bitcoin wallets containing LightningVend user funds.
+service WalletService {
+  // Creates a wallet.
+  rpc CreateWallet(CreateWalletRequest) returns (Wallet);
+
+  // Retrieves a wallet.
+  rpc GetWallet(GetWalletRequest) returns (Wallet) {};
+
+  rpc ListWalletDeposits(ListWalletDepositsRequest) returns (ListWalletDepositsResponse) {};
+
+  rpc CreateWalletDeposit(CreateWalletDepositRequest) returns (WalletDeposit) {};
+
+  rpc ListWalletWithdrawals(ListWalletWithdrawalsRequest) returns (ListWalletWithdrawalsResponse) {};
+
+  rpc CreateWalletWithdrawal(CreateWalletWithdrawalRequest) returns (WalletWithdrawal) {};
+}
+
+// Request message for CreateWallet.
+message CreateWalletRequest {
+  // The parent wallet.
+  // Format: users/{user}/wallets/{wallet}.
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.lightningvend.com/Wallet"}
+  ];
+
+  // The wallet to create.
+  Wallet wallet = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for GetWallet.
+message GetWalletRequest {
+  // The name of the wallet to retrieve.
+  // Format: users/{user}/wallets/{wallet}.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.lightningvend.com/Wallet"}
+  ];
+}
+
+// Request message for ListWalletDeposits.
+message ListWalletDepositsRequest {
+  // TODO  - Add fields.
+}
+
+// Response message for ListWalletDeposits.
+message ListWalletDepositsResponse {
+  // TODO  - Add fields.
+}
+
+// Request message for CreateWalletDeposit.
+message CreateWalletDepositRequest {
+  // TODO  - Add fields.
+}
+
+// Request message for ListWalletWithdrawals.
+message ListWalletWithdrawalsRequest {
+  // TODO  - Add fields.
+}
+
+// Response message for ListWalletWithdrawals.
+message ListWalletWithdrawalsResponse {
+  // TODO  - Add fields.
+}
+
+// Request message for CreateWalletWithdrawal.
+message CreateWalletWithdrawalRequest {
+  // TODO  - Add fields.
+}
