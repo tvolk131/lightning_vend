@@ -1,11 +1,8 @@
 #[macro_use]
 extern crate rocket;
-#[cfg(feature = "liveace")]
 use serialport::{SerialPortInfo, SerialPortType, UsbPortInfo};
-#[cfg(feature = "liveace")]
 use std::time::Duration;
 mod command_executor;
-#[cfg(feature = "liveace")]
 use command_executor::liveace::LiVeAceSerialPort;
 use command_executor::{CommandExecutor, CommandExecutorManager, NamespacedCommandExecutor};
 use rocket::{
@@ -19,11 +16,11 @@ use std::sync::Mutex;
 fn run_null_command_handler(
     command: String,
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> Result<rocket::response::content::Json<String>, rocket::response::status::NotFound<String>> {
+) -> Result<rocket::serde::json::Json<String>, rocket::response::status::NotFound<String>> {
     let mut command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
     match command_executor_manager.execute_null_command(&command) {
-        Ok(_) => Ok(rocket::response::content::Json(
+        Ok(_) => Ok(rocket::serde::json::Json(
             serde_json::json!(null).to_string(),
         )),
         Err(err) => {
@@ -37,11 +34,11 @@ fn run_null_command_handler(
 fn run_bool_command_handler(
     command: String,
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> Result<rocket::response::content::Json<String>, rocket::response::status::NotFound<String>> {
+) -> Result<rocket::serde::json::Json<String>, rocket::response::status::NotFound<String>> {
     let mut command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
     match command_executor_manager.execute_bool_command(&command) {
-        Ok(bool_res) => Ok(rocket::response::content::Json(
+        Ok(bool_res) => Ok(rocket::serde::json::Json(
             serde_json::json!(bool_res).to_string(),
         )),
         Err(err) => {
@@ -54,7 +51,7 @@ fn run_bool_command_handler(
 #[get("/listCommands")]
 fn list_commands_handler(
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> rocket::response::content::Json<String> {
+) -> rocket::serde::json::Json<String> {
     let command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
     let mut null_commands: Vec<&str> = command_executor_manager.get_null_commands().collect();
@@ -63,7 +60,7 @@ fn list_commands_handler(
     let mut bool_commands: Vec<&str> = command_executor_manager.get_bool_commands().collect();
     bool_commands.sort();
 
-    rocket::response::content::Json(
+    rocket::serde::json::Json(
         serde_json::json!({
             "nullCommands": null_commands,
             "boolCommands": bool_commands
@@ -96,29 +93,15 @@ impl Fairing for Cors {
 
 #[rocket::launch]
 async fn rocket() -> _ {
-    #[cfg(any(feature = "adafruit_motorkit", feature = "liveace"))]
     let mut command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = Vec::new();
-    #[cfg(not(any(feature = "adafruit_motorkit", feature = "liveace")))]
-    let command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = Vec::new();
 
-    #[cfg(feature = "adafruit_motorkit")]
-    {
-        println!("Connecting to Adafruit Motor Controller HAT...");
-        command_executors.push(Box::from(
-            command_executor::adafruit_motorkit::AdafruitMotorHat::new().unwrap(),
-        ));
-    }
-
-    #[cfg(feature = "liveace")]
-    {
-        println!("Bootstrapping Arduino(s)...");
-        // TODO - Spawn a thread for each call to `try_get_call_response_serial_port_from_serial_port_info` since they all block. Then join on all of the handles.
-        for port_info in serialport::available_ports().unwrap_or_default() {
-            if let Some(call_response_serial_port) =
-                try_get_call_response_serial_port_from_serial_port_info(port_info)
-            {
-                command_executors.push(Box::from(call_response_serial_port));
-            }
+    println!("Bootstrapping Arduino(s)...");
+    // TODO - Spawn a thread for each call to `try_get_call_response_serial_port_from_serial_port_info` since they all block. Then join on all of the handles.
+    for port_info in serialport::available_ports().unwrap_or_default() {
+        if let Some(call_response_serial_port) =
+            try_get_call_response_serial_port_from_serial_port_info(port_info)
+        {
+            command_executors.push(Box::from(call_response_serial_port));
         }
     }
 
@@ -142,7 +125,6 @@ async fn rocket() -> _ {
         )
 }
 
-#[cfg(feature = "liveace")]
 fn try_get_call_response_serial_port_from_serial_port_info(
     serial_port_info: SerialPortInfo,
 ) -> Option<LiVeAceSerialPort> {
@@ -175,7 +157,6 @@ fn try_get_call_response_serial_port_from_serial_port_info(
     }
 }
 
-#[cfg(feature = "liveace")]
 fn get_board_type(usb_port_info: &UsbPortInfo) -> ArduinoBoardType {
     // 9025 is the decimal version of 2341.
     // See https://devicehunt.com/view/type/usb/vendor/2341 for board
@@ -191,7 +172,6 @@ fn get_board_type(usb_port_info: &UsbPortInfo) -> ArduinoBoardType {
     ArduinoBoardType::Unknown
 }
 
-#[cfg(feature = "liveace")]
 #[derive(PartialEq, std::fmt::Debug)]
 enum ArduinoBoardType {
     Unknown,

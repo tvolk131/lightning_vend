@@ -1,7 +1,4 @@
 use std::collections::HashMap;
-#[cfg(feature = "adafruit_motorkit")]
-pub mod adafruit_motorkit;
-#[cfg(feature = "liveace")]
 pub mod liveace;
 
 pub trait CommandExecutor: Send + Sync {
