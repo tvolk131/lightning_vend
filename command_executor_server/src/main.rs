@@ -16,11 +16,11 @@ use std::sync::Mutex;
 fn run_null_command_handler(
     command: String,
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> Result<rocket::response::content::Json<String>, rocket::response::status::NotFound<String>> {
+) -> Result<rocket::serde::json::Json<String>, rocket::response::status::NotFound<String>> {
     let mut command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
     match command_executor_manager.execute_null_command(&command) {
-        Ok(_) => Ok(rocket::response::content::Json(
+        Ok(_) => Ok(rocket::serde::json::Json(
             serde_json::json!(null).to_string(),
         )),
         Err(err) => {
@@ -34,11 +34,11 @@ fn run_null_command_handler(
 fn run_bool_command_handler(
     command: String,
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> Result<rocket::response::content::Json<String>, rocket::response::status::NotFound<String>> {
+) -> Result<rocket::serde::json::Json<String>, rocket::response::status::NotFound<String>> {
     let mut command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
     match command_executor_manager.execute_bool_command(&command) {
-        Ok(bool_res) => Ok(rocket::response::content::Json(
+        Ok(bool_res) => Ok(rocket::serde::json::Json(
             serde_json::json!(bool_res).to_string(),
         )),
         Err(err) => {
@@ -51,7 +51,7 @@ fn run_bool_command_handler(
 #[get("/listCommands")]
 fn list_commands_handler(
     command_executor_manager_mutex: &State<Mutex<CommandExecutorManager>>,
-) -> rocket::response::content::Json<String> {
+) -> rocket::serde::json::Json<String> {
     let command_executor_manager = command_executor_manager_mutex.lock().unwrap();
 
     let mut null_commands: Vec<&str> = command_executor_manager.get_null_commands().collect();
@@ -60,7 +60,7 @@ fn list_commands_handler(
     let mut bool_commands: Vec<&str> = command_executor_manager.get_bool_commands().collect();
     bool_commands.sort();
 
-    rocket::response::content::Json(
+    rocket::serde::json::Json(
         serde_json::json!({
             "nullCommands": null_commands,
             "boolCommands": bool_commands
