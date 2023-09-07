@@ -96,11 +96,10 @@ async fn rocket() -> _ {
     let mut command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = Vec::new();
 
     println!("Bootstrapping Arduino(s)...");
-    // TODO - Spawn a thread for each call to `try_get_call_response_serial_port_from_serial_port_info` since they all block. Then join on all of the handles.
+    // TODO - Spawn a thread for each call to `get_liveace_serial_port` since
+    // they all block. Then join on all of the handles.
     for port_info in serialport::available_ports().unwrap_or_default() {
-        if let Some(call_response_serial_port) =
-            try_get_call_response_serial_port_from_serial_port_info(port_info)
-        {
+        if let Some(call_response_serial_port) = get_liveace_serial_port(port_info) {
             command_executors.push(Box::from(call_response_serial_port));
         }
     }
@@ -125,9 +124,7 @@ async fn rocket() -> _ {
         )
 }
 
-fn try_get_call_response_serial_port_from_serial_port_info(
-    serial_port_info: SerialPortInfo,
-) -> Option<LiVeAceSerialPort> {
+fn get_liveace_serial_port(serial_port_info: SerialPortInfo) -> Option<LiVeAceSerialPort> {
     let usb_port_info = match &serial_port_info.port_type {
         SerialPortType::UsbPort(usb_port_info) => usb_port_info,
         _ => return None,
