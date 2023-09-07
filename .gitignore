@@ -12,10 +12,10 @@ node_modules
 dist
 dist-ssr
 *.local
-/client/out/**
+/frontend/client/out/**
 *.macaroon
 *.cert
-/proto_out/**/*.ts
+proto_out
 .env
 
 # Editor directories and files
