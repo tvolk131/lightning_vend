@@ -56,9 +56,7 @@ jobs:
 
       - name: Build container image
         run: |
-          cd frontend
-          docker build -t registry.digitalocean.com/cards/lightningvend:$(echo $GITHUB_SHA | head -c7) .
-          cd ..
+          docker build -t registry.digitalocean.com/cards/lightningvend:$(echo $GITHUB_SHA | head -c7) -f frontend/Dockerfile .
 
       - name: Log in to DigitalOcean Container Registry with short-lived credentials
         run: doctl registry login --expiry-seconds 1200

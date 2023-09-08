@@ -13,15 +13,15 @@ const loaderOptions: protoLoader.Options = {
 };
 
 const packageDefinition = protoLoader.loadSync(
-  __dirname + '/../proto/lnd/lnrpc/lightning.proto',
+  __dirname + '/../../proto/lnd/lnrpc/lightning.proto',
   loaderOptions
 );
 
-const lndCert = fs.readFileSync(__dirname + '/../config/tls.cert');
+const lndCert = fs.readFileSync(__dirname + '/../../config/tls.cert');
 const sslCreds = grpc.credentials.createSsl(lndCert);
 
 const macaroon = fs.readFileSync(
-  __dirname + '/../config/admin.macaroon'
+  __dirname + '/../../config/admin.macaroon'
 ).toString('hex');
 
 // This value is used for generating and verifying short-lived unsigned LN
