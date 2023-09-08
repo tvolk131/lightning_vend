@@ -107,10 +107,10 @@ export const AdminPage = () => {
         <div>
           <Fab
             color={'primary'}
-            style={{position: 'absolute', bottom: '20px', right: '20px'}}
+            style={{position: 'fixed', bottom: '20px', right: '20px'}}
             onClick={() => setShowClaimDeviceDialog(true)}
           >
-            <AddIcon />
+            <AddIcon/>
           </Fab>
           <Dialog
             onClose={() => setShowClaimDeviceDialog(false)}
