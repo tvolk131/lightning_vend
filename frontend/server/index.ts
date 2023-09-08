@@ -1,6 +1,4 @@
-import * as compression from 'compression';
 import * as dotenv from 'dotenv';
-import * as express from 'express';
 import * as fs from 'fs';
 import * as glob from 'glob';
 import * as http from 'http';
@@ -8,6 +6,8 @@ import * as path from 'path';
 import {Coordinator} from './coordinator';
 import {MongoClient} from 'mongodb';
 import {User_AuthId} from '../proto_out/lightning_vend/model';
+import compression from 'compression';
+import express from 'express';
 import {lightning} from './lndApi';
 import {verifyMessage} from './lnAuth';
 

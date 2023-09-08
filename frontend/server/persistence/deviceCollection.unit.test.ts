@@ -1,4 +1,3 @@
-import * as Long from 'long';
 import {
   ClaimUnclaimedDeviceRequest,
   GetDeviceRequest,
@@ -9,6 +8,7 @@ import {Collection, MongoClient, ObjectId} from 'mongodb';
 import {Device, UnclaimedDevice} from '../../proto_out/lightning_vend/model';
 import {DeviceCollection} from './deviceCollection';
 import {DeviceName} from '../../shared/proto';
+import Long from 'long';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 
 describe('DeviceCollection', () => {
