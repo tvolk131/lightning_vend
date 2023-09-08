@@ -41,6 +41,7 @@ jobs:
         cargo check
         cargo fmt -- --check
         cargo clippy -- -D warnings
+        sh build_for_pi.sh
         cd ..
   deploy:
     needs: test
