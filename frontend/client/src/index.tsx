@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {RouterProvider, createBrowserRouter} from 'react-router-dom';
-import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {
   adminPagePath,
   devicePagePath,
@@ -12,8 +11,9 @@ import {DevicePage} from './devicePage';
 import {LandingPage} from './landingPage';
 import {LearnMorePage} from './learnMorePage';
 import {NotFoundPage} from './notFoundPage';
-import {blue} from '@mui/material/colors';
+import {ThemeProvider} from '@mui/material/styles';
 import {createRoot} from 'react-dom/client';
+import {useLightningVendTheme} from './themes';
 
 // Install the service worker. This allows the app to work offline by caching
 // the app's files and serving them from the cache when the user is offline.
@@ -49,17 +49,7 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-  // TODO - Add a way for users to be able to set this.
-  const isDarkMode = false;
-
-  const theme = createTheme({
-    palette: {
-      primary: {main: '#F7931A'},
-      secondary: blue,
-      mode: isDarkMode ? 'dark' : 'light',
-      background: isDarkMode ? undefined : {default: '#E7EBF0'}
-    }
-  });
+  const theme = useLightningVendTheme();
 
   return (
     <ThemeProvider theme={theme}>
