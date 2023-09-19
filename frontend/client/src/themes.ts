@@ -1,4 +1,4 @@
-import {createTheme, useMediaQuery} from '@mui/material';
+import {PaletteOptions, createTheme, useMediaQuery} from '@mui/material';
 import {blue} from '@mui/material/colors';
 import {Device_ColorScheme} from '../../proto_out/lightning_vend/model';
 
@@ -12,12 +12,15 @@ export const useLightningVendTheme = (colorScheme?: Device_ColorScheme) => {
     isDarkMode = false;
   }
 
-  return createTheme({
-    palette: {
-      primary: {main: '#F7931A'},
-      secondary: blue,
-      mode: isDarkMode ? 'dark' : 'light',
-      background: isDarkMode ? undefined : {default: '#E7EBF0'}
-    }
-  });
+  const palette: PaletteOptions = {
+    primary: {main: '#F7931A'},
+    secondary: blue,
+    mode: isDarkMode ? 'dark' : 'light'
+  };
+
+  if (!isDarkMode) {
+    palette.background = {default: '#E7EBF0'};
+  }
+
+  return createTheme({palette});
 };
