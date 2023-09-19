@@ -13,10 +13,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import {LightningNetworkLogo} from './lightningNetworkLogo';
 import Paper from '@mui/material/Paper';
 import {SelectionMenu} from './selectionMenu';
+import {ThemeProvider} from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
+import {useLightningVendTheme} from './themes';
 import {deviceApi} from './api/deviceApi';
-import {useTheme} from '@mui/material/styles';
 
 // Screensaver appears after one minute of inactivity.
 const SCREENSAVER_DELAY_MS = 60000;
@@ -24,8 +25,6 @@ const SCREENSAVER_DELAY_MS = 60000;
 const centerSquareSize = 330;
 
 export const DevicePage = () => {
-  const theme = useTheme();
-
   deviceApi.useSocket();
   const connectionStatus = deviceApi.useConnectionStatus();
   const loadableDevice = deviceApi.useLoadableDevice();
@@ -120,79 +119,53 @@ export const DevicePage = () => {
 
   const loadableDeviceStats = getAsyncLoadableDataStats(loadableDevice);
 
+  // Get the color scheme from the device proto if it's available. Otherwise,
+  // use the default color scheme.
+  let colorScheme;
+  if (loadableDeviceStats.data) {
+    if ('device' in loadableDeviceStats.data) {
+      colorScheme = loadableDeviceStats.data.device.colorScheme;
+    }
+  }
+  const theme = useLightningVendTheme(colorScheme);
+
   return (
-    <div
-      style={{display: 'flex', flexWrap: 'wrap', height: '100vh'}}
-      onClick={appTouched}
-    >
-      {
-        showLightningLogo && (
-          <div style={{width: 'fit-content', margin: 'auto', padding: '20px'}}>
-            <LightningNetworkLogo size={200}/>
-          </div>
-        )
-      }
-      <div style={{width: 'fit-content', margin: 'auto'}}>
-        {/* TODO - Indicate whether we're still loading the device and/or using
-            cached data. And if we're in an error state, indicate that the
-            device failed to load, and allow retry. */}
-        {loadableDeviceStats.data && 'device' in loadableDeviceStats.data && (
-          <SelectionMenu
-            size={centerSquareSize}
-            // TODO - Only hide the invoice if it has expired or is manually
-            // cancelled. This will provide the best user experience since an
-            // invoice will only be hidden if it is no longer usable or the
-            // user explicitly indicates they don't want to pay it.
-            canShowInvoice={!screensaverActive}
-            inventory={loadableDeviceStats.data.device.inventory}
-          />
-        )}
-        {loadableDeviceStats.data &&
-         'unclaimedDevice' in loadableDeviceStats.data && (
-          <div style={{position: 'relative'}}>
-            <Paper
+    <ThemeProvider theme={theme}>
+      <div
+        style={{display: 'flex', flexWrap: 'wrap', height: '100vh'}}
+        onClick={appTouched}
+      >
+        {
+          showLightningLogo && (
+            <div
               style={{
-                height: `${centerSquareSize}px`,
-                width: `${centerSquareSize}px`
+                width: 'fit-content',
+                margin: 'auto',
+                padding: '20px'
               }}
             >
-              <div
-                style={{
-                  padding: '20px',
-                  textAlign: 'center',
-                  position: 'absolute',
-                  top: '50%',
-                  transform: 'translate(0, -50%)'
-                }}
-              >
-                <Typography style={{paddingBottom: '20px'}}>
-                  Device is not setup! Please login to an admin account on
-                  another device and enter the following setup code:
-                </Typography>
-                <Typography variant={'h3'}>
-                  {loadableDeviceStats.data.unclaimedDevice.setupCode}
-                </Typography>
-              </div>
-            </Paper>
-            {executionCommands.state === 'error' && (
-                <div style={{position: 'absolute', marginTop: '20px'}}>
-                  <Alert
-                    severity={'error'}
-                    action={
-                      <Button onClick={loadAndSaveExecutionCommands}>
-                        Retry
-                      </Button>
-                    }
-                  >
-                    Failed to load device execution commands!
-                  </Alert>
-                </div>
-            )}
-          </div>
-        )}
-        {!loadableDeviceStats.data && (() => {
-          if (loadableDeviceStats.state === 'loading') {
-            return (
+              <LightningNetworkLogo size={200}/>
+            </div>
+          )
+        }
+        <div style={{width: 'fit-content', margin: 'auto'}}>
+          {/* TODO - Indicate whether we're still loading the device and/or
+              using cached data. And if we're in an error state, indicate that
+              the device failed to load, and allow retry. */}
+          {loadableDeviceStats.data && 'device' in loadableDeviceStats.data && (
+            <SelectionMenu
+              size={centerSquareSize}
+              // TODO - Only hide the invoice if it has expired or is manually
+              // cancelled. This will provide the best user experience since an
+              // invoice will only be hidden if it is no longer usable or the
+              // user explicitly indicates they don't want to pay it.
+              canShowInvoice={!screensaverActive}
+              inventory={loadableDeviceStats.data.device.inventory}
+            />
+          )}
+          {loadableDeviceStats.data &&
+          'unclaimedDevice' in loadableDeviceStats.data && (
+            <div style={{position: 'relative'}}>
               <Paper
                 style={{
                   height: `${centerSquareSize}px`,
@@ -201,21 +174,41 @@ export const DevicePage = () => {
               >
                 <div
                   style={{
+                    padding: '20px',
+                    textAlign: 'center',
                     position: 'absolute',
                     top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)'
+                    transform: 'translate(0, -50%)'
                   }}
                 >
-                  <CircularProgress size={100}/>
+                  <Typography style={{paddingBottom: '20px'}}>
+                    Device is not setup! Please login to an admin account on
+                    another device and enter the following setup code:
+                  </Typography>
+                  <Typography variant={'h3'}>
+                    {loadableDeviceStats.data.unclaimedDevice.setupCode}
+                  </Typography>
                 </div>
               </Paper>
-            );
-          }
-
-          if (loadableDeviceStats.state === 'error') {
-            return (
-              <div style={{position: 'relative'}}>
+              {executionCommands.state === 'error' && (
+                  <div style={{position: 'absolute', marginTop: '20px'}}>
+                    <Alert
+                      severity={'error'}
+                      action={
+                        <Button onClick={loadAndSaveExecutionCommands}>
+                          Retry
+                        </Button>
+                      }
+                    >
+                      Failed to load device execution commands!
+                    </Alert>
+                  </div>
+              )}
+            </div>
+          )}
+          {!loadableDeviceStats.data && (() => {
+            if (loadableDeviceStats.state === 'loading') {
+              return (
                 <Paper
                   style={{
                     height: `${centerSquareSize}px`,
@@ -224,76 +217,100 @@ export const DevicePage = () => {
                 >
                   <div
                     style={{
-                      padding: '20px',
-                      textAlign: 'center',
                       position: 'absolute',
                       top: '50%',
-                      transform: 'translate(0, -50%)'
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
                     }}
                   >
-                    <Typography variant={'h4'}>
-                      Error loading device data!
-                    </Typography>
-                    <Button
-                      style={{marginTop: '10px'}}
-                      variant={'contained'}
-                      onClick={() => {
-                        deviceApi.getDevice();
-                      }}
-                    >
-                      Retry
-                    </Button>
+                    <CircularProgress size={100}/>
                   </div>
                 </Paper>
-              </div>
-            );
-          }
-        })()}
-      </div>
-      <div style={{position: 'absolute', top: 0, right: 0, padding: '10px'}}>
-        <Chip
-          icon={
-            <CircleIcon
-              color={connectionStatus === 'connected' ? 'success' : 'error'}
-            />
-          }
-          label={connectionStatus === 'connected' ? 'Online' : 'Offline'}
-        />
-      </div>
-      <div
-        id='screensaver'
-        style={{
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: theme.palette.background.default + 'E0',
-          fontSize: 32,
-          color: 'white',
-          cursor: 'pointer',
-          transition: 'opacity 0.25s',
-          opacity: `${screensaverActive ? 100 : 0}%`,
-          transform: screensaverRendered ? undefined : 'translate(0, 100%)',
-          zIndex: 100
-        }}
-        onClick={screensaverClicked}
-        onTransitionEnd={() => {
-          if (!screensaverActive) {
-            setScreensaverRendered(false);
-          }
-        }}
-      >
-        <Typography
-          color={theme.palette.text.primary}
-          variant={'h3'}
+              );
+            }
+
+            if (loadableDeviceStats.state === 'error') {
+              return (
+                <div style={{position: 'relative'}}>
+                  <Paper
+                    style={{
+                      height: `${centerSquareSize}px`,
+                      width: `${centerSquareSize}px`
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: '20px',
+                        textAlign: 'center',
+                        position: 'absolute',
+                        top: '50%',
+                        transform: 'translate(0, -50%)'
+                      }}
+                    >
+                      <Typography variant={'h4'}>
+                        Error loading device data!
+                      </Typography>
+                      <Button
+                        style={{marginTop: '10px'}}
+                        variant={'contained'}
+                        onClick={() => {
+                          deviceApi.getDevice();
+                        }}
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  </Paper>
+                </div>
+              );
+            }
+          })()}
+        </div>
+        <div style={{position: 'absolute', top: 0, right: 0, padding: '10px'}}>
+          <Chip
+            icon={
+              <CircleIcon
+                color={connectionStatus === 'connected' ? 'success' : 'error'}
+              />
+            }
+            label={connectionStatus === 'connected' ? 'Online' : 'Offline'}
+          />
+        </div>
+        <div
+          id='screensaver'
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: theme.palette.background.default + 'E0',
+            fontSize: 32,
+            color: 'white',
+            cursor: 'pointer',
+            transition: 'opacity 0.25s',
+            opacity: `${screensaverActive ? 100 : 0}%`,
+            transform: screensaverRendered ? undefined : 'translate(0, 100%)',
+            zIndex: 100
+          }}
+          onClick={screensaverClicked}
+          onTransitionEnd={() => {
+            if (!screensaverActive) {
+              setScreensaverRendered(false);
+            }
+          }}
         >
-          Tap Me!
-        </Typography>
+          <Typography
+            color={theme.palette.text.primary}
+            variant={'h3'}
+          >
+            Tap Me!
+          </Typography>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };

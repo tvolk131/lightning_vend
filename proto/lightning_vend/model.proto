@@ -71,6 +71,16 @@ message Device {
 
   // The commands that the device supports that return a boolean value.
   repeated string bool_execution_commands = 5;
+
+  enum ColorScheme {
+    SYSTEM_DEFAULT = 0;
+
+    DEFAULT_DARK = 1;
+
+    DEFAULT_LIGHT = 2;
+  }
+
+  ColorScheme color_scheme = 7;
 }
 
 message InventoryItem {
