@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Device,
+  Device_ColorScheme,
   InventoryItem
 } from '../../../../proto_out/lightning_vend/model';
 import {useEffect, useState} from 'react';
@@ -12,6 +13,8 @@ import {InventoryItemDialog} from './inventoryItemDialog';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import {adminApi} from '../../api/adminApi';
+import {MenuItem} from '@mui/material';
+import {Select} from '@mui/material';
 
 interface DeviceSettingsPanelProps {
   device: Device
@@ -37,6 +40,11 @@ export const DeviceSettingsPanel = (props: DeviceSettingsPanelProps) => {
   return (
     <Paper style={{padding: '10px'}}>
       <EditableDeviceDisplayName device={props.device}/>
+      <Select<Device_ColorScheme> value={props.device.colorScheme} onChange={(e) => adminApi.updateDeviceColorScheme(e.target.value)}>
+        <MenuItem value={Device_ColorScheme.SYSTEM_DEFAULT}>Device Default</MenuItem>
+        <MenuItem value={Device_ColorScheme.DEFAULT_DARK}>Dark</MenuItem>
+        <MenuItem value={Device_ColorScheme.DEFAULT_LIGHT}>Light</MenuItem>
+      </Select>
       <Typography variant={'h4'}>Inventory</Typography>
       <div>
         {props.device.inventory.map((inventoryItem, i) => (

@@ -36,6 +36,7 @@ export interface DeviceCollectionSchema {
   inventory?: Partial<InventoryItem>[];
   nullExecutionCommands?: string[];
   boolExecutionCommands?: string[];
+  colorScheme?: number;
 }
 
 const deviceCollectionDocumentToProto = (
@@ -65,7 +66,8 @@ const deviceCollectionDocumentToProto = (
         displayName: document.displayName,
         inventory: document.inventory,
         nullExecutionCommands: document.nullExecutionCommands,
-        boolExecutionCommands: document.boolExecutionCommands
+        boolExecutionCommands: document.boolExecutionCommands,
+        colorScheme: document.colorScheme
       })
     };
   }
@@ -100,6 +102,10 @@ const partialDeviceToDocument = (
 
   if (device?.boolExecutionCommands) {
     deviceSchemaInstance.boolExecutionCommands = device.boolExecutionCommands;
+  }
+
+  if (device && device.colorScheme.valueOf() !== 0) {
+    deviceSchemaInstance.colorScheme = device.colorScheme;
   }
 
   return deviceSchemaInstance;
@@ -375,6 +381,12 @@ export class DeviceCollection implements DeviceService {
           setDoc.boolExecutionCommands = request.device.boolExecutionCommands;
         } else {
           unsetDoc.boolExecutionCommands = '';
+        }
+      } else if (updatePath === 'color_scheme') {
+        if (request.device.colorScheme.valueOf() !== 0) {
+          setDoc.colorScheme = request.device.colorScheme;
+        } else {
+          unsetDoc.colorScheme = '';
         }
       } else if (updatePath.length === 0) {
         throw new Error('Update mask paths must not be empty.');
