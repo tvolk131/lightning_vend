@@ -1,5 +1,5 @@
-# Run this script from your desktop to setup a Raspberry Pi 4 Model B running
-# Raspberry Pi OS.
+# Run this script to setup a Raspberry Pi 4 Model B running Raspberry Pi OS to
+# function as a LightningVend device.
 
 # Exit early if any command fails.
 set -e
@@ -85,7 +85,7 @@ Group={user}
 Type=simple
 ExecStart=/bin/bash /home/{user}/kiosk.sh
 Restart=on-abort
-Environment=DISPLAY={display}
+Environment=DISPLAY=:0.0
 Environment=XAUTHORITY=/home/{user}/.Xauthority
 
 [Install]
@@ -95,9 +95,6 @@ EOF
 
 # Replace {user} with your username.
 sudo sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
-
-# Replace {display} with your display.
-sudo sed -i "s/{display}/$DISPLAY/g" /etc/systemd/system/kiosk.service
 
 # Enable the Chromium kiosk to run on boot.
 sudo systemctl enable kiosk.service
