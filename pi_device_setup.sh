@@ -1,6 +1,6 @@
 # Place this file anywhere on your Raspberry Pi 4 Model B running Raspberry Pi
 # OS. Then run the following command:
-#   sudo bash pi_setup_from_desktop.sh
+#   sudo bash rpi_setup_from_desktop.sh
 # This script will install all the dependencies, clone the repo, build the
 # command executor server, and setup the system to run the command executor
 # server and Chromium in kiosk mode on boot.
@@ -14,10 +14,12 @@ sudo apt -y install xdotool unclutter
 # Install Rust.
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 # Add Rust to the path (so we can continue in the same shell).
-source $HOME/.cargo/env
+source "$HOME/.cargo/env"
 
 # Clone the repo.
-git clone https://github.com/tvolk131/lightning_vend.git
+# TODO: Currently we're ignoring the error if the repo already exists. This
+# should be changed to pull the latest changes instead.
+git clone https://github.com/tvolk131/lightning_vend.git || true
 
 # Build the command executor server from source.
 cd lightning_vend/command_executor_server
