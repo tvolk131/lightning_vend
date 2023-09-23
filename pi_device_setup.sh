@@ -92,10 +92,10 @@ sudo sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
 sudo systemctl enable kiosk.service
 
 # Update the package manager.
-sudo apt update
+sudo apt -y update
 
 # Upgrade the system.
-sudo apt full-upgrade
+sudo apt -y full-upgrade
 
 # Set system to login automatically.
 sudo raspi-config nonint do_boot_behaviour B4
