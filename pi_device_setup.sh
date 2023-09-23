@@ -1,10 +1,11 @@
 # Run this script from your desktop to setup a Raspberry Pi 4 Model B running
 # Raspberry Pi OS.
 
-sudo apt install xdotool unclutter
+# Install dependencies.
+sudo apt -y install xdotool unclutter
 
 # Install Rust.
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -y
 
 # Clone the repo.
 git clone https://github.com/tvolk131/lightning_vend.git
@@ -58,7 +59,7 @@ WantedBy=default.target
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
+sudo sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
 
 # Enable the command executor server to run on boot.
 sudo systemctl enable command_executor_server.service
@@ -85,7 +86,7 @@ WantedBy=graphical.target
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
+sudo sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
 
 # Enable the Chromium kiosk to run on boot.
 sudo systemctl enable kiosk.service
