@@ -27,8 +27,8 @@ xset -dpms
 
 unclutter -idle 0.5 -root &
 
-sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' /home/admin/.config/chromium/Default/Preferences
-sed -i 's/"exit_type":"Crashed"/"exit_type":"Normal"/' /home/admin/.config/chromium/Default/Preferences
+sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' /home/{user}/.config/chromium/Default/Preferences
+sed -i 's/"exit_type":"Crashed"/"exit_type":"Normal"/' /home/{user}/.config/chromium/Default/Preferences
 
 /usr/bin/chromium-browser --kiosk --start-fullscreen --noerrdialogs --disable-infobars https://lightningvend.com/device &
 
@@ -38,6 +38,9 @@ while true; do
 done
 
 EOF
+
+# Replace {user} with your username.
+sed -i "s/{user}/$USER/g" ~/kiosk.sh
 
 # Create systemd service file for command executor server.
 sudo tee /etc/systemd/system/command_executor_server.service << EOF
