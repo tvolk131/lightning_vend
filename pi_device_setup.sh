@@ -1,11 +1,16 @@
 # Run this script from your desktop to setup a Raspberry Pi 4 Model B running
 # Raspberry Pi OS.
 
+# Exit early if any command fails.
+set -e
+
 # Install dependencies.
 sudo apt -y install xdotool unclutter
 
 # Install Rust.
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -y
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# Add Rust to the path (so we can continue in the same shell).
+source "$HOME/.cargo/env"
 
 # Clone the repo.
 git clone https://github.com/tvolk131/lightning_vend.git
