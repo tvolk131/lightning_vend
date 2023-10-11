@@ -1,9 +1,10 @@
 # Place this file anywhere on your Raspberry Pi 4 Model B running Raspberry Pi
-# OS. Then run the following command:
-#   sudo bash pi_setup_from_desktop.sh
-# This script will install all the dependencies, clone the repo, build the
+# OS 64-bit. Note that 32-bit is the default, so be sure to double-check this!
+# Then run the following command:
+#   sudo bash pi_device_setup.sh
+# This script will install all of the dependencies, clone the repo, build the
 # command executor server, and setup the system to run the command executor
-# server and Chromium in kiosk mode on boot.
+# server and Chromium UI on boot.
 
 # Exit early if any command fails.
 set -e
