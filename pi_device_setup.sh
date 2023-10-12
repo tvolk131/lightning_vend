@@ -10,7 +10,7 @@
 set -e
 
 # Set the user variable to the current user (as opposed to root).
-ORIGINAL_USER=${SUDO_USER:-$USER}
+USER=${SUDO_USER:-$USER}
 
 # Install dependencies.
 apt -y install xdotool unclutter
@@ -30,10 +30,11 @@ cd lightning_vend/command_executor_server
 cargo build --release
 
 # Move the binary to the home directory.
-mv target/release/command_executor_server ~
+# TODO: This should replace the existing binary instead of ignoring the error.
+mv target/release/command_executor_server /home/$USER/ || true
 
 # Create a script to run Chromium in kiosk mode.
-tee ~/kiosk.sh << EOF
+tee /home/$USER/kiosk.sh << EOF
 #!/bin/bash
 
 xset s noblank
@@ -55,7 +56,7 @@ done
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$ORIGINAL_USER/g" ~/kiosk.sh
+sed -i "s/{user}/$USER/g" /home/$USER/kiosk.sh
 
 # Create systemd service file for command executor server.
 tee /etc/systemd/system/command_executor_server.service << EOF
@@ -77,7 +78,7 @@ WantedBy=default.target
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$ORIGINAL_USER/g" /etc/systemd/system/command_executor_server.service
+sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
 
 # Enable the command executor server to run on boot.
 systemctl enable command_executor_server.service
@@ -104,7 +105,7 @@ WantedBy=graphical.target
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$ORIGINAL_USER/g" /etc/systemd/system/kiosk.service
+sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
 
 # Enable the Chromium kiosk to run on boot.
 systemctl enable kiosk.service
