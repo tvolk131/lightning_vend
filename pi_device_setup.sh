@@ -118,5 +118,7 @@ sudo apt -y full-upgrade
 # Set system to login automatically.
 sudo raspi-config nonint do_boot_behaviour B4
 
-# Reboot.
-sudo reboot
+# Print to the console that the setup is complete and the system should be
+# rebooted.
+echo "Setup complete. Please reboot the system by running the following command:"
+echo "sudo reboot"
