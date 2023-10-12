@@ -13,7 +13,7 @@
 set -e
 
 # Install dependencies.
-sudo apt -y install xdotool unclutter
+apt -y install xdotool unclutter
 
 # Install Rust.
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -58,7 +58,7 @@ EOF
 sed -i "s/{user}/$USER/g" ~/kiosk.sh
 
 # Create systemd service file for command executor server.
-sudo tee /etc/systemd/system/command_executor_server.service << EOF
+tee /etc/systemd/system/command_executor_server.service << EOF
 [Unit]
 Description=LightningVend Command Executor
 Before=kiosk.service
@@ -77,13 +77,13 @@ WantedBy=default.target
 EOF
 
 # Replace {user} with your username.
-sudo sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
+sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
 
 # Enable the command executor server to run on boot.
-sudo systemctl enable command_executor_server.service
+systemctl enable command_executor_server.service
 
 # Create systemd service file for Chromium kiosk.
-sudo tee /etc/systemd/system/kiosk.service << EOF
+tee /etc/systemd/system/kiosk.service << EOF
 [Unit]
 Description=LightningVend Chromium Kiosk
 Wants=graphical.target
@@ -104,19 +104,19 @@ WantedBy=graphical.target
 EOF
 
 # Replace {user} with your username.
-sudo sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
+sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
 
 # Enable the Chromium kiosk to run on boot.
-sudo systemctl enable kiosk.service
+systemctl enable kiosk.service
 
 # Update the package manager.
-sudo apt -y update
+apt -y update
 
 # Upgrade the system.
-sudo apt -y full-upgrade
+apt -y full-upgrade
 
 # Set system to login automatically.
-sudo raspi-config nonint do_boot_behaviour B4
+raspi-config nonint do_boot_behaviour B4
 
 # Print to the console that the setup is complete and the system should be
 # rebooted.
