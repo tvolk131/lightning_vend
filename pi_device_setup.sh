@@ -109,12 +109,6 @@ sed -i "s/{user}/$ORIGINAL_USER/g" /etc/systemd/system/kiosk.service
 # Enable the Chromium kiosk to run on boot.
 systemctl enable kiosk.service
 
-# Update the package manager.
-apt -y update
-
-# Upgrade the system.
-apt -y full-upgrade
-
 # Set system to login automatically.
 raspi-config nonint do_boot_behaviour B4
 
