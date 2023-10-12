@@ -1,10 +1,13 @@
-# Place this file anywhere on your Raspberry Pi 4 Model B running Raspberry Pi
-# OS 64-bit. Note that 32-bit is the default, so be sure to double-check this!
-# Then run the following command:
-#   sudo bash pi_device_setup.sh
-# This script will install all of the dependencies, clone the repo, build the
-# command executor server, and setup the system to run the command executor
-# server and Chromium UI on boot.
+# Use the Raspberry Pi Imager to flash the latest version of
+# "Raspberry Pi OS (64-bit)" which is in the "Raspberry Pi OS (other)" section.
+# Once on the desktop, place this file anywhere and run the following command:
+#   sudo -E bash pi_device_setup.sh
+# The `-E` flag is required to preserve the environment variables so that the
+# $USER variable is available to the script. This script should be run as the
+# current user (as opposed to root).
+# This will install all of the dependencies, clone the repo, build the command
+# executor server, and setup the system to run the command executor server and
+# Chromium UI on boot.
 
 # Exit early if any command fails.
 set -e
