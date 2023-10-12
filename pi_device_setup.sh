@@ -1,16 +1,16 @@
 # Use the Raspberry Pi Imager to flash the latest version of
 # "Raspberry Pi OS (64-bit)" which is in the "Raspberry Pi OS (other)" section.
 # Once on the desktop, place this file anywhere and run the following command:
-#   sudo -E bash pi_device_setup.sh
-# The `-E` flag is required to preserve the environment variables so that the
-# $USER variable is available to the script. This script should be run as the
-# current user (as opposed to root).
+#   sudo bash pi_device_setup.sh
 # This will install all of the dependencies, clone the repo, build the command
 # executor server, and setup the system to run the command executor server and
 # Chromium UI on boot.
 
 # Exit early if any command fails.
 set -e
+
+# Set the user variable to the current user (as opposed to root).
+ORIGINAL_USER=${SUDO_USER:-$USER}
 
 # Install dependencies.
 apt -y install xdotool unclutter
@@ -55,7 +55,7 @@ done
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$USER/g" ~/kiosk.sh
+sed -i "s/{user}/$ORIGINAL_USER/g" ~/kiosk.sh
 
 # Create systemd service file for command executor server.
 tee /etc/systemd/system/command_executor_server.service << EOF
@@ -77,7 +77,7 @@ WantedBy=default.target
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
+sed -i "s/{user}/$ORIGINAL_USER/g" /etc/systemd/system/command_executor_server.service
 
 # Enable the command executor server to run on boot.
 systemctl enable command_executor_server.service
@@ -104,7 +104,7 @@ WantedBy=graphical.target
 EOF
 
 # Replace {user} with your username.
-sed -i "s/{user}/$USER/g" /etc/systemd/system/kiosk.service
+sed -i "s/{user}/$ORIGINAL_USER/g" /etc/systemd/system/kiosk.service
 
 # Enable the Chromium kiosk to run on boot.
 systemctl enable kiosk.service
