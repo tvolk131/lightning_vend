@@ -37,6 +37,9 @@ mv target/release/command_executor_server /home/$USER/ || true
 tee /home/$USER/kiosk.sh << EOF
 #!/bin/bash
 
+# Set the display variable to the current user's display.
+export DISPLAY=$(w "$USER" 2>/dev/null | awk 'NF > 7 && $2 ~ /tty[0-9]+/ {print $3; exit}' 2>/dev/null)
+
 xset s noblank
 xset s off
 xset -dpms
@@ -84,6 +87,9 @@ sed -i "s/{user}/$USER/g" /etc/systemd/system/command_executor_server.service
 systemctl enable command_executor_server.service
 
 # Create systemd service file for Chromium kiosk.
+# TODO: Try reducing the sleep time (ExecStartPre) to see if it's still needed.
+# We delay the start of the Chromium kiosk to ensure that the graphical target
+# is ready.
 tee /etc/systemd/system/kiosk.service << EOF
 [Unit]
 Description=LightningVend Chromium Kiosk
@@ -94,9 +100,9 @@ After=graphical.target
 User={user}
 Group={user}
 Type=simple
+ExecStartPre=/bin/sleep 10
 ExecStart=/bin/bash /home/{user}/kiosk.sh
 Restart=on-abort
-Environment=DISPLAY=:0.0
 Environment=XAUTHORITY=/home/{user}/.Xauthority
 
 [Install]
