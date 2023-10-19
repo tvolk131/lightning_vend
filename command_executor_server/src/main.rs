@@ -5,6 +5,7 @@ use std::time::Duration;
 mod command_executor;
 use command_executor::liveace::LiVeAceSerialPort;
 use command_executor::{CommandExecutor, CommandExecutorManager, NamespacedCommandExecutor};
+use rayon::prelude::*;
 use rocket::{
     fairing::{Fairing, Info, Kind},
     http::Header,
@@ -93,17 +94,19 @@ impl Fairing for Cors {
 
 #[rocket::launch]
 async fn rocket() -> _ {
-    let mut command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = Vec::new();
-
     println!("Bootstrapping Arduino(s)...");
-    // TODO - Spawn a thread for each call to `try_get_call_response_serial_port_from_serial_port_info` since they all block. Then join on all of the handles.
-    for port_info in serialport::available_ports().unwrap_or_default() {
-        if let Some(call_response_serial_port) =
-            try_get_call_response_serial_port_from_serial_port_info(port_info)
-        {
-            command_executors.push(Box::from(call_response_serial_port));
-        }
-    }
+    let liveace_serial_ports: Vec<LiVeAceSerialPort> = serialport::available_ports()
+        .unwrap_or_default()
+        .into_par_iter()
+        .map(get_liveace_serial_port)
+        .filter_map(|port_or| port_or)
+        .collect();
+
+    let command_executors: Vec<Box<dyn NamespacedCommandExecutor>> = liveace_serial_ports
+        .into_iter()
+        .map(|port| Box::from(port) as Box<dyn NamespacedCommandExecutor>)
+        .collect();
+    println!("Discovered {} LiVeACE Arduinos!", command_executors.len());
 
     println!("Starting server...");
     rocket::build()
@@ -125,9 +128,7 @@ async fn rocket() -> _ {
         )
 }
 
-fn try_get_call_response_serial_port_from_serial_port_info(
-    serial_port_info: SerialPortInfo,
-) -> Option<LiVeAceSerialPort> {
+fn get_liveace_serial_port(serial_port_info: SerialPortInfo) -> Option<LiVeAceSerialPort> {
     let usb_port_info = match &serial_port_info.port_type {
         SerialPortType::UsbPort(usb_port_info) => usb_port_info,
         _ => return None,
