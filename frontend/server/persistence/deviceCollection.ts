@@ -36,6 +36,8 @@ export interface DeviceCollectionSchema {
   inventory?: Partial<InventoryItem>[];
   nullExecutionCommands?: string[];
   boolExecutionCommands?: string[];
+  lnbitsWalletInvoiceKey?: string;
+  lnbitsWalletAdminKey?: string;
 }
 
 const deviceCollectionDocumentToProto = (
@@ -65,7 +67,9 @@ const deviceCollectionDocumentToProto = (
         displayName: document.displayName,
         inventory: document.inventory,
         nullExecutionCommands: document.nullExecutionCommands,
-        boolExecutionCommands: document.boolExecutionCommands
+        boolExecutionCommands: document.boolExecutionCommands,
+        lnbitsWalletInvoiceKey: document.lnbitsWalletInvoiceKey,
+        lnbitsWalletAdminKey: document.lnbitsWalletAdminKey
       })
     };
   }
@@ -100,6 +104,14 @@ const partialDeviceToDocument = (
 
   if (device?.boolExecutionCommands) {
     deviceSchemaInstance.boolExecutionCommands = device.boolExecutionCommands;
+  }
+
+  if (device?.lnbitsWalletInvoiceKey) {
+    deviceSchemaInstance.lnbitsWalletInvoiceKey = device.lnbitsWalletInvoiceKey;
+  }
+
+  if (device?.lnbitsWalletAdminKey) {
+    deviceSchemaInstance.lnbitsWalletAdminKey = device.lnbitsWalletAdminKey;
   }
 
   return deviceSchemaInstance;
@@ -376,6 +388,10 @@ export class DeviceCollection implements DeviceService {
         } else {
           unsetDoc.boolExecutionCommands = '';
         }
+      } else if (updatePath === 'lnbits_wallet_invoice_key') {
+        setDoc.lnbitsWalletInvoiceKey = request.device.lnbitsWalletInvoiceKey;
+      } else if (updatePath === 'lnbits_wallet_admin_key') {
+        setDoc.lnbitsWalletAdminKey = request.device.lnbitsWalletAdminKey;
       } else if (updatePath.length === 0) {
         throw new Error('Update mask paths must not be empty.');
       } else if (updatePath === '*') {

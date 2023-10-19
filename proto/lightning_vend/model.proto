@@ -73,6 +73,12 @@ message Device {
 
   // The commands that the device supports that return a boolean value.
   repeated string bool_execution_commands = 5;
+
+  // The Lnbits Invoice Key of the Lnbits Wallet associated with this device.
+  string lnbits_wallet_invoice_key = 7;
+
+  // The Lnbits Admin Key of the Lnbits Wallet associated with this device.
+  string lnbits_wallet_admin_key = 8;
 }
 
 message InventoryItem {

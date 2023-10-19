@@ -171,7 +171,9 @@ describe('DeviceCollection', () => {
         displayName: '',
         inventory: [],
         nullExecutionCommands: [],
-        boolExecutionCommands: []
+        boolExecutionCommands: [],
+        lnbitsWalletInvoiceKey: '',
+        lnbitsWalletAdminKey: ''
       });
     });
   });
