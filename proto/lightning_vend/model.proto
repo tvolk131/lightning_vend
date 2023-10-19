@@ -27,6 +27,8 @@ message User {
 
   // The user's authentication ID.
   AuthId auth_id = 4 [(google.api.field_behavior) = REQUIRED];
+
+  string lnbits_user_id = 5;
 }
 
 // A device that is not yet claimed by a user.

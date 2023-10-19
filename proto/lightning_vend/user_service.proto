@@ -4,6 +4,7 @@ package lightning_vend;
 
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
+import "google/protobuf/field_mask.proto";
 import "lightning_vend/model.proto";
 
 // A service for managing users.
@@ -13,6 +14,8 @@ service UserService {
 
   // Retrieves a user.
   rpc GetUser(GetUserRequest) returns (User) {};
+
+  rpc UpdateUser(UpdateUserRequest) returns (User) {};
 }
 
 // Request message for GetOrCreateUserByAuthId.
@@ -31,4 +34,16 @@ message GetUserRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {type: "api.lightningvend.com/User"}
   ];
+}
+
+// Request message for UpdateUser.
+message UpdateUserRequest {
+  // The user to update.
+  //
+  // The user's `name` field is used to identify the user to update.
+  // Format: users/{user}.
+  User user = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The list of fields to update.
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
 }
