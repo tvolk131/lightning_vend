@@ -95,8 +95,24 @@ impl Fairing for Cors {
 #[rocket::launch]
 async fn rocket() -> _ {
     println!("Bootstrapping Arduino(s)...");
-    let liveace_serial_ports: Vec<LiVeAceSerialPort> = serialport::available_ports()
-        .unwrap_or_default()
+    let serial_ports = match serialport::available_ports() {
+        Ok(serial_ports) => {
+            println!("Discovered {} serial ports", serial_ports.len());
+            println!();
+            for serial_port in &serial_ports {
+                println!("{:#?}", serial_port);
+                println!();
+            }
+            serial_ports
+        }
+        Err(err) => {
+            println!("Unable to enumerate serial ports: {}", err);
+            Vec::default()
+        }
+    };
+
+    println!("Discovering LiVeACE Arduinos...");
+    let liveace_serial_ports: Vec<LiVeAceSerialPort> = serial_ports
         .into_par_iter()
         .map(get_liveace_serial_port)
         .filter_map(|port_or| port_or)
