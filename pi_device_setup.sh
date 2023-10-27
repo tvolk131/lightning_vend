@@ -13,7 +13,7 @@ set -e
 USER=${SUDO_USER:-$USER}
 
 # Install dependencies.
-apt -y install xdotool unclutter
+apt -y install xdotool unclutter libudev-dev
 
 # Install Rust.
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
