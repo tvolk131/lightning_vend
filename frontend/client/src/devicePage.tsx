@@ -2,7 +2,8 @@ import * as React from 'react';
 import {AsyncLoadableData, getAsyncLoadableDataStats} from './api/sharedApi';
 import {
   ExecutionCommands,
-  executionCommandsAreEqual
+  executionCommandsAreEqual,
+  listCommands
 } from '../../shared/commandExecutor';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import Alert from '@mui/material/Alert';
@@ -14,7 +15,6 @@ import {LightningNetworkLogo} from './lightningNetworkLogo';
 import Paper from '@mui/material/Paper';
 import {SelectionMenu} from './selectionMenu';
 import Typography from '@mui/material/Typography';
-import axios from 'axios';
 import {deviceApi} from './api/deviceApi';
 import {useTheme} from '@mui/material/styles';
 
@@ -35,25 +35,22 @@ export const DevicePage = () => {
 
   const loadAndSaveExecutionCommands = async () => {
     setExecutionCommands({state: 'loading'});
-    try {
-      const res = await axios.get('http://localhost:21000/listCommands');
-
-      const {
-        nullCommands,
-        boolCommands
-      } = res.data as ExecutionCommands;
-
-      await deviceApi.setDeviceExecutionCommands({nullCommands, boolCommands});
-      setExecutionCommands({
-        state: 'loaded',
-        data: {
-          nullCommands,
-          boolCommands
-        }
-      });
-    } catch (err) {
+    const executionCommands = await listCommands();
+    executionCommands.match(({nullCommands, boolCommands}) => {
+      deviceApi.setDeviceExecutionCommands({nullCommands, boolCommands})
+        .then(() => {
+          setExecutionCommands({
+            state: 'loaded',
+            data: {
+              nullCommands,
+              boolCommands
+            }
+          });
+        });
+    }, (errorMsg) => {
+      // TODO - Use a toast to display `errorMsg` to the user.
       setExecutionCommands({state: 'error'});
-    }
+    });
   };
 
   // Load execution commands from the device if the device is already claimed
