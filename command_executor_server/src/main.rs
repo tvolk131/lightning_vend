@@ -145,9 +145,8 @@ fn get_liveace_serial_port(serial_port_info: SerialPortInfo) -> Option<LiVeAceSe
         _ => return None,
     };
 
-    if get_board_type(usb_port_info) == ArduinoBoardType::Unknown {
-        return None;
-    }
+    // Return None if the USB port isn't an Arduino.
+    get_board_type(usb_port_info)?;
 
     let port_builder = serialport::new(&serial_port_info.port_name, 57600)
         .timeout(Duration::from_millis(1))
@@ -169,19 +168,20 @@ fn get_liveace_serial_port(serial_port_info: SerialPortInfo) -> Option<LiVeAceSe
     }
 }
 
-fn get_board_type(usb_port_info: &UsbPortInfo) -> ArduinoBoardType {
+/// Returns the board type for the given USB port info, or None if the port
+/// isn't an Arduino.
+fn get_board_type(usb_port_info: &UsbPortInfo) -> Option<ArduinoBoardType> {
     // 9025 is the decimal version of 2341.
     // See https://devicehunt.com/view/type/usb/vendor/2341 for board
     // number references, and remember to convert from hex to decimal.
     if usb_port_info.vid != 9025 {
-        return ArduinoBoardType::Unknown;
+        return None;
     }
 
-    if usb_port_info.pid == 66 {
-        return ArduinoBoardType::Mega2560;
+    match usb_port_info.pid {
+        66 => Some(ArduinoBoardType::Mega2560),
+        _ => Some(ArduinoBoardType::Unknown),
     }
-
-    ArduinoBoardType::Unknown
 }
 
 #[derive(PartialEq, std::fmt::Debug)]
