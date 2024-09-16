@@ -33,19 +33,19 @@ const int homingSwitchUnpressedState = HIGH;
 
 // TODO - Figure out why the pins need to be out of order and if we can fix
 // this. If we can't fix this, then we need to document why.
-Stepper stepper0(stepsPerRevolution, 39, 43, 41, 45);
-const int stepper0PowerPin0 = 35;
-const int stepper0PowerPin1 = 37;
-const int stepper0HomingSwitchPin = 2;
-const int stepper0InventorySensorPin = 53;
+Stepper stepper0(stepsPerRevolution, 2, 3, 4, 5);
+const int stepper0PowerPin0 = 6;
+const int stepper0PowerPin1 = 6;
+const int stepper0HomingSwitchPin = A1;
+const int stepper0InventorySensorPin = 27;
 
 // TODO - Figure out why the pins need to be out of order and if we can fix
 // this. If we can't fix this, then we need to document why.
-Stepper stepper1(stepsPerRevolution, 38, 42, 40, 44);
-const int stepper1PowerPin0 = 34;
-const int stepper1PowerPin1 = 36;
-const int stepper1HomingSwitchPin = 8;
-const int stepper1InventorySensorPin = 52;
+Stepper stepper1(stepsPerRevolution, 8, 9, 10, 11);
+const int stepper1PowerPin0 = 12;
+const int stepper1PowerPin1 = 12;
+const int stepper1HomingSwitchPin = A0;
+const int stepper1InventorySensorPin = 33;
 
 // --------------------------------------
 //    END OF CONFIGURATION, BEGIN CODE
